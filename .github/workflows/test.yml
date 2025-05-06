@@ -9,7 +9,7 @@ on:
       - '**/*.yaml'
       - '**/*.toml'
       - 'pyproject.toml'
-      - 'requirements.txt'
+      - 'requirements.txt' # Keep this path watch if you still have a requirements.txt for non-dev deps, otherwise remove
 
 jobs:
   test:
@@ -30,18 +30,21 @@ jobs:
         cache: 'pip' # Cache dependencies to speed up builds
 
     - name: Install dependencies
+      # Use bash shell for consistency and robust command execution
+      shell: bash
       run: |
+        # Upgrade pip
         python -m pip install --upgrade pip
-        # Check for requirements-dev.txt or pyproject.toml and install accordingly
-        if [ -f requirements-dev.txt ]; then
-          pip install -r requirements-dev.txt
-        else
-          echo "No requirements.txt or pyproject.toml found. Skipping dependency installation."
-        fi
-        pip install pytest pytest-cov # Install pytest and pytest-cov for coverage
+        # Install the package itself in editable mode, including 'dev' dependencies
+        # This reads dependencies from pyproject.toml
+        pip install -e .[dev]
+        # If you don't use a '[dev]' extra in pyproject.toml for test dependencies,
+        # you might need to explicitly install them here, e.g.:
+        # pip install pytest pytest-cov
 
     - name: Run tests with pytest
       run: |
+        # Run tests and generate coverage report
         pytest --cov=./ --cov-report=xml
 
     - name: Upload coverage report
