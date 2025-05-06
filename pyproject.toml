@@ -1,0 +1,27 @@
+[build-system]
+requires = ["setuptools>=61.0", "wheel"]
+build-backend = "setuptools.build_meta"
+
+[project]
+name = "scisbi"
+description = "Simulation-based parameter inference library"
+readme = "README.md"
+license = "Apache-2.0"
+authors = [
+  { name="Csongor Horváth", email="csongor.horvath@it.uu.se" }
+]
+requires-python = ">=3.9"
+
+dynamic = ["version"]
+
+# Leave dependencies empty or minimal here
+dependencies = []
+
+[tool.setuptools]
+package-dir = { "" = "src" }
+
+[tool.setuptools.dynamic]
+# Read the version from the __version__ attribute in the scisbi package
+version = { attr = "scisbi.__version__" }
+# Read dependencies from requirements.txt (keep this if you want)
+dependencies = { file = ["requirements.txt"] }
