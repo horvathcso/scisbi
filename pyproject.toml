@@ -25,4 +25,3 @@ package-dir = { "" = "src" }
 version = { attr = "scisbi.__version__" }
 # Read dependencies from requirements.txt (keep this if you want)
 dependencies = { file = ["requirements.txt"] }
-# ---------------------------------------------
