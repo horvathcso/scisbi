@@ -10,7 +10,7 @@ license = "Apache-2.0"
 authors = [
   { name="Csongor Horváth", email="csongor.horvath@it.uu.se" }
 ]
-requires-python = ">=3.8"
+requires-python = ">=3.9"
 
 dynamic = ["version"]
 
