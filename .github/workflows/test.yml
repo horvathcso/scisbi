@@ -42,6 +42,14 @@ jobs:
         # you might need to explicitly install them here, e.g.:
         # pip install pytest pytest-cov
 
+        # Check if requirements-dev.txt exists and install development dependencies from it.
+        if [ -f requirements-dev.txt ]; then
+          echo "Installing development dependencies from requirements-dev.txt"
+          pip install -r requirements-dev.txt
+        else
+          echo "requirements-dev.txt not found. Skipping installation of development dependencies from this file."
+        fi
+
     - name: Run tests with pytest
       run: |
         # Run tests and generate coverage report
