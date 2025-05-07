@@ -4,9 +4,9 @@ import sys
 sys.path.insert(0, os.path.abspath(".."))  # Ensure project root is in path
 
 # -- Project information -----------------------------------------------------
-project = "YourProjectName"
-author = "Your Name"
-release = "0.1.0"
+project = "scisbi - Scientific Machine Learning package for Simulation Based Inference documentation"
+author = "Csongor Horváth"
+release = "0.0.1"
 
 # -- General configuration ---------------------------------------------------
 extensions = [
