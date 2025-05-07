@@ -1,5 +1,9 @@
 -r requirements.txt
-black==25.1.0 
-pytest==8.3.5 
+black==25.1.0
+pytest==8.3.5
 pytest-cov==6.1.0
 pre-commit==4.2.0
+sphinx>=5.0.0
+sphinx-autodoc-typehints>=2.1.0
+myst-parser>=2.0.1
+furo>=2020.1.1
