@@ -1,4 +1,4 @@
-# scisbi - Scientific Machine Learning package for Simulation Based Inference 
+# scisbi - Scientific Machine Learning package for Simulation Based Inference
 
 A personal project with multiple aims:
 
@@ -8,6 +8,10 @@ A personal project with multiple aims:
 
 
 # Notes
+
+## Documentation
+
+[scisbi.readthedocs.io](https://scisbi.readthedocs.io)
 
 Other better maintained python packages might be more suitable for personal, research or applied uage, such as
 
