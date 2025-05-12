@@ -1,4 +1,4 @@
-# sbilib/base/workflow.py
+# scisbi/base/workflow.py
 
 import abc
 from typing import Any, Dict, Optional  # Import necessary types

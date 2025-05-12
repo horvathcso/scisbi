@@ -1,4 +1,4 @@
-# sbilib/base/summary_statistic.py
+# scisbi/base/summary_statistic.py
 
 import abc
 from typing import Any, Dict, Optional, TypeVar

@@ -1,6 +1,6 @@
-# sbilib/base/__init__.py
+# scisbi/base/__init__.py
 
-# Import the base classes to make them available under the sbilib.base namespace
+# Import the base classes to make them available under the scisbi.base namespace
 from .inference import BaseInferenceAlgorithm
 from .simulator import BaseSimulator
 from .summary_statistic import BaseSummaryStatistic

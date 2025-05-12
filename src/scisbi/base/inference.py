@@ -1,4 +1,4 @@
-# sbilib/base/inference_algorithm.py
+# scisbi/base/inference_algorithm.py
 
 import abc
 from typing import Any, Dict, Optional

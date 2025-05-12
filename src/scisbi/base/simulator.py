@@ -1,4 +1,4 @@
-# sbilib/base/simulator.py
+# scisbi/base/simulator.py
 
 import abc
 
