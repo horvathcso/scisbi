@@ -22,9 +22,10 @@ API Reference
 =============
 
 .. toctree::
-   :maxdepth: 4  <-- You might need to adjust this depth
-   :caption: Modules
+   :maxdepth: 4
 
-   scisbi.modul1
-   scisbi.base  <-- Make sure this line is present!
-   # Add other modules here
+   api/scisbi
+   api/scisbi.base  
+   api/scisbi.inference
+   api/scisbi.simulator
+   api/scisbi.summary_statistic
