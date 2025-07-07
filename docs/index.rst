@@ -17,4 +17,14 @@ documentation for details.
 
    introduction
    usage
-   api/modules
+
+API Reference
+=============
+
+.. toctree::
+   :maxdepth: 4  <-- You might need to adjust this depth
+   :caption: Modules
+
+   scisbi.modul1
+   scisbi.base  <-- Make sure this line is present!
+   # Add other modules here
