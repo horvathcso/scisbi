@@ -7,3 +7,4 @@ sphinx>=5.0.0
 sphinx-autodoc-typehints>=2.1.0
 myst-parser>=2.0.1
 furo>=2020.1.1
+scikit-learn>=0.24.0
