@@ -3,6 +3,8 @@ name: Build Documentation
 on:
   pull_request:
     branches: [main]
+  push: # Also build on push to main, for deployments or latest docs
+    branches: [main]
 
 jobs:
   docs:
@@ -21,6 +23,17 @@ jobs:
         run: |
           python -m pip install --upgrade pip
           pip install -r docs/requirements.txt
+          pip install -e
+
+      - name: Generate API documentation stubs
+        run: |
+          cd docs
+          # -o .: Output to the current docs directory
+          # ../your_package_name: Path to your Python package relative to 'docs/'
+          # --force: Overwrite existing RST files (important for updates)
+          # --implicit-namespaces: Use if your package is a PEP 420 namespace package
+          # --module-first: Puts module docs before package docs
+          sphinx-apidoc -o . ../src/scicbi --force --implicit-namespaces --module-first
 
       - name: Build Sphinx documentation
         run: |
