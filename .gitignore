@@ -2,6 +2,8 @@
 .vscode/*
 *.code-workspace
 
+*.pth
+
 # Local History for Visual Studio Code
 .history/
 
