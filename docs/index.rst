@@ -6,9 +6,6 @@
 scisbi - Scientific Machine Learning package for Simulation Based Inference documentation
 =========================================================================================
 
-Add your content using ``reStructuredText`` syntax. See the
-`reStructuredText <https://www.sphinx-doc.org/en/master/usage/restructuredtext/index.html>`_
-documentation for details.
 
 
 .. toctree::
@@ -17,6 +14,7 @@ documentation for details.
 
    introduction
    usage
+   api
 
 API Reference
 =============
