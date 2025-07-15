@@ -18,13 +18,13 @@ class ABCMCMC(BaseInferenceAlgorithm):
 
     The algorithm implements the following procedure:
 
-    1. Initialize the chain at θ₀
-    2. At iteration i, propose θ* from proposal distribution q(θ|θᵢ)
-    3. Simulate data x* using θ* with the forward model f(x|θ*)
-    4. If ρ(x*, x_obs) ≤ ε, proceed to acceptance step, otherwise reject
-    5. Accept θ* with probability α = min(1, [π(θ*)q(θᵢ|θ*)] / [π(θᵢ)q(θ*|θᵢ)])
-    6. Set θᵢ₊₁ = θ* if accepted, otherwise θᵢ₊₁ = θᵢ
-    7. Increment i and repeat from step 2
+    1. Initialize the chain at θ₀.
+    2. At iteration i, propose θ* from proposal distribution q(θ|θᵢ).
+    3. Simulate data x* using θ* with the forward model f(x|θ*).
+    4. If ρ(x*, x_obs) ≤ ε, proceed to acceptance step, otherwise reject.
+    5. Accept θ* with probability α = min(1, [π(θ*)q(θᵢ|θ*)] / [π(θᵢ)q(θ*|θᵢ)]).
+    6. Set θᵢ₊₁ = θ* if accepted, otherwise θᵢ₊₁ = θᵢ.
+    7. Increment i and repeat from step 2.
 
     The key advantage over ABC rejection sampling is that ABC-MCMC can achieve
     better mixing and exploration of the posterior, especially in high-dimensional
@@ -33,11 +33,13 @@ class ABCMCMC(BaseInferenceAlgorithm):
     correlation between successive samples.
 
     The choice of proposal distribution q(θ|θᵢ) is crucial:
-    - Common choices include multivariate normal: q(θ|θᵢ) = N(θᵢ, Σ)
-    - Proposal covariance Σ should be tuned to achieve reasonable acceptance rates
-    - Adaptive proposals can be used to improve efficiency during sampling
+
+    - Common choices include multivariate normal: q(θ|θᵢ) = N(θᵢ, Σ).
+    - Proposal covariance Σ should be tuned to achieve reasonable acceptance rates.
+    - Adaptive proposals can be used to improve efficiency during sampling.
 
     References:
+
     - Marjoram, P., Molitor, J., Plagnol, V., & Tavaré, S. (2003). Markov chain
       Monte Carlo without likelihoods. Proceedings of the National Academy of
       Sciences, 100(26), 15324-15328.
@@ -63,31 +65,35 @@ class ABCMCMC(BaseInferenceAlgorithm):
 
         Args:
             simulator (BaseSimulator): Simulator object with a 'simulate' method
-                                     that generates synthetic data given parameters.
+                that generates synthetic data given parameters.
+
             prior (Any): Prior distribution object with 'sample' and 'log_prob' methods.
-                        Should support sampling parameter vectors θ ~ π(θ) and
-                        computing log-probabilities log π(θ).
+                Should support sampling parameter vectors θ ~ π(θ) and
+                computing log-probabilities log π(θ).
+
             distance_function (Callable[[Any, Any], float]): Function ρ(x_sim, x_obs)
-                                                            that computes the distance
-                                                            between simulated and observed
-                                                            data. Should return a non-negative
-                                                            float value.
+                that computes the distance between simulated and observed
+                data. Should return a non-negative float value.
+
             tolerance (float): Acceptance threshold ε ≥ 0. Smaller values yield more
-                             accurate approximations but lower acceptance rates.
+                accurate approximations but lower acceptance rates.
+
             proposal_distribution (Callable[[Any], Any]): Proposal distribution q(θ|θᵢ)
-                                                         that takes current state θᵢ and
-                                                         returns a proposed state θ*.
-                                                         Should be symmetric for simplicity.
+                that takes current state θᵢ and returns a proposed state θ*.
+                Should be symmetric for simplicity.
+
             summary_statistic (Optional[BaseSummaryStatistic]): Optional summary statistic
-                                                               function to reduce data
-                                                               dimensionality before
-                                                               distance computation.
-            **kwargs: Additional configuration parameters such as:
-                     - max_attempts_per_step (int): Maximum simulation attempts per
-                       MCMC step before moving to next iteration (default: 100)
-                     - verbose (bool): Whether to print progress information
-                     - thin (int): Thinning interval for storing samples (default: 1)
-                     - burn_in (int): Number of burn-in iterations to discard (default: 0)
+                function to reduce data dimensionality before distance computation.
+
+            **kwargs (Optional):
+                Additional configuration parameters such as:
+                    - max_attempts_per_step (int): Maximum simulation attempts per
+                    MCMC step before moving to next iteration (default: 100).
+                    - verbose (bool): Whether to print progress information.
+                    - thin (int): Thinning interval for storing samples (default: 1).
+                    - burn_in (int): Number of burn-in iterations to discard (default: 0).
+
+
         """
         super().__init__(simulator, prior, summary_statistic, **kwargs)
 

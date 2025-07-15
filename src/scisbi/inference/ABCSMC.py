@@ -18,24 +18,26 @@ class ABCSMC(BaseInferenceAlgorithm):
 
     The algorithm implements the following procedure:
 
-    1. Initialize tolerance sequence ε₁ > ε₂ > ... > εₜ ≥ 0
-    2. For t = 0: Sample N particles {θ⁽ⁱ⁾₀} from prior π(θ)
+    1. Initialize tolerance sequence ε₁ > ε₂ > ... > εₜ ≥ 0.
+    2. For t = 0: Sample N particles {θⁱ₀} from prior π(θ).
     3. For t > 0:
-       a) Sample θ* from previous population with weights wₜ₋₁
-       b) Perturb: θ** ~ Kₜ(θ|θ*) using perturbation kernel
-       c) Check prior: if π(θ**) = 0, reject and resample
-       d) Simulate: x* ~ f(x|θ**)
-       e) Accept if ρ(x*, x_obs) ≤ εₜ
-    4. Calculate importance weights for accepted particles
-    5. Repeat until final tolerance εₜ is reached
+       a) Sample θ* from previous population with weights wₜ₋₁.
+       b) Perturb: θ** ~ Kₜ(θ|θ*) using perturbation kernel.
+       c) Check prior: if π(θ**) = 0, reject and resample.
+       d) Simulate: x* ~ f(x|θ**).
+       e) Accept if ρ(x*, x_obs) ≤ εₜ.
+    4. Calculate importance weights for accepted particles.
+    5. Repeat until final tolerance εₜ is reached.
 
     The key advantages over other ABC methods:
-    - Population-based approach avoids local optima
-    - Sequential refinement allows efficient exploration
-    - Adaptive tolerance schedule improves convergence
-    - Importance weighting maintains proper particle distribution
+
+    - Population-based approach avoids local optima.
+    - Sequential refinement allows efficient exploration.
+    - Adaptive tolerance schedule improves convergence.
+    - Importance weighting maintains proper particle distribution.
 
     References:
+
     - Sisson, S. A., Fan, Y., & Tanaka, M. M. (2007). Sequential Monte Carlo
       without likelihoods. Proceedings of the National Academy of Sciences,
       104(6), 1760-1765.
@@ -45,6 +47,7 @@ class ABCSMC(BaseInferenceAlgorithm):
       Approximate Bayesian computation scheme for parameter inference and model
       selection in dynamical systems. Journal of the Royal Statistical Society,
       71(3), 463-482.
+
     """
 
     def __init__(
@@ -63,34 +66,39 @@ class ABCSMC(BaseInferenceAlgorithm):
 
         Args:
             simulator (BaseSimulator): Simulator object with a 'simulate' method
-                                     that generates synthetic data given parameters.
+                that generates synthetic data given parameters.
+
             prior (Any): Prior distribution object with 'sample' and 'log_prob' methods.
-                        Should support sampling parameter vectors θ ~ π(θ) and
-                        computing log-probabilities log π(θ).
+                Should support sampling parameter vectors θ ~ π(θ) and
+                computing log-probabilities log π(θ).
+
             distance_function (Callable[[Any, Any], float]): Function ρ(x_sim, x_obs)
-                                                            that computes the distance
-                                                            between simulated and observed
-                                                            data. Should return a non-negative
-                                                            float value.
+                that computes the distance between simulated and observed
+                data. Should return a non-negative float value.
+
             tolerance_schedule (List[float]): Decreasing sequence of tolerance thresholds
-                                            [ε₁, ε₂, ..., εₜ] where ε₁ > ε₂ > ... > εₜ ≥ 0.
+                [ε₁, ε₂, ..., εₜ] where ε₁ > ε₂ > ... > εₜ ≥ 0.
+
             perturbation_kernel (Callable[[Any], Any]): Kernel Kₜ(θ|θ*) for perturbing
-                                                       particles between iterations.
-                                                       Takes a particle and returns a
-                                                       perturbed version.
+                particles between iterations. Takes a particle and returns a
+                perturbed version.
+
             num_particles (int): Number of particles N in the population (default: 1000).
+
             summary_statistic (Optional[BaseSummaryStatistic]): Optional summary statistic
-                                                               function to reduce data
-                                                               dimensionality before
-                                                               distance computation.
-            **kwargs: Additional configuration parameters such as:
-                     - max_attempts_per_particle (int): Maximum attempts to accept
-                       each particle (default: 1000)
-                     - verbose (bool): Whether to print progress information
-                     - adaptive_tolerance (bool): Whether to adaptively set tolerances
-                       based on population distances (default: False)
-                     - effective_sample_size_threshold (float): Threshold for resampling
-                       when effective sample size drops too low (default: 0.5)
+                function to reduce data dimensionality before distance computation.
+
+            **kwargs (Optional): Additional configuration parameters such as:
+
+                - max_attempts_per_particle (int): Maximum attempts to accept
+                  each particle (default: 1000).
+                - verbose (bool): Whether to print progress information.
+                - adaptive_tolerance (bool): Whether to adaptively set tolerances
+                  based on population distances (default: False).
+                - effective_sample_size_threshold (float): Threshold for resampling
+                  when effective sample size drops too low (default: 0.5).
+
+
         """
         super().__init__(simulator, prior, summary_statistic, **kwargs)
 

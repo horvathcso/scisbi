@@ -18,13 +18,14 @@ class ABCRejectionSampling(BaseInferenceAlgorithm):
 
     The algorithm implements the following procedure:
 
-    1. Sample candidate parameters θ* from the prior distribution π(θ)
-    2. Generate synthetic data x* by running the simulator f(x|θ*) with θ*
-    3. Compute the distance ρ(x*, x_obs) between simulated and observed data
-    4. Accept θ* if ρ(x*, x_obs) ≤ ε, otherwise reject
-    5. Repeat until N accepted samples are collected
+    1. Sample candidate parameters θ* from the prior distribution π(θ).
+    2. Generate synthetic data x* by running the simulator f(x|θ*) with θ*.
+    3. Compute the distance ρ(x*, x_obs) between simulated and observed data.
+    4. Accept θ* if ρ(x*, x_obs) ≤ ε, otherwise reject.
+    5. Repeat until N accepted samples are collected.
 
     The accepted samples approximate draws from the ABC posterior:
+
     π_ABC(θ|x_obs) ∝ π(θ) · I[ρ(f(x|θ), x_obs) ≤ ε]
 
     where I[·] is the indicator function. As ε → 0, the ABC posterior approaches
@@ -32,18 +33,21 @@ class ABCRejectionSampling(BaseInferenceAlgorithm):
     effort due to lower acceptance rates.
 
     The choice of distance function ρ and tolerance ε are critical:
-    - ρ should capture relevant differences between datasets
-    - ε controls the approximation quality vs. computational cost trade-off
+
+    - ρ should capture relevant differences between datasets.
+    - ε controls the approximation quality vs. computational cost trade-off.
     - Summary statistics can be used to reduce dimensionality and focus on
-      informative features of the data
+      informative features of the data.
 
     References:
+
     - Beaumont, M. A., Zhang, W., & Balding, D. J. (2002). Approximate Bayesian
       computation in population genetics. Genetics, 162(2), 2025-2035.
     - Scott A. Sisson, Yanan Fan, Mark Beaumont (2018). Handbook of
       approximate Bayesian computation. CRC press.
-    - Pritchard, J. K., Seielstad, M. T., Perez-Lezaun, A., & Feldman, M. W. (1999)
+    - Pritchard, J. K., Seielstad, M. T., Perez-Lezaun, A., & Feldman, M. W. (1999).
       Population growth of human Y chromosomes: a study of Y chromosome microsatellites.
+
     """
 
     def __init__(
@@ -60,24 +64,27 @@ class ABCRejectionSampling(BaseInferenceAlgorithm):
 
         Args:
             simulator (BaseSimulator): Simulator object with a 'simulate' method
-                                     that generates synthetic data given parameters.
+                that generates synthetic data given parameters.
+
             prior (Any): Prior distribution object with 'sample' and 'log_prob' methods.
-                        Should support sampling parameter vectors θ ~ π(θ).
+                Should support sampling parameter vectors θ ~ π(θ).
+
             distance_function (Callable[[Any, Any], float]): Function ρ(x_sim, x_obs)
-                                                            that computes the distance
-                                                            between simulated and observed
-                                                            data. Should return a non-negative
-                                                            float value.
+                that computes the distance between simulated and observed
+                data. Should return a non-negative float value.
+
             tolerance (float): Acceptance threshold ε ≥ 0. Smaller values yield more
-                             accurate approximations but lower acceptance rates.
+                accurate approximations but lower acceptance rates.
+
             summary_statistic (Optional[BaseSummaryStatistic]): Optional summary statistic
-                                                               function to reduce data
-                                                               dimensionality before
-                                                               distance computation.
-            **kwargs: Additional configuration parameters such as:
-                     - max_attempts (int): Maximum number of simulation attempts
-                       before raising an error (default: 1000000)
-                     - verbose (bool): Whether to print progress information
+                function to reduce data dimensionality before distance computation.
+
+            **kwargs (Optional): Additional configuration parameters such as:
+
+                - max_attempts (int): Maximum number of simulation attempts
+                  before raising an error (default: 1000000).
+                - verbose (bool): Whether to print progress information.
+
         """
         super().__init__(simulator, prior, summary_statistic, **kwargs)
 
@@ -296,7 +303,6 @@ class ABCPosterior:
                                              assumes samples are 1D (default: None).
             bins (int): Number of bins for the histogram (default: 30).
         """
-
         if not self.samples:
             raise ValueError("No samples available to plot.")
 
