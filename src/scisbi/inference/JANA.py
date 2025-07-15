@@ -11,6 +11,8 @@ import torch.nn as nn
 import torch.optim as optim
 from torch.utils.data import DataLoader, TensorDataset
 from tqdm.auto import trange
+import tempfile
+import os
 
 from ..base.inference import BaseInferenceAlgorithm
 from ..base.simulator import BaseSimulator
@@ -150,6 +152,11 @@ class JANA(BaseInferenceAlgorithm):
         epochs_no_improve = 0
         best_model_saved = False
 
+        # Create temporary file for saving best model
+        temp_file = tempfile.NamedTemporaryFile(delete=False, suffix=".pth")
+        temp_model_path = temp_file.name
+        temp_file.close()
+
         self.model.train()
         for epoch in trange(num_epochs, desc="Epochs", disable=not verbose):
             total_train_loss = 0
@@ -205,7 +212,7 @@ class JANA(BaseInferenceAlgorithm):
             if avg_val_loss < best_val_loss:
                 best_val_loss = avg_val_loss
                 epochs_no_improve = 0
-                torch.save(self.model.state_dict(), "best_jana_model.pth")
+                torch.save(self.model.state_dict(), temp_model_path)
                 best_model_saved = True
             else:
                 epochs_no_improve += 1
@@ -222,7 +229,22 @@ class JANA(BaseInferenceAlgorithm):
 
         # Load best model if saved, otherwise keep current state
         if best_model_saved:
-            self.model.load_state_dict(torch.load("best_jana_model.pth"))
+            try:
+                self.model.load_state_dict(torch.load(temp_model_path))
+                if verbose:
+                    print("Loaded best model from training.")
+            except FileNotFoundError:
+                if verbose:
+                    print(
+                        "Warning: Best model file not found, keeping current model state."
+                    )
+
+        # Cleanup temporary file
+        try:
+            os.unlink(temp_model_path)
+        except OSError:
+            pass  # File may not exist or already deleted
+
         self.model.eval()
 
         return JANAPosterior(
