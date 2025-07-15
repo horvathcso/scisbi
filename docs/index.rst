@@ -16,6 +16,7 @@ Welcome to scisbi's documentation!
    introduction
    usage
    api
+   MAINTENANCE
 
 Indices and tables
 ==================
