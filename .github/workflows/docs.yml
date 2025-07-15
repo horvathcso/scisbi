@@ -33,7 +33,7 @@ jobs:
           # --force: Overwrite existing RST files (important for updates)
           # --implicit-namespaces: Use if your package is a PEP 420 namespace package
           # --module-first: Puts module docs before package docs
-          sphinx-apidoc -o . ../src/scicbi --force --implicit-namespaces --module-first
+          sphinx-apidoc -o . ../src/scisbi --force --implicit-namespaces --module-first
 
       - name: Build Sphinx documentation
         run: |
