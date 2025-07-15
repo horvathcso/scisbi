@@ -1,4 +1,5 @@
-sphinx
+sphinx>=4.0
 sphinx-autodoc-typehints
 myst-parser
 furo
+sphinx-rtd-theme

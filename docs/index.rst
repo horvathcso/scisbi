@@ -3,8 +3,8 @@
    You can adapt this file completely to your liking, but it should at least
    contain the root `toctree` directive.
 
-scisbi - Scientific Machine Learning package for Simulation Based Inference documentation
-=========================================================================================
+scisbi - Scientific Machine Learning package for Simulation Based Inference
+============================================================================
 
 Welcome to scisbi's documentation!
 ===================================
@@ -13,10 +13,13 @@ Welcome to scisbi's documentation!
    :maxdepth: 2
    :caption: Contents:
 
-   # Other documentation sections (e.g., introduction, usage, installation)
-   # ...
-
-
    introduction
    usage
-   api  # <--- ADD THIS LINE to link to your API documentation
+   api
+
+Indices and tables
+==================
+
+* :ref:`genindex`
+* :ref:`modindex`
+* :ref:`search`
