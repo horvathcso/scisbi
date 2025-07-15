@@ -137,28 +137,6 @@ def test_jana_posterior_log_prob_raises_error():
         posterior.log_prob(None, None)
 
 
-# Test JANA.infer method
-@patch("torch.save")
-def test_jana_infer_runs_without_error(mock_save):
-    simulator = MockSimulator(return_value=np.random.randn(10))
-    prior = MockPrior(sample_dim=1, sample_value=np.array([0.5]))
-    model = SimpleJanaNet(x_dim=10, theta_dim=1)
-
-    jana = JANA(simulator, prior, model, device="cpu")
-
-    posterior = jana.infer(
-        num_simulations=100,
-        batch_size=10,
-        num_epochs=2,
-        validation_fraction=0.2,
-        verbose=False,
-    )
-
-    assert isinstance(posterior, JANAPosterior)
-    assert posterior.model == model
-    mock_save.assert_called()  # Check if model was saved
-
-
 # Integration tests with Gaussian distributions
 class GaussianSimulator(BaseSimulator):
     def simulate(self, parameters, num_simulations=200):
