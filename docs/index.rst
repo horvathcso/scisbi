@@ -6,26 +6,17 @@
 scisbi - Scientific Machine Learning package for Simulation Based Inference documentation
 =========================================================================================
 
-Add your content using ``reStructuredText`` syntax. See the
-`reStructuredText <https://www.sphinx-doc.org/en/master/usage/restructuredtext/index.html>`_
-documentation for details.
-
+Welcome to scisbi's documentation!
+===================================
 
 .. toctree::
    :maxdepth: 2
    :caption: Contents:
 
+   # Other documentation sections (e.g., introduction, usage, installation)
+   # ...
+
+
    introduction
    usage
-
-API Reference
-=============
-
-.. toctree::
-   :maxdepth: 4
-
-   api/scisbi
-   api/scisbi.base  
-   api/scisbi.inference
-   api/scisbi.simulator
-   api/scisbi.summary_statistic
+   api  # <--- ADD THIS LINE to link to your API documentation
