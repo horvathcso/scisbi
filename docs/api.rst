@@ -1,10 +1,44 @@
 API Reference
 =============
 
-The API documentation below is auto-generated from the source code using Sphinx and sphinx-apidoc.
-All modules in the ``scisbi`` package are included.
+This page contains the API reference for scisbi.
 
-.. toctree::
-   :maxdepth: 2
+Core Package
+------------
 
-   modules
+.. automodule:: scisbi
+   :members:
+   :undoc-members:
+   :show-inheritance:
+
+Base Classes
+------------
+
+.. automodule:: scisbi.base
+   :members:
+   :undoc-members:
+   :show-inheritance:
+
+Inference Methods
+-----------------
+
+.. automodule:: scisbi.inference
+   :members:
+   :undoc-members:
+   :show-inheritance:
+
+Simulators
+----------
+
+.. automodule:: scisbi.simulator
+   :members:
+   :undoc-members:
+   :show-inheritance:
+
+Summary Statistics
+------------------
+
+.. automodule:: scisbi.summary_statistic
+   :members:
+   :undoc-members:
+   :show-inheritance:

@@ -1,52 +1,27 @@
-# Enhanced Makefile for Sphinx documentation
-# Compatible with GitHub Actions and local development
-# Provides comprehensive debugging output and error handling
+# Minimal Makefile for Sphinx documentation
 
-# Build configuration variables
-SPHINXOPTS     ?= -v -W --keep-going
-SPHINXBUILD    ?= sphinx-build
-SPHINXAPIDOC   ?= sphinx-apidoc
+SPHINXOPTS    ?=
+SPHINXBUILD   ?= sphinx-build
 SOURCEDIR     = .
 BUILDDIR      = _build
 
-# Package and API documentation paths
-PACKAGE_DIR   = ../src/scisbi
-APIDOC_OUTPUT = _autosummary
+.PHONY: help clean html
 
-# Colors for output (works in most terminals including GitHub Actions)
-RESET   = \033[0m
-BOLD    = \033[1m
-RED     = \033[31m
-GREEN   = \033[32m
-YELLOW  = \033[33m
-BLUE    = \033[34m
-
-# Default target
-.DEFAULT_GOAL := help
-
-# Declare phony targets
-.PHONY: help clean clean-all apidoc html livehtml debug check-deps install-deps test-build
-
-# Help target - shows available commands
 help:
-	@echo "$(BOLD)Sphinx Documentation Build System$(RESET)"
-	@echo ""
-	@echo "$(BOLD)Available targets:$(RESET)"
-	@echo "  $(GREEN)help$(RESET)        - Show this help message"
-	@echo "  $(GREEN)clean$(RESET)       - Remove build files and auto-generated API docs"
-	@echo "  $(GREEN)clean-all$(RESET)   - Deep clean including cache and temporary files"
-	@echo "  $(GREEN)apidoc$(RESET)      - Generate API documentation from source code"
-	@echo "  $(GREEN)html$(RESET)        - Build HTML documentation"
-	@echo "  $(GREEN)livehtml$(RESET)    - Build HTML with live reload (requires sphinx-autobuild)"
-	@echo "  $(GREEN)debug$(RESET)       - Build with maximum verbosity for debugging"
-	@echo "  $(GREEN)check-deps$(RESET)  - Check if required dependencies are installed"
-	@echo "  $(GREEN)test-build$(RESET)  - Quick test build to check for errors"
-	@echo ""
-	@echo "$(BOLD)Environment:$(RESET)"
-	@echo "  SPHINXBUILD   = $(SPHINXBUILD)"
-	@echo "  SPHINXAPIDOC  = $(SPHINXAPIDOC)"
-	@echo "  PACKAGE_DIR   = $(PACKAGE_DIR)"
-	@echo "  BUILDDIR      = $(BUILDDIR)"
+	@echo "Sphinx documentation build targets:"
+	@echo "  html       Build HTML documentation"
+	@echo "  clean      Remove build files"
+	@echo "  check-deps Check dependencies"
+
+clean:
+	rm -rf $(BUILDDIR)
+
+html:
+	$(SPHINXBUILD) -b html $(SPHINXOPTS) $(SOURCEDIR) $(BUILDDIR)/html
+	@echo "Build finished. The HTML pages are in $(BUILDDIR)/html."
+
+check-deps:
+	@python -c "import sphinx, furo, myst_parser; print('All dependencies available')"
 
 # Check if required dependencies are available
 check-deps:

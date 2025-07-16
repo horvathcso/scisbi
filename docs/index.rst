@@ -1,16 +1,18 @@
-scisbi - Scientific Machine Learning package for Simulation Based Inference
-============================================================================
+scisbi Documentation
+====================
 
-Welcome to scisbi's documentation!
+Welcome to scisbi, a Scientific Machine Learning package for Simulation Based Inference.
 
 .. toctree::
    :maxdepth: 2
-   :caption: Contents:
+   :caption: Documentation:
 
-   introduction
-   usage
+   overview
+   quickstart
    api
-   MAINTENANCE
+
+Indices and tables
+==================
 
 * :ref:`genindex`
 * :ref:`modindex`
