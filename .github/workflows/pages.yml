@@ -1,0 +1,29 @@
+name: Deploy to GitHub Pages from _build/html
+
+on:
+  workflow_dispatch:
+
+jobs:
+  deploy:
+    runs-on: ubuntu-latest
+
+    steps:
+      - name: Checkout code
+        uses: actions/checkout@v4
+
+      - name: Deploy _build/html to gh-pages
+        run: |
+          git config --global user.name "github-actions[bot]"
+          git config --global user.email "github-actions[bot]@users.noreply.github.com"
+
+          mkdir public
+          cp -r docs/_build/html/* public/
+
+          git switch --orphan gh-pages
+          git rm -rf .
+          cp -r public/* .
+          touch .nojekyll
+
+          git add .
+          git commit -m "Deploy docs from _build/html"
+          git push --force origin gh-pages
