@@ -15,7 +15,7 @@ jobs:
 
           # Create a temporary directory for the built docs to avoid issues with .git directory
           mkdir -p temp-docs
-          cp -r _build/html/* temp-docs/
+          cp -r docs/_build/html/* temp-docs/
 
           # Switch to orphan branch gh-pages
           git fetch origin gh-pages || git checkout --orphan gh-pages
