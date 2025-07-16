@@ -8,19 +8,6 @@ jobs:
       - name: Checkout code
         uses: actions/checkout@v4
 
-      - name: Setup Python (if your build process needs it)
-        uses: actions/setup-python@v5
-        with:
-          python-version: '3.x' # Specify your Python version if your build process needs it
-          cache: 'pip'
-
-      - name: Build documentation (replace with your actual build command)
-        run: |
-          # Example: If you're using Sphinx
-          pip install sphinx sphinx-rtd-theme
-          sphinx-build -b html docs/ _build/html
-          # Or whatever command builds your docs into _build/html
-
       - name: Deploy _build/html to gh-pages
         run: |
           git config --global user.name "github-actions[bot]"
