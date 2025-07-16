@@ -1,35 +1,48 @@
 name: Deploy to GitHub Pages from _build/html
-
 on:
   workflow_dispatch:
-
 jobs:
   deploy:
     runs-on: ubuntu-latest
-
     steps:
       - name: Checkout code
         uses: actions/checkout@v4
+
+      - name: Setup Python (if your build process needs it)
+        uses: actions/setup-python@v5
+        with:
+          python-version: '3.x' # Specify your Python version if your build process needs it
+          cache: 'pip'
+
+      - name: Build documentation (replace with your actual build command)
+        run: |
+          # Example: If you're using Sphinx
+          pip install sphinx sphinx-rtd-theme
+          sphinx-build -b html docs/ _build/html
+          # Or whatever command builds your docs into _build/html
 
       - name: Deploy _build/html to gh-pages
         run: |
           git config --global user.name "github-actions[bot]"
           git config --global user.email "github-actions[bot]@users.noreply.github.com"
 
-          # Backup built docs before switching branch
-          mkdir temp-docs
-          cp -r docs/_build/html/* temp-docs/
+          # Create a temporary directory for the built docs to avoid issues with .git directory
+          mkdir -p temp-docs
+          cp -r _build/html/* temp-docs/
 
           # Switch to orphan branch gh-pages
-          git switch --orphan gh-pages
+          git fetch origin gh-pages || git checkout --orphan gh-pages
+          git reset --hard origin/gh-pages || true # Reset to avoid stale files if branch exists
 
-          # Remove all files (if any)
+          # Remove everything from the working directory but not .git
+          # This is important if the gh-pages branch already exists and has old content
           git rm -rf .
+          rm -rf * # Also remove untracked files
 
           # Copy docs back from backup
           cp -r temp-docs/* .
 
-          # Add .nojekyll to prevent GitHub Pages issues
+          # Add .nojekyll to prevent GitHub Pages issues with Jekyll processing
           touch .nojekyll
 
           # Add all files, commit and push
