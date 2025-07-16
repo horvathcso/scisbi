@@ -1,0 +1,894 @@
+<!doctype html>
+<html class="no-js" lang="en" data-content_root="../../../">
+  <head><meta charset="utf-8"/>
+    <meta name="viewport" content="width=device-width,initial-scale=1"/>
+    <meta name="color-scheme" content="light dark"><link rel="index" title="Index" href="../../../genindex.html" /><link rel="search" title="Search" href="../../../search.html" />
+
+    <!-- Generated with Sphinx 8.2.3 and Furo 2024.08.06 -->
+        <title>scisbi.inference.ABCMCMC - scisbi v0.0.1</title>
+      <link rel="stylesheet" type="text/css" href="../../../_static/pygments.css?v=8f2a1f02" />
+    <link rel="stylesheet" type="text/css" href="../../../_static/styles/furo.css?v=354aac6f" />
+    <link rel="stylesheet" type="text/css" href="../../../_static/styles/furo-extensions.css?v=302659d7" />
+
+
+
+
+<style>
+  body {
+    --color-code-background: #f8f8f8;
+  --color-code-foreground: black;
+
+  }
+  @media not print {
+    body[data-theme="dark"] {
+      --color-code-background: #202020;
+  --color-code-foreground: #d0d0d0;
+
+    }
+    @media (prefers-color-scheme: dark) {
+      body:not([data-theme="light"]) {
+        --color-code-background: #202020;
+  --color-code-foreground: #d0d0d0;
+
+      }
+    }
+  }
+</style></head>
+  <body>
+
+    <script>
+      document.body.dataset.theme = localStorage.getItem("theme") || "auto";
+    </script>
+
+
+<svg xmlns="http://www.w3.org/2000/svg" style="display: none;">
+  <symbol id="svg-toc" viewBox="0 0 24 24">
+    <title>Contents</title>
+    <svg stroke="currentColor" fill="currentColor" stroke-width="0" viewBox="0 0 1024 1024">
+      <path d="M408 442h480c4.4 0 8-3.6 8-8v-56c0-4.4-3.6-8-8-8H408c-4.4 0-8 3.6-8 8v56c0 4.4 3.6 8 8 8zm-8 204c0 4.4 3.6 8 8 8h480c4.4 0 8-3.6 8-8v-56c0-4.4-3.6-8-8-8H408c-4.4 0-8 3.6-8 8v56zm504-486H120c-4.4 0-8 3.6-8 8v56c0 4.4 3.6 8 8 8h784c4.4 0 8-3.6 8-8v-56c0-4.4-3.6-8-8-8zm0 632H120c-4.4 0-8 3.6-8 8v56c0 4.4 3.6 8 8 8h784c4.4 0 8-3.6 8-8v-56c0-4.4-3.6-8-8-8zM115.4 518.9L271.7 642c5.8 4.6 14.4.5 14.4-6.9V388.9c0-7.4-8.5-11.5-14.4-6.9L115.4 505.1a8.74 8.74 0 0 0 0 13.8z"/>
+    </svg>
+  </symbol>
+  <symbol id="svg-menu" viewBox="0 0 24 24">
+    <title>Menu</title>
+    <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="none" stroke="currentColor"
+      stroke-width="2" stroke-linecap="round" stroke-linejoin="round" class="feather-menu">
+      <line x1="3" y1="12" x2="21" y2="12"></line>
+      <line x1="3" y1="6" x2="21" y2="6"></line>
+      <line x1="3" y1="18" x2="21" y2="18"></line>
+    </svg>
+  </symbol>
+  <symbol id="svg-arrow-right" viewBox="0 0 24 24">
+    <title>Expand</title>
+    <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="none" stroke="currentColor"
+      stroke-width="2" stroke-linecap="round" stroke-linejoin="round" class="feather-chevron-right">
+      <polyline points="9 18 15 12 9 6"></polyline>
+    </svg>
+  </symbol>
+  <symbol id="svg-sun" viewBox="0 0 24 24">
+    <title>Light mode</title>
+    <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="none" stroke="currentColor"
+      stroke-width="1" stroke-linecap="round" stroke-linejoin="round" class="feather-sun">
+      <circle cx="12" cy="12" r="5"></circle>
+      <line x1="12" y1="1" x2="12" y2="3"></line>
+      <line x1="12" y1="21" x2="12" y2="23"></line>
+      <line x1="4.22" y1="4.22" x2="5.64" y2="5.64"></line>
+      <line x1="18.36" y1="18.36" x2="19.78" y2="19.78"></line>
+      <line x1="1" y1="12" x2="3" y2="12"></line>
+      <line x1="21" y1="12" x2="23" y2="12"></line>
+      <line x1="4.22" y1="19.78" x2="5.64" y2="18.36"></line>
+      <line x1="18.36" y1="5.64" x2="19.78" y2="4.22"></line>
+    </svg>
+  </symbol>
+  <symbol id="svg-moon" viewBox="0 0 24 24">
+    <title>Dark mode</title>
+    <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="none" stroke="currentColor"
+      stroke-width="1" stroke-linecap="round" stroke-linejoin="round" class="icon-tabler-moon">
+      <path stroke="none" d="M0 0h24v24H0z" fill="none" />
+      <path d="M12 3c.132 0 .263 0 .393 0a7.5 7.5 0 0 0 7.92 12.446a9 9 0 1 1 -8.313 -12.454z" />
+    </svg>
+  </symbol>
+  <symbol id="svg-sun-with-moon" viewBox="0 0 24 24">
+    <title>Auto light/dark, in light mode</title>
+    <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="none" stroke="currentColor"
+      stroke-width="1" stroke-linecap="round" stroke-linejoin="round"
+      class="icon-custom-derived-from-feather-sun-and-tabler-moon">
+      <path style="opacity: 50%" d="M 5.411 14.504 C 5.471 14.504 5.532 14.504 5.591 14.504 C 3.639 16.319 4.383 19.569 6.931 20.352 C 7.693 20.586 8.512 20.551 9.25 20.252 C 8.023 23.207 4.056 23.725 2.11 21.184 C 0.166 18.642 1.702 14.949 4.874 14.536 C 5.051 14.512 5.231 14.5 5.411 14.5 L 5.411 14.504 Z"/>
+      <line x1="14.5" y1="3.25" x2="14.5" y2="1.25"/>
+      <line x1="14.5" y1="15.85" x2="14.5" y2="17.85"/>
+      <line x1="10.044" y1="5.094" x2="8.63" y2="3.68"/>
+      <line x1="19" y1="14.05" x2="20.414" y2="15.464"/>
+      <line x1="8.2" y1="9.55" x2="6.2" y2="9.55"/>
+      <line x1="20.8" y1="9.55" x2="22.8" y2="9.55"/>
+      <line x1="10.044" y1="14.006" x2="8.63" y2="15.42"/>
+      <line x1="19" y1="5.05" x2="20.414" y2="3.636"/>
+      <circle cx="14.5" cy="9.55" r="3.6"/>
+    </svg>
+  </symbol>
+  <symbol id="svg-moon-with-sun" viewBox="0 0 24 24">
+    <title>Auto light/dark, in dark mode</title>
+    <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="none" stroke="currentColor"
+      stroke-width="1" stroke-linecap="round" stroke-linejoin="round"
+      class="icon-custom-derived-from-feather-sun-and-tabler-moon">
+      <path d="M 8.282 7.007 C 8.385 7.007 8.494 7.007 8.595 7.007 C 5.18 10.184 6.481 15.869 10.942 17.24 C 12.275 17.648 13.706 17.589 15 17.066 C 12.851 22.236 5.91 23.143 2.505 18.696 C -0.897 14.249 1.791 7.786 7.342 7.063 C 7.652 7.021 7.965 7 8.282 7 L 8.282 7.007 Z"/>
+      <line style="opacity: 50%" x1="18" y1="3.705" x2="18" y2="2.5"/>
+      <line style="opacity: 50%" x1="18" y1="11.295" x2="18" y2="12.5"/>
+      <line style="opacity: 50%" x1="15.316" y1="4.816" x2="14.464" y2="3.964"/>
+      <line style="opacity: 50%" x1="20.711" y1="10.212" x2="21.563" y2="11.063"/>
+      <line style="opacity: 50%" x1="14.205" y1="7.5" x2="13.001" y2="7.5"/>
+      <line style="opacity: 50%" x1="21.795" y1="7.5" x2="23" y2="7.5"/>
+      <line style="opacity: 50%" x1="15.316" y1="10.184" x2="14.464" y2="11.036"/>
+      <line style="opacity: 50%" x1="20.711" y1="4.789" x2="21.563" y2="3.937"/>
+      <circle style="opacity: 50%" cx="18" cy="7.5" r="2.169"/>
+    </svg>
+  </symbol>
+  <symbol id="svg-pencil" viewBox="0 0 24 24">
+    <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="none" stroke="currentColor"
+      stroke-width="1" stroke-linecap="round" stroke-linejoin="round" class="icon-tabler-pencil-code">
+      <path d="M4 20h4l10.5 -10.5a2.828 2.828 0 1 0 -4 -4l-10.5 10.5v4" />
+      <path d="M13.5 6.5l4 4" />
+      <path d="M20 21l2 -2l-2 -2" />
+      <path d="M17 17l-2 2l2 2" />
+    </svg>
+  </symbol>
+  <symbol id="svg-eye" viewBox="0 0 24 24">
+    <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="none" stroke="currentColor"
+      stroke-width="1" stroke-linecap="round" stroke-linejoin="round" class="icon-tabler-eye-code">
+      <path stroke="none" d="M0 0h24v24H0z" fill="none" />
+      <path d="M10 12a2 2 0 1 0 4 0a2 2 0 0 0 -4 0" />
+      <path
+        d="M11.11 17.958c-3.209 -.307 -5.91 -2.293 -8.11 -5.958c2.4 -4 5.4 -6 9 -6c3.6 0 6.6 2 9 6c-.21 .352 -.427 .688 -.647 1.008" />
+      <path d="M20 21l2 -2l-2 -2" />
+      <path d="M17 17l-2 2l2 2" />
+    </svg>
+  </symbol>
+</svg>
+
+<input type="checkbox" class="sidebar-toggle" name="__navigation" id="__navigation">
+<input type="checkbox" class="sidebar-toggle" name="__toc" id="__toc">
+<label class="overlay sidebar-overlay" for="__navigation">
+  <div class="visually-hidden">Hide navigation sidebar</div>
+</label>
+<label class="overlay toc-overlay" for="__toc">
+  <div class="visually-hidden">Hide table of contents sidebar</div>
+</label>
+
+<a class="skip-to-content muted-link" href="#furo-main-content">Skip to content</a>
+
+
+
+<div class="page">
+  <header class="mobile-header">
+    <div class="header-left">
+      <label class="nav-overlay-icon" for="__navigation">
+        <div class="visually-hidden">Toggle site navigation sidebar</div>
+        <i class="icon"><svg><use href="#svg-menu"></use></svg></i>
+      </label>
+    </div>
+    <div class="header-center">
+      <a href="../../../index.html"><div class="brand">scisbi v0.0.1</div></a>
+    </div>
+    <div class="header-right">
+      <div class="theme-toggle-container theme-toggle-header">
+        <button class="theme-toggle">
+          <div class="visually-hidden">Toggle Light / Dark / Auto color theme</div>
+          <svg class="theme-icon-when-auto-light"><use href="#svg-sun-with-moon"></use></svg>
+          <svg class="theme-icon-when-auto-dark"><use href="#svg-moon-with-sun"></use></svg>
+          <svg class="theme-icon-when-dark"><use href="#svg-moon"></use></svg>
+          <svg class="theme-icon-when-light"><use href="#svg-sun"></use></svg>
+        </button>
+      </div>
+      <label class="toc-overlay-icon toc-header-icon no-toc" for="__toc">
+        <div class="visually-hidden">Toggle table of contents sidebar</div>
+        <i class="icon"><svg><use href="#svg-toc"></use></svg></i>
+      </label>
+    </div>
+  </header>
+  <aside class="sidebar-drawer">
+    <div class="sidebar-container">
+
+      <div class="sidebar-sticky"><a class="sidebar-brand" href="../../../index.html">
+
+
+  <span class="sidebar-brand-text">scisbi v0.0.1</span>
+
+</a><form class="sidebar-search-container" method="get" action="../../../search.html" role="search">
+  <input class="sidebar-search" placeholder="Search" name="q" aria-label="Search">
+  <input type="hidden" name="check_keywords" value="yes">
+  <input type="hidden" name="area" value="default">
+</form>
+<div id="searchbox"></div><div class="sidebar-scroll"><div class="sidebar-tree">
+  <p class="caption" role="heading"><span class="caption-text">Documentation:</span></p>
+<ul>
+<li class="toctree-l1"><a class="reference internal" href="../../../overview.html">Overview</a></li>
+<li class="toctree-l1"><a class="reference internal" href="../../../quickstart.html">Quick Start</a></li>
+<li class="toctree-l1"><a class="reference internal" href="../../../api.html">API Reference</a></li>
+</ul>
+
+</div>
+</div>
+
+      </div>
+
+    </div>
+  </aside>
+  <div class="main">
+    <div class="content">
+      <div class="article-container">
+        <a href="#" class="back-to-top muted-link">
+          <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24">
+            <path d="M13 20h-2V8l-5.5 5.5-1.42-1.42L12 4.16l7.92 7.92-1.42 1.42L13 8v12z"></path>
+          </svg>
+          <span>Back to top</span>
+        </a>
+        <div class="content-icon-container">
+          <div class="theme-toggle-container theme-toggle-content">
+            <button class="theme-toggle">
+              <div class="visually-hidden">Toggle Light / Dark / Auto color theme</div>
+              <svg class="theme-icon-when-auto-light"><use href="#svg-sun-with-moon"></use></svg>
+              <svg class="theme-icon-when-auto-dark"><use href="#svg-moon-with-sun"></use></svg>
+              <svg class="theme-icon-when-dark"><use href="#svg-moon"></use></svg>
+              <svg class="theme-icon-when-light"><use href="#svg-sun"></use></svg>
+            </button>
+          </div>
+          <label class="toc-overlay-icon toc-content-icon no-toc" for="__toc">
+            <div class="visually-hidden">Toggle table of contents sidebar</div>
+            <i class="icon"><svg><use href="#svg-toc"></use></svg></i>
+          </label>
+        </div>
+        <article role="main" id="furo-main-content">
+          <h1>Source code for scisbi.inference.ABCMCMC</h1><div class="highlight"><pre>
+<span></span><span class="kn">import</span><span class="w"> </span><span class="nn">numpy</span><span class="w"> </span><span class="k">as</span><span class="w"> </span><span class="nn">np</span>
+<span class="kn">import</span><span class="w"> </span><span class="nn">matplotlib.pyplot</span><span class="w"> </span><span class="k">as</span><span class="w"> </span><span class="nn">plt</span>
+<span class="kn">from</span><span class="w"> </span><span class="nn">typing</span><span class="w"> </span><span class="kn">import</span> <span class="n">Any</span><span class="p">,</span> <span class="n">Callable</span><span class="p">,</span> <span class="n">List</span><span class="p">,</span> <span class="n">Optional</span><span class="p">,</span> <span class="n">Union</span>
+<span class="kn">from</span><span class="w"> </span><span class="nn">..base.inference</span><span class="w"> </span><span class="kn">import</span> <span class="n">BaseInferenceAlgorithm</span>
+<span class="kn">from</span><span class="w"> </span><span class="nn">..base.simulator</span><span class="w"> </span><span class="kn">import</span> <span class="n">BaseSimulator</span>
+<span class="kn">from</span><span class="w"> </span><span class="nn">..base.summary_statistic</span><span class="w"> </span><span class="kn">import</span> <span class="n">BaseSummaryStatistic</span>
+
+
+<div class="viewcode-block" id="ABCMCMC">
+<a class="viewcode-back" href="../../../api.html#scisbi.inference.ABCMCMC">[docs]</a>
+<span class="k">class</span><span class="w"> </span><span class="nc">ABCMCMC</span><span class="p">(</span><span class="n">BaseInferenceAlgorithm</span><span class="p">):</span>
+<span class="w">    </span><span class="sd">&quot;&quot;&quot;</span>
+<span class="sd">    Approximate Bayesian Computation using Markov Chain Monte Carlo (ABC-MCMC).</span>
+
+<span class="sd">    ABC-MCMC is a likelihood-free inference method that combines the approximate</span>
+<span class="sd">    nature of ABC with the efficient exploration of MCMC sampling. Instead of</span>
+<span class="sd">    independently sampling from the prior as in ABC rejection sampling, ABC-MCMC</span>
+<span class="sd">    constructs a Markov chain that explores the parameter space more efficiently</span>
+<span class="sd">    by proposing new states based on the current state.</span>
+
+<span class="sd">    The algorithm implements the following procedure:</span>
+
+<span class="sd">    1. Initialize the chain at θ₀.</span>
+<span class="sd">    2. At iteration i, propose θ* from proposal distribution q(θ|θᵢ).</span>
+<span class="sd">    3. Simulate data x* using θ* with the forward model f(x|θ*).</span>
+<span class="sd">    4. If ρ(x*, x_obs) ≤ ε, proceed to acceptance step, otherwise reject.</span>
+<span class="sd">    5. Accept θ* with probability α = min(1, [π(θ*)q(θᵢ|θ*)] / [π(θᵢ)q(θ*|θᵢ)]).</span>
+<span class="sd">    6. Set θᵢ₊₁ = θ* if accepted, otherwise θᵢ₊₁ = θᵢ.</span>
+<span class="sd">    7. Increment i and repeat from step 2.</span>
+
+<span class="sd">    The key advantage over ABC rejection sampling is that ABC-MCMC can achieve</span>
+<span class="sd">    better mixing and exploration of the posterior, especially in high-dimensional</span>
+<span class="sd">    parameter spaces or when the prior-posterior mismatch is large. However, it</span>
+<span class="sd">    requires careful tuning of the proposal distribution and may suffer from</span>
+<span class="sd">    correlation between successive samples.</span>
+
+<span class="sd">    The choice of proposal distribution q(θ|θᵢ) is crucial:</span>
+
+<span class="sd">    - Common choices include multivariate normal: q(θ|θᵢ) = N(θᵢ, Σ).</span>
+<span class="sd">    - Proposal covariance Σ should be tuned to achieve reasonable acceptance rates.</span>
+<span class="sd">    - Adaptive proposals can be used to improve efficiency during sampling.</span>
+
+<span class="sd">    References:</span>
+
+<span class="sd">    - Marjoram, P., Molitor, J., Plagnol, V., &amp; Tavaré, S. (2003). Markov chain</span>
+<span class="sd">      Monte Carlo without likelihoods. Proceedings of the National Academy of</span>
+<span class="sd">      Sciences, 100(26), 15324-15328.</span>
+<span class="sd">    - Scott A. Sisson, Yanan Fan, Mark Beaumont (2018). Handbook of</span>
+<span class="sd">      approximate Bayesian computation. CRC press.</span>
+<span class="sd">    - Wegmann, D., Leuenberger, C., &amp; Excoffier, L. (2009). Efficient approximate</span>
+<span class="sd">      Bayesian computation coupled with Markov chain Monte Carlo without</span>
+<span class="sd">      likelihood. Genetics, 182(4), 1207-1218.</span>
+<span class="sd">    &quot;&quot;&quot;</span>
+
+    <span class="k">def</span><span class="w"> </span><span class="fm">__init__</span><span class="p">(</span>
+        <span class="bp">self</span><span class="p">,</span>
+        <span class="n">simulator</span><span class="p">:</span> <span class="n">BaseSimulator</span><span class="p">,</span>
+        <span class="n">prior</span><span class="p">:</span> <span class="n">Any</span><span class="p">,</span>
+        <span class="n">distance_function</span><span class="p">:</span> <span class="n">Callable</span><span class="p">[[</span><span class="n">Any</span><span class="p">,</span> <span class="n">Any</span><span class="p">],</span> <span class="nb">float</span><span class="p">],</span>
+        <span class="n">tolerance</span><span class="p">:</span> <span class="nb">float</span><span class="p">,</span>
+        <span class="n">proposal_distribution</span><span class="p">:</span> <span class="n">Callable</span><span class="p">[[</span><span class="n">Any</span><span class="p">],</span> <span class="n">Any</span><span class="p">],</span>
+        <span class="n">summary_statistic</span><span class="p">:</span> <span class="n">Optional</span><span class="p">[</span><span class="n">BaseSummaryStatistic</span><span class="p">]</span> <span class="o">=</span> <span class="kc">None</span><span class="p">,</span>
+        <span class="o">**</span><span class="n">kwargs</span><span class="p">:</span> <span class="n">Any</span><span class="p">,</span>
+    <span class="p">):</span>
+<span class="w">        </span><span class="sd">&quot;&quot;&quot;</span>
+<span class="sd">        Initialize the ABC-MCMC algorithm.</span>
+
+<span class="sd">        Args:</span>
+<span class="sd">            simulator (BaseSimulator): Simulator object with a &#39;simulate&#39; method</span>
+<span class="sd">                that generates synthetic data given parameters.</span>
+
+<span class="sd">            prior (Any): Prior distribution object with &#39;sample&#39; and &#39;log_prob&#39; methods.</span>
+<span class="sd">                Should support sampling parameter vectors θ ~ π(θ) and</span>
+<span class="sd">                computing log-probabilities log π(θ).</span>
+
+<span class="sd">            distance_function (Callable[[Any, Any], float]): Function ρ(x_sim, x_obs)</span>
+<span class="sd">                that computes the distance between simulated and observed</span>
+<span class="sd">                data. Should return a non-negative float value.</span>
+
+<span class="sd">            tolerance (float): Acceptance threshold ε ≥ 0. Smaller values yield more</span>
+<span class="sd">                accurate approximations but lower acceptance rates.</span>
+
+<span class="sd">            proposal_distribution (Callable[[Any], Any]): Proposal distribution q(θ|θᵢ)</span>
+<span class="sd">                that takes current state θᵢ and returns a proposed state θ*.</span>
+<span class="sd">                Should be symmetric for simplicity.</span>
+
+<span class="sd">            summary_statistic (Optional[BaseSummaryStatistic]): Optional summary statistic</span>
+<span class="sd">                function to reduce data dimensionality before distance computation.</span>
+
+<span class="sd">            **kwargs (Optional):</span>
+<span class="sd">                Additional configuration parameters such as:</span>
+<span class="sd">                    - max_attempts_per_step (int): Maximum simulation attempts per</span>
+<span class="sd">                    MCMC step before moving to next iteration (default: 100).</span>
+<span class="sd">                    - verbose (bool): Whether to print progress information.</span>
+<span class="sd">                    - thin (int): Thinning interval for storing samples (default: 1).</span>
+<span class="sd">                    - burn_in (int): Number of burn-in iterations to discard (default: 0).</span>
+
+
+<span class="sd">        &quot;&quot;&quot;</span>
+        <span class="nb">super</span><span class="p">()</span><span class="o">.</span><span class="fm">__init__</span><span class="p">(</span><span class="n">simulator</span><span class="p">,</span> <span class="n">prior</span><span class="p">,</span> <span class="n">summary_statistic</span><span class="p">,</span> <span class="o">**</span><span class="n">kwargs</span><span class="p">)</span>
+
+        <span class="k">if</span> <span class="ow">not</span> <span class="nb">callable</span><span class="p">(</span><span class="n">distance_function</span><span class="p">):</span>
+            <span class="k">raise</span> <span class="ne">TypeError</span><span class="p">(</span><span class="s2">&quot;distance_function must be callable&quot;</span><span class="p">)</span>
+        <span class="k">if</span> <span class="ow">not</span> <span class="nb">callable</span><span class="p">(</span><span class="n">proposal_distribution</span><span class="p">):</span>
+            <span class="k">raise</span> <span class="ne">TypeError</span><span class="p">(</span><span class="s2">&quot;proposal_distribution must be callable&quot;</span><span class="p">)</span>
+        <span class="k">if</span> <span class="n">tolerance</span> <span class="o">&lt;</span> <span class="mi">0</span><span class="p">:</span>
+            <span class="k">raise</span> <span class="ne">ValueError</span><span class="p">(</span><span class="s2">&quot;tolerance must be non-negative&quot;</span><span class="p">)</span>
+
+        <span class="bp">self</span><span class="o">.</span><span class="n">distance_function</span> <span class="o">=</span> <span class="n">distance_function</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">tolerance</span> <span class="o">=</span> <span class="n">tolerance</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">proposal_distribution</span> <span class="o">=</span> <span class="n">proposal_distribution</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">max_attempts_per_step</span> <span class="o">=</span> <span class="n">kwargs</span><span class="o">.</span><span class="n">get</span><span class="p">(</span><span class="s2">&quot;max_attempts_per_step&quot;</span><span class="p">,</span> <span class="mi">100</span><span class="p">)</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">verbose</span> <span class="o">=</span> <span class="n">kwargs</span><span class="o">.</span><span class="n">get</span><span class="p">(</span><span class="s2">&quot;verbose&quot;</span><span class="p">,</span> <span class="kc">False</span><span class="p">)</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">thin</span> <span class="o">=</span> <span class="n">kwargs</span><span class="o">.</span><span class="n">get</span><span class="p">(</span><span class="s2">&quot;thin&quot;</span><span class="p">,</span> <span class="mi">1</span><span class="p">)</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">burn_in</span> <span class="o">=</span> <span class="n">kwargs</span><span class="o">.</span><span class="n">get</span><span class="p">(</span><span class="s2">&quot;burn_in&quot;</span><span class="p">,</span> <span class="mi">0</span><span class="p">)</span>
+
+<div class="viewcode-block" id="ABCMCMC.infer">
+<a class="viewcode-back" href="../../../api.html#scisbi.inference.ABCMCMC.infer">[docs]</a>
+    <span class="k">def</span><span class="w"> </span><span class="nf">infer</span><span class="p">(</span>
+        <span class="bp">self</span><span class="p">,</span>
+        <span class="n">observed_data</span><span class="p">:</span> <span class="n">Any</span><span class="p">,</span>
+        <span class="n">num_iterations</span><span class="p">:</span> <span class="nb">int</span><span class="p">,</span>
+        <span class="n">initial_state</span><span class="p">:</span> <span class="n">Optional</span><span class="p">[</span><span class="n">Any</span><span class="p">]</span> <span class="o">=</span> <span class="kc">None</span><span class="p">,</span>
+        <span class="o">**</span><span class="n">kwargs</span><span class="p">:</span> <span class="n">Any</span><span class="p">,</span>
+    <span class="p">)</span> <span class="o">-&gt;</span> <span class="s2">&quot;ABCMCMCPosterior&quot;</span><span class="p">:</span>
+<span class="w">        </span><span class="sd">&quot;&quot;&quot;</span>
+<span class="sd">        Perform ABC-MCMC sampling to approximate the posterior distribution.</span>
+
+<span class="sd">        This method implements the core ABC-MCMC algorithm as described in the</span>
+<span class="sd">        class docstring. It constructs a Markov chain that explores the parameter</span>
+<span class="sd">        space while respecting the ABC tolerance constraint.</span>
+
+<span class="sd">        Args:</span>
+<span class="sd">            observed_data (Any): The observed dataset x_obs to perform inference on.</span>
+<span class="sd">                               If summary_statistic was provided during initialization,</span>
+<span class="sd">                               this will be processed through the summary statistic.</span>
+<span class="sd">            num_iterations (int): Number of MCMC iterations to run. The effective</span>
+<span class="sd">                                number of samples will be smaller due to thinning</span>
+<span class="sd">                                and burn-in.</span>
+<span class="sd">            initial_state (Optional[Any]): Starting value θ₀ for the chain. If None,</span>
+<span class="sd">                                          samples from the prior distribution.</span>
+<span class="sd">            **kwargs: Runtime parameters that override initialization settings:</span>
+<span class="sd">                     - tolerance (float): Override the tolerance threshold</span>
+<span class="sd">                     - max_attempts_per_step (int): Override maximum attempts per step</span>
+<span class="sd">                     - verbose (bool): Override verbosity setting</span>
+<span class="sd">                     - thin (int): Override thinning interval</span>
+<span class="sd">                     - burn_in (int): Override burn-in period</span>
+
+<span class="sd">        Returns:</span>
+<span class="sd">            ABCMCMCPosterior: Object containing the MCMC samples and chain diagnostics.</span>
+
+<span class="sd">        Raises:</span>
+<span class="sd">            ValueError: If num_iterations &lt;= 0</span>
+<span class="sd">            RuntimeError: If unable to find valid initial state or if chain gets stuck</span>
+
+<span class="sd">        Note:</span>
+<span class="sd">            The effective sample size will be approximately</span>
+<span class="sd">            (num_iterations - burn_in) // thin. Consider autocorrelation when</span>
+<span class="sd">            choosing thinning intervals for nearly independent samples.</span>
+<span class="sd">        &quot;&quot;&quot;</span>
+        <span class="k">if</span> <span class="n">num_iterations</span> <span class="o">&lt;=</span> <span class="mi">0</span><span class="p">:</span>
+            <span class="k">raise</span> <span class="ne">ValueError</span><span class="p">(</span><span class="s2">&quot;num_iterations must be positive&quot;</span><span class="p">)</span>
+
+        <span class="c1"># Override settings with runtime parameters</span>
+        <span class="n">tolerance</span> <span class="o">=</span> <span class="n">kwargs</span><span class="o">.</span><span class="n">get</span><span class="p">(</span><span class="s2">&quot;tolerance&quot;</span><span class="p">,</span> <span class="bp">self</span><span class="o">.</span><span class="n">tolerance</span><span class="p">)</span>
+        <span class="n">max_attempts_per_step</span> <span class="o">=</span> <span class="n">kwargs</span><span class="o">.</span><span class="n">get</span><span class="p">(</span>
+            <span class="s2">&quot;max_attempts_per_step&quot;</span><span class="p">,</span> <span class="bp">self</span><span class="o">.</span><span class="n">max_attempts_per_step</span>
+        <span class="p">)</span>
+        <span class="n">verbose</span> <span class="o">=</span> <span class="n">kwargs</span><span class="o">.</span><span class="n">get</span><span class="p">(</span><span class="s2">&quot;verbose&quot;</span><span class="p">,</span> <span class="bp">self</span><span class="o">.</span><span class="n">verbose</span><span class="p">)</span>
+        <span class="n">thin</span> <span class="o">=</span> <span class="n">kwargs</span><span class="o">.</span><span class="n">get</span><span class="p">(</span><span class="s2">&quot;thin&quot;</span><span class="p">,</span> <span class="bp">self</span><span class="o">.</span><span class="n">thin</span><span class="p">)</span>
+        <span class="n">burn_in</span> <span class="o">=</span> <span class="n">kwargs</span><span class="o">.</span><span class="n">get</span><span class="p">(</span><span class="s2">&quot;burn_in&quot;</span><span class="p">,</span> <span class="bp">self</span><span class="o">.</span><span class="n">burn_in</span><span class="p">)</span>
+
+        <span class="c1"># Process observed data through summary statistic if provided</span>
+        <span class="k">if</span> <span class="bp">self</span><span class="o">.</span><span class="n">summary_statistic</span> <span class="ow">is</span> <span class="ow">not</span> <span class="kc">None</span><span class="p">:</span>
+            <span class="n">observed_summary</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">summary_statistic</span><span class="o">.</span><span class="n">compute</span><span class="p">(</span><span class="n">observed_data</span><span class="p">)</span>
+        <span class="k">else</span><span class="p">:</span>
+            <span class="n">observed_summary</span> <span class="o">=</span> <span class="n">observed_data</span>
+
+        <span class="c1"># Initialize chain state</span>
+        <span class="k">if</span> <span class="n">initial_state</span> <span class="ow">is</span> <span class="kc">None</span><span class="p">:</span>
+            <span class="n">current_state</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">_find_valid_initial_state</span><span class="p">(</span>
+                <span class="n">observed_summary</span><span class="p">,</span> <span class="n">tolerance</span><span class="p">,</span> <span class="n">max_attempts_per_step</span>
+            <span class="p">)</span>
+        <span class="k">else</span><span class="p">:</span>
+            <span class="n">current_state</span> <span class="o">=</span> <span class="n">initial_state</span>
+            <span class="c1"># Verify initial state is valid</span>
+            <span class="k">if</span> <span class="ow">not</span> <span class="bp">self</span><span class="o">.</span><span class="n">_is_valid_state</span><span class="p">(</span><span class="n">current_state</span><span class="p">,</span> <span class="n">observed_summary</span><span class="p">,</span> <span class="n">tolerance</span><span class="p">):</span>
+                <span class="k">if</span> <span class="n">verbose</span><span class="p">:</span>
+                    <span class="nb">print</span><span class="p">(</span>
+                        <span class="s2">&quot;Warning: Initial state does not satisfy tolerance. Searching for valid state...&quot;</span>
+                    <span class="p">)</span>
+                <span class="n">current_state</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">_find_valid_initial_state</span><span class="p">(</span>
+                    <span class="n">observed_summary</span><span class="p">,</span> <span class="n">tolerance</span><span class="p">,</span> <span class="n">max_attempts_per_step</span>
+                <span class="p">)</span>
+
+        <span class="n">current_log_prior</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">prior</span><span class="o">.</span><span class="n">log_prob</span><span class="p">(</span><span class="n">current_state</span><span class="p">)</span>
+
+        <span class="c1"># Initialize storage</span>
+        <span class="n">samples</span> <span class="o">=</span> <span class="p">[]</span>
+        <span class="n">log_priors</span> <span class="o">=</span> <span class="p">[]</span>
+        <span class="n">distances</span> <span class="o">=</span> <span class="p">[]</span>
+        <span class="n">acceptance_indicators</span> <span class="o">=</span> <span class="p">[]</span>
+
+        <span class="k">if</span> <span class="n">verbose</span><span class="p">:</span>
+            <span class="nb">print</span><span class="p">(</span><span class="s2">&quot;Starting ABC-MCMC sampling...&quot;</span><span class="p">)</span>
+            <span class="nb">print</span><span class="p">(</span><span class="sa">f</span><span class="s2">&quot;Iterations: </span><span class="si">{</span><span class="n">num_iterations</span><span class="si">}</span><span class="s2">, Tolerance: </span><span class="si">{</span><span class="n">tolerance</span><span class="si">}</span><span class="s2">&quot;</span><span class="p">)</span>
+            <span class="nb">print</span><span class="p">(</span><span class="sa">f</span><span class="s2">&quot;Burn-in: </span><span class="si">{</span><span class="n">burn_in</span><span class="si">}</span><span class="s2">, Thinning: </span><span class="si">{</span><span class="n">thin</span><span class="si">}</span><span class="s2">&quot;</span><span class="p">)</span>
+
+        <span class="c1"># Main ABC-MCMC loop</span>
+        <span class="k">for</span> <span class="n">iteration</span> <span class="ow">in</span> <span class="nb">range</span><span class="p">(</span><span class="n">num_iterations</span><span class="p">):</span>
+            <span class="c1"># M2: Propose new state</span>
+            <span class="n">proposed_state</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">proposal_distribution</span><span class="p">(</span><span class="n">current_state</span><span class="p">)</span>
+            <span class="n">proposed_log_prior</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">prior</span><span class="o">.</span><span class="n">log_prob</span><span class="p">(</span><span class="n">proposed_state</span><span class="p">)</span>
+
+            <span class="c1"># M3 &amp; M4: Simulate and check distance constraint</span>
+            <span class="n">accepted</span> <span class="o">=</span> <span class="kc">False</span>
+            <span class="n">attempts</span> <span class="o">=</span> <span class="mi">0</span>
+
+            <span class="k">while</span> <span class="n">attempts</span> <span class="o">&lt;</span> <span class="n">max_attempts_per_step</span><span class="p">:</span>
+                <span class="k">try</span><span class="p">:</span>
+                    <span class="c1"># Simulate data with proposed parameters</span>
+                    <span class="n">simulated_data</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">simulator</span><span class="o">.</span><span class="n">simulate</span><span class="p">(</span>
+                        <span class="n">proposed_state</span><span class="p">,</span> <span class="n">num_simulations</span><span class="o">=</span><span class="nb">len</span><span class="p">(</span><span class="n">observed_summary</span><span class="p">)</span>
+                    <span class="p">)</span>
+
+                    <span class="c1"># Apply summary statistic if provided</span>
+                    <span class="k">if</span> <span class="bp">self</span><span class="o">.</span><span class="n">summary_statistic</span> <span class="ow">is</span> <span class="ow">not</span> <span class="kc">None</span><span class="p">:</span>
+                        <span class="n">simulated_summary</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">summary_statistic</span><span class="o">.</span><span class="n">compute</span><span class="p">(</span>
+                            <span class="n">simulated_data</span>
+                        <span class="p">)</span>
+                    <span class="k">else</span><span class="p">:</span>
+                        <span class="n">simulated_summary</span> <span class="o">=</span> <span class="n">simulated_data</span>
+
+                    <span class="c1"># Compute distance</span>
+                    <span class="n">distance</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">distance_function</span><span class="p">(</span>
+                        <span class="n">simulated_summary</span><span class="p">,</span> <span class="n">observed_summary</span>
+                    <span class="p">)</span>
+
+                    <span class="c1"># Check tolerance constraint</span>
+                    <span class="k">if</span> <span class="n">distance</span> <span class="o">&lt;=</span> <span class="n">tolerance</span><span class="p">:</span>
+                        <span class="c1"># M5: Compute acceptance probability</span>
+                        <span class="c1"># For symmetric proposals: α = min(1, π(θ*)/π(θᵢ))</span>
+                        <span class="n">log_acceptance_ratio</span> <span class="o">=</span> <span class="n">proposed_log_prior</span> <span class="o">-</span> <span class="n">current_log_prior</span>
+                        <span class="n">acceptance_prob</span> <span class="o">=</span> <span class="nb">min</span><span class="p">(</span><span class="mf">1.0</span><span class="p">,</span> <span class="n">np</span><span class="o">.</span><span class="n">exp</span><span class="p">(</span><span class="n">log_acceptance_ratio</span><span class="p">))</span>
+
+                        <span class="c1"># Accept with probability α</span>
+                        <span class="k">if</span> <span class="n">np</span><span class="o">.</span><span class="n">random</span><span class="o">.</span><span class="n">rand</span><span class="p">()</span> <span class="o">&lt;</span> <span class="n">acceptance_prob</span><span class="p">:</span>
+                            <span class="n">current_state</span> <span class="o">=</span> <span class="n">proposed_state</span>
+                            <span class="n">current_log_prior</span> <span class="o">=</span> <span class="n">proposed_log_prior</span>
+                            <span class="n">accepted</span> <span class="o">=</span> <span class="kc">True</span>
+
+                        <span class="k">break</span>  <span class="c1"># Exit attempt loop regardless of acceptance</span>
+
+                    <span class="n">attempts</span> <span class="o">+=</span> <span class="mi">1</span>
+
+                <span class="k">except</span> <span class="ne">Exception</span> <span class="k">as</span> <span class="n">e</span><span class="p">:</span>
+                    <span class="k">if</span> <span class="n">verbose</span><span class="p">:</span>
+                        <span class="nb">print</span><span class="p">(</span><span class="sa">f</span><span class="s2">&quot;Simulation failed at iteration </span><span class="si">{</span><span class="n">iteration</span><span class="si">}</span><span class="s2">: </span><span class="si">{</span><span class="n">e</span><span class="si">}</span><span class="s2">&quot;</span><span class="p">)</span>
+                    <span class="n">attempts</span> <span class="o">+=</span> <span class="mi">1</span>
+
+            <span class="c1"># If we couldn&#39;t find a valid proposal within tolerance, reject</span>
+            <span class="k">if</span> <span class="n">attempts</span> <span class="o">&gt;=</span> <span class="n">max_attempts_per_step</span><span class="p">:</span>
+                <span class="n">distance</span> <span class="o">=</span> <span class="nb">float</span><span class="p">(</span><span class="s2">&quot;inf&quot;</span><span class="p">)</span>  <span class="c1"># Mark as invalid</span>
+                <span class="n">accepted</span> <span class="o">=</span> <span class="kc">False</span>
+
+            <span class="c1"># Store samples after burn-in and according to thinning</span>
+            <span class="k">if</span> <span class="n">iteration</span> <span class="o">&gt;=</span> <span class="n">burn_in</span> <span class="ow">and</span> <span class="n">iteration</span> <span class="o">%</span> <span class="n">thin</span> <span class="o">==</span> <span class="mi">0</span><span class="p">:</span>
+                <span class="n">samples</span><span class="o">.</span><span class="n">append</span><span class="p">(</span><span class="n">current_state</span><span class="p">)</span>
+                <span class="n">log_priors</span><span class="o">.</span><span class="n">append</span><span class="p">(</span><span class="n">current_log_prior</span><span class="p">)</span>
+                <span class="n">distances</span><span class="o">.</span><span class="n">append</span><span class="p">(</span><span class="n">distance</span> <span class="k">if</span> <span class="n">distance</span> <span class="o">!=</span> <span class="nb">float</span><span class="p">(</span><span class="s2">&quot;inf&quot;</span><span class="p">)</span> <span class="k">else</span> <span class="n">np</span><span class="o">.</span><span class="n">nan</span><span class="p">)</span>
+                <span class="n">acceptance_indicators</span><span class="o">.</span><span class="n">append</span><span class="p">(</span><span class="n">accepted</span><span class="p">)</span>
+
+            <span class="c1"># Progress reporting</span>
+            <span class="k">if</span> <span class="n">verbose</span> <span class="ow">and</span> <span class="p">(</span><span class="n">iteration</span> <span class="o">+</span> <span class="mi">1</span><span class="p">)</span> <span class="o">%</span> <span class="nb">max</span><span class="p">(</span><span class="mi">1</span><span class="p">,</span> <span class="n">num_iterations</span> <span class="o">//</span> <span class="mi">10</span><span class="p">)</span> <span class="o">==</span> <span class="mi">0</span><span class="p">:</span>
+                <span class="n">recent_acceptance</span> <span class="o">=</span> <span class="p">(</span>
+                    <span class="n">np</span><span class="o">.</span><span class="n">mean</span><span class="p">(</span><span class="n">acceptance_indicators</span><span class="p">[</span><span class="o">-</span><span class="mi">100</span><span class="p">:])</span>
+                    <span class="k">if</span> <span class="n">acceptance_indicators</span>
+                    <span class="k">else</span> <span class="mi">0</span>
+                <span class="p">)</span>
+                <span class="nb">print</span><span class="p">(</span>
+                    <span class="sa">f</span><span class="s2">&quot;Iteration </span><span class="si">{</span><span class="n">iteration</span><span class="w"> </span><span class="o">+</span><span class="w"> </span><span class="mi">1</span><span class="si">}</span><span class="s2">/</span><span class="si">{</span><span class="n">num_iterations</span><span class="si">}</span><span class="s2">, &quot;</span>
+                    <span class="sa">f</span><span class="s2">&quot;Recent acceptance rate: </span><span class="si">{</span><span class="n">recent_acceptance</span><span class="si">:</span><span class="s2">.3f</span><span class="si">}</span><span class="s2">&quot;</span>
+                <span class="p">)</span>
+
+        <span class="k">if</span> <span class="n">verbose</span><span class="p">:</span>
+            <span class="n">overall_acceptance_rate</span> <span class="o">=</span> <span class="p">(</span>
+                <span class="n">np</span><span class="o">.</span><span class="n">mean</span><span class="p">(</span><span class="n">acceptance_indicators</span><span class="p">)</span> <span class="k">if</span> <span class="n">acceptance_indicators</span> <span class="k">else</span> <span class="mi">0</span>
+            <span class="p">)</span>
+            <span class="nb">print</span><span class="p">(</span><span class="s2">&quot;ABC-MCMC completed!&quot;</span><span class="p">)</span>
+            <span class="nb">print</span><span class="p">(</span><span class="sa">f</span><span class="s2">&quot;Overall acceptance rate: </span><span class="si">{</span><span class="n">overall_acceptance_rate</span><span class="si">:</span><span class="s2">.4f</span><span class="si">}</span><span class="s2">&quot;</span><span class="p">)</span>
+            <span class="nb">print</span><span class="p">(</span><span class="sa">f</span><span class="s2">&quot;Effective samples: </span><span class="si">{</span><span class="nb">len</span><span class="p">(</span><span class="n">samples</span><span class="p">)</span><span class="si">}</span><span class="s2">&quot;</span><span class="p">)</span>
+
+        <span class="c1"># Return ABC-MCMC posterior object</span>
+        <span class="k">return</span> <span class="n">ABCMCMCPosterior</span><span class="p">(</span>
+            <span class="n">samples</span><span class="o">=</span><span class="n">samples</span><span class="p">,</span>
+            <span class="n">log_priors</span><span class="o">=</span><span class="n">log_priors</span><span class="p">,</span>
+            <span class="n">distances</span><span class="o">=</span><span class="n">distances</span><span class="p">,</span>
+            <span class="n">acceptance_indicators</span><span class="o">=</span><span class="n">acceptance_indicators</span><span class="p">,</span>
+            <span class="n">tolerance</span><span class="o">=</span><span class="n">tolerance</span><span class="p">,</span>
+            <span class="n">num_iterations</span><span class="o">=</span><span class="n">num_iterations</span><span class="p">,</span>
+            <span class="n">burn_in</span><span class="o">=</span><span class="n">burn_in</span><span class="p">,</span>
+            <span class="n">thin</span><span class="o">=</span><span class="n">thin</span><span class="p">,</span>
+        <span class="p">)</span></div>
+
+
+    <span class="k">def</span><span class="w"> </span><span class="nf">_find_valid_initial_state</span><span class="p">(</span>
+        <span class="bp">self</span><span class="p">,</span> <span class="n">observed_summary</span><span class="p">:</span> <span class="n">Any</span><span class="p">,</span> <span class="n">tolerance</span><span class="p">:</span> <span class="nb">float</span><span class="p">,</span> <span class="n">max_attempts</span><span class="p">:</span> <span class="nb">int</span>
+    <span class="p">)</span> <span class="o">-&gt;</span> <span class="n">Any</span><span class="p">:</span>
+<span class="w">        </span><span class="sd">&quot;&quot;&quot;</span>
+<span class="sd">        Find a valid initial state that satisfies the distance constraint.</span>
+
+<span class="sd">        Args:</span>
+<span class="sd">            observed_summary: Processed observed data</span>
+<span class="sd">            tolerance: Distance tolerance threshold</span>
+<span class="sd">            max_attempts: Maximum attempts to find valid state</span>
+
+<span class="sd">        Returns:</span>
+<span class="sd">            Valid initial state</span>
+
+<span class="sd">        Raises:</span>
+<span class="sd">            RuntimeError: If no valid state found within max_attempts</span>
+<span class="sd">        &quot;&quot;&quot;</span>
+        <span class="k">for</span> <span class="n">_</span> <span class="ow">in</span> <span class="nb">range</span><span class="p">(</span><span class="n">max_attempts</span><span class="p">):</span>
+            <span class="n">candidate</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">prior</span><span class="o">.</span><span class="n">sample</span><span class="p">()</span>
+            <span class="k">if</span> <span class="bp">self</span><span class="o">.</span><span class="n">_is_valid_state</span><span class="p">(</span><span class="n">candidate</span><span class="p">,</span> <span class="n">observed_summary</span><span class="p">,</span> <span class="n">tolerance</span><span class="p">):</span>
+                <span class="k">return</span> <span class="n">candidate</span>
+
+        <span class="k">raise</span> <span class="ne">RuntimeError</span><span class="p">(</span>
+            <span class="sa">f</span><span class="s2">&quot;Could not find valid initial state within </span><span class="si">{</span><span class="n">max_attempts</span><span class="si">}</span><span class="s2"> attempts. &quot;</span>
+            <span class="sa">f</span><span class="s2">&quot;Consider increasing tolerance or max_attempts_per_step.&quot;</span>
+        <span class="p">)</span>
+
+    <span class="k">def</span><span class="w"> </span><span class="nf">_is_valid_state</span><span class="p">(</span>
+        <span class="bp">self</span><span class="p">,</span> <span class="n">state</span><span class="p">:</span> <span class="n">Any</span><span class="p">,</span> <span class="n">observed_summary</span><span class="p">:</span> <span class="n">Any</span><span class="p">,</span> <span class="n">tolerance</span><span class="p">:</span> <span class="nb">float</span>
+    <span class="p">)</span> <span class="o">-&gt;</span> <span class="nb">bool</span><span class="p">:</span>
+<span class="w">        </span><span class="sd">&quot;&quot;&quot;</span>
+<span class="sd">        Check if a state satisfies the distance constraint.</span>
+
+<span class="sd">        Args:</span>
+<span class="sd">            state: Parameter state to check</span>
+<span class="sd">            observed_summary: Processed observed data</span>
+<span class="sd">            tolerance: Distance tolerance threshold</span>
+
+<span class="sd">        Returns:</span>
+<span class="sd">            True if state is valid, False otherwise</span>
+<span class="sd">        &quot;&quot;&quot;</span>
+        <span class="k">try</span><span class="p">:</span>
+            <span class="n">simulated_data</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">simulator</span><span class="o">.</span><span class="n">simulate</span><span class="p">(</span>
+                <span class="n">state</span><span class="p">,</span> <span class="n">num_simulations</span><span class="o">=</span><span class="nb">len</span><span class="p">(</span><span class="n">observed_summary</span><span class="p">)</span>
+            <span class="p">)</span>
+
+            <span class="k">if</span> <span class="bp">self</span><span class="o">.</span><span class="n">summary_statistic</span> <span class="ow">is</span> <span class="ow">not</span> <span class="kc">None</span><span class="p">:</span>
+                <span class="n">simulated_summary</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">summary_statistic</span><span class="o">.</span><span class="n">compute</span><span class="p">(</span><span class="n">simulated_data</span><span class="p">)</span>
+            <span class="k">else</span><span class="p">:</span>
+                <span class="n">simulated_summary</span> <span class="o">=</span> <span class="n">simulated_data</span>
+
+            <span class="n">distance</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">distance_function</span><span class="p">(</span><span class="n">simulated_summary</span><span class="p">,</span> <span class="n">observed_summary</span><span class="p">)</span>
+            <span class="k">return</span> <span class="n">distance</span> <span class="o">&lt;=</span> <span class="n">tolerance</span>
+
+        <span class="k">except</span> <span class="ne">Exception</span><span class="p">:</span>
+            <span class="k">return</span> <span class="kc">False</span></div>
+
+
+
+<div class="viewcode-block" id="ABCMCMCPosterior">
+<a class="viewcode-back" href="../../../api.html#scisbi.inference.ABCMCMCPosterior">[docs]</a>
+<span class="k">class</span><span class="w"> </span><span class="nc">ABCMCMCPosterior</span><span class="p">:</span>
+<span class="w">    </span><span class="sd">&quot;&quot;&quot;</span>
+<span class="sd">    Container for ABC-MCMC sampling results representing the approximate posterior.</span>
+
+<span class="sd">    This class stores the MCMC samples from ABC-MCMC and provides methods to query</span>
+<span class="sd">    and analyze the approximate posterior distribution, including chain diagnostics</span>
+<span class="sd">    and convergence assessment tools.</span>
+<span class="sd">    &quot;&quot;&quot;</span>
+
+    <span class="k">def</span><span class="w"> </span><span class="fm">__init__</span><span class="p">(</span>
+        <span class="bp">self</span><span class="p">,</span>
+        <span class="n">samples</span><span class="p">:</span> <span class="n">List</span><span class="p">[</span><span class="n">Any</span><span class="p">],</span>
+        <span class="n">log_priors</span><span class="p">:</span> <span class="n">List</span><span class="p">[</span><span class="nb">float</span><span class="p">],</span>
+        <span class="n">distances</span><span class="p">:</span> <span class="n">List</span><span class="p">[</span><span class="nb">float</span><span class="p">],</span>
+        <span class="n">acceptance_indicators</span><span class="p">:</span> <span class="n">List</span><span class="p">[</span><span class="nb">bool</span><span class="p">],</span>
+        <span class="n">tolerance</span><span class="p">:</span> <span class="nb">float</span><span class="p">,</span>
+        <span class="n">num_iterations</span><span class="p">:</span> <span class="nb">int</span><span class="p">,</span>
+        <span class="n">burn_in</span><span class="p">:</span> <span class="nb">int</span><span class="p">,</span>
+        <span class="n">thin</span><span class="p">:</span> <span class="nb">int</span><span class="p">,</span>
+    <span class="p">):</span>
+<span class="w">        </span><span class="sd">&quot;&quot;&quot;</span>
+<span class="sd">        Initialize the ABC-MCMC posterior object.</span>
+
+<span class="sd">        Args:</span>
+<span class="sd">            samples (List[Any]): MCMC samples after burn-in and thinning</span>
+<span class="sd">            log_priors (List[float]): Log-prior probabilities for each sample</span>
+<span class="sd">            distances (List[float]): Distance values for each sample</span>
+<span class="sd">            acceptance_indicators (List[bool]): Acceptance status for each sample</span>
+<span class="sd">            tolerance (float): Tolerance threshold used</span>
+<span class="sd">            num_iterations (int): Total MCMC iterations run</span>
+<span class="sd">            burn_in (int): Number of burn-in iterations discarded</span>
+<span class="sd">            thin (int): Thinning interval used</span>
+<span class="sd">        &quot;&quot;&quot;</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">samples</span> <span class="o">=</span> <span class="n">samples</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">log_priors</span> <span class="o">=</span> <span class="n">log_priors</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">distances</span> <span class="o">=</span> <span class="n">distances</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">acceptance_indicators</span> <span class="o">=</span> <span class="n">acceptance_indicators</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">tolerance</span> <span class="o">=</span> <span class="n">tolerance</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">num_iterations</span> <span class="o">=</span> <span class="n">num_iterations</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">burn_in</span> <span class="o">=</span> <span class="n">burn_in</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">thin</span> <span class="o">=</span> <span class="n">thin</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">acceptance_rate</span> <span class="o">=</span> <span class="p">(</span>
+            <span class="n">np</span><span class="o">.</span><span class="n">mean</span><span class="p">(</span><span class="n">acceptance_indicators</span><span class="p">)</span> <span class="k">if</span> <span class="n">acceptance_indicators</span> <span class="k">else</span> <span class="mi">0</span>
+        <span class="p">)</span>
+
+<div class="viewcode-block" id="ABCMCMCPosterior.sample">
+<a class="viewcode-back" href="../../../api.html#scisbi.inference.ABCMCMCPosterior.sample">[docs]</a>
+    <span class="k">def</span><span class="w"> </span><span class="nf">sample</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">num_samples</span><span class="p">:</span> <span class="nb">int</span> <span class="o">=</span> <span class="mi">1</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="n">Union</span><span class="p">[</span><span class="n">Any</span><span class="p">,</span> <span class="n">List</span><span class="p">[</span><span class="n">Any</span><span class="p">]]:</span>
+<span class="w">        </span><span class="sd">&quot;&quot;&quot;</span>
+<span class="sd">        Draw samples from the ABC-MCMC posterior.</span>
+
+<span class="sd">        Args:</span>
+<span class="sd">            num_samples (int): Number of samples to draw</span>
+
+<span class="sd">        Returns:</span>
+<span class="sd">            Single sample if num_samples=1, otherwise list of samples</span>
+<span class="sd">        &quot;&quot;&quot;</span>
+        <span class="k">if</span> <span class="n">num_samples</span> <span class="o">==</span> <span class="mi">1</span><span class="p">:</span>
+            <span class="k">return</span> <span class="n">np</span><span class="o">.</span><span class="n">random</span><span class="o">.</span><span class="n">choice</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">samples</span><span class="p">)</span>
+        <span class="k">else</span><span class="p">:</span>
+            <span class="k">return</span> <span class="n">np</span><span class="o">.</span><span class="n">random</span><span class="o">.</span><span class="n">choice</span><span class="p">(</span>
+                <span class="bp">self</span><span class="o">.</span><span class="n">samples</span><span class="p">,</span> <span class="n">size</span><span class="o">=</span><span class="n">num_samples</span><span class="p">,</span> <span class="n">replace</span><span class="o">=</span><span class="kc">True</span>
+            <span class="p">)</span><span class="o">.</span><span class="n">tolist</span><span class="p">()</span></div>
+
+
+<div class="viewcode-block" id="ABCMCMCPosterior.get_samples">
+<a class="viewcode-back" href="../../../api.html#scisbi.inference.ABCMCMCPosterior.get_samples">[docs]</a>
+    <span class="k">def</span><span class="w"> </span><span class="nf">get_samples</span><span class="p">(</span><span class="bp">self</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="n">List</span><span class="p">[</span><span class="n">Any</span><span class="p">]:</span>
+<span class="w">        </span><span class="sd">&quot;&quot;&quot;Return all MCMC samples.&quot;&quot;&quot;</span>
+        <span class="k">return</span> <span class="bp">self</span><span class="o">.</span><span class="n">samples</span><span class="o">.</span><span class="n">copy</span><span class="p">()</span></div>
+
+
+<div class="viewcode-block" id="ABCMCMCPosterior.get_distances">
+<a class="viewcode-back" href="../../../api.html#scisbi.inference.ABCMCMCPosterior.get_distances">[docs]</a>
+    <span class="k">def</span><span class="w"> </span><span class="nf">get_distances</span><span class="p">(</span><span class="bp">self</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="n">List</span><span class="p">[</span><span class="nb">float</span><span class="p">]:</span>
+<span class="w">        </span><span class="sd">&quot;&quot;&quot;Return all distance values.&quot;&quot;&quot;</span>
+        <span class="k">return</span> <span class="bp">self</span><span class="o">.</span><span class="n">distances</span><span class="o">.</span><span class="n">copy</span><span class="p">()</span></div>
+
+
+<div class="viewcode-block" id="ABCMCMCPosterior.get_log_priors">
+<a class="viewcode-back" href="../../../api.html#scisbi.inference.ABCMCMCPosterior.get_log_priors">[docs]</a>
+    <span class="k">def</span><span class="w"> </span><span class="nf">get_log_priors</span><span class="p">(</span><span class="bp">self</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="n">List</span><span class="p">[</span><span class="nb">float</span><span class="p">]:</span>
+<span class="w">        </span><span class="sd">&quot;&quot;&quot;Return all log-prior values.&quot;&quot;&quot;</span>
+        <span class="k">return</span> <span class="bp">self</span><span class="o">.</span><span class="n">log_priors</span><span class="o">.</span><span class="n">copy</span><span class="p">()</span></div>
+
+
+<div class="viewcode-block" id="ABCMCMCPosterior.get_acceptance_indicators">
+<a class="viewcode-back" href="../../../api.html#scisbi.inference.ABCMCMCPosterior.get_acceptance_indicators">[docs]</a>
+    <span class="k">def</span><span class="w"> </span><span class="nf">get_acceptance_indicators</span><span class="p">(</span><span class="bp">self</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="n">List</span><span class="p">[</span><span class="nb">bool</span><span class="p">]:</span>
+<span class="w">        </span><span class="sd">&quot;&quot;&quot;Return acceptance indicators for chain diagnostics.&quot;&quot;&quot;</span>
+        <span class="k">return</span> <span class="bp">self</span><span class="o">.</span><span class="n">acceptance_indicators</span><span class="o">.</span><span class="n">copy</span><span class="p">()</span></div>
+
+
+<div class="viewcode-block" id="ABCMCMCPosterior.effective_sample_size">
+<a class="viewcode-back" href="../../../api.html#scisbi.inference.ABCMCMCPosterior.effective_sample_size">[docs]</a>
+    <span class="k">def</span><span class="w"> </span><span class="nf">effective_sample_size</span><span class="p">(</span><span class="bp">self</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="nb">int</span><span class="p">:</span>
+<span class="w">        </span><span class="sd">&quot;&quot;&quot;</span>
+<span class="sd">        Estimate the effective sample size accounting for autocorrelation.</span>
+
+<span class="sd">        Returns:</span>
+<span class="sd">            Estimated effective sample size</span>
+<span class="sd">        &quot;&quot;&quot;</span>
+        <span class="c1"># Simple estimate: total samples / (1 + 2 * sum of autocorrelations)</span>
+        <span class="c1"># For more sophisticated estimates, consider using external packages</span>
+        <span class="k">return</span> <span class="nb">len</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">samples</span><span class="p">)</span>  <span class="c1"># Simplified for now</span></div>
+
+
+<div class="viewcode-block" id="ABCMCMCPosterior.summary_statistics">
+<a class="viewcode-back" href="../../../api.html#scisbi.inference.ABCMCMCPosterior.summary_statistics">[docs]</a>
+    <span class="k">def</span><span class="w"> </span><span class="nf">summary_statistics</span><span class="p">(</span><span class="bp">self</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="nb">dict</span><span class="p">:</span>
+<span class="w">        </span><span class="sd">&quot;&quot;&quot;</span>
+<span class="sd">        Compute summary statistics of the ABC-MCMC posterior.</span>
+
+<span class="sd">        Returns:</span>
+<span class="sd">            Dictionary with posterior and chain summary information</span>
+<span class="sd">        &quot;&quot;&quot;</span>
+        <span class="n">valid_distances</span> <span class="o">=</span> <span class="p">[</span><span class="n">d</span> <span class="k">for</span> <span class="n">d</span> <span class="ow">in</span> <span class="bp">self</span><span class="o">.</span><span class="n">distances</span> <span class="k">if</span> <span class="ow">not</span> <span class="n">np</span><span class="o">.</span><span class="n">isnan</span><span class="p">(</span><span class="n">d</span><span class="p">)]</span>
+
+        <span class="k">return</span> <span class="p">{</span>
+            <span class="s2">&quot;num_samples&quot;</span><span class="p">:</span> <span class="nb">len</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">samples</span><span class="p">),</span>
+            <span class="s2">&quot;acceptance_rate&quot;</span><span class="p">:</span> <span class="bp">self</span><span class="o">.</span><span class="n">acceptance_rate</span><span class="p">,</span>
+            <span class="s2">&quot;tolerance&quot;</span><span class="p">:</span> <span class="bp">self</span><span class="o">.</span><span class="n">tolerance</span><span class="p">,</span>
+            <span class="s2">&quot;num_iterations&quot;</span><span class="p">:</span> <span class="bp">self</span><span class="o">.</span><span class="n">num_iterations</span><span class="p">,</span>
+            <span class="s2">&quot;burn_in&quot;</span><span class="p">:</span> <span class="bp">self</span><span class="o">.</span><span class="n">burn_in</span><span class="p">,</span>
+            <span class="s2">&quot;thin&quot;</span><span class="p">:</span> <span class="bp">self</span><span class="o">.</span><span class="n">thin</span><span class="p">,</span>
+            <span class="s2">&quot;effective_sample_size&quot;</span><span class="p">:</span> <span class="bp">self</span><span class="o">.</span><span class="n">effective_sample_size</span><span class="p">(),</span>
+            <span class="s2">&quot;mean_distance&quot;</span><span class="p">:</span> <span class="n">np</span><span class="o">.</span><span class="n">mean</span><span class="p">(</span><span class="n">valid_distances</span><span class="p">)</span> <span class="k">if</span> <span class="n">valid_distances</span> <span class="k">else</span> <span class="n">np</span><span class="o">.</span><span class="n">nan</span><span class="p">,</span>
+            <span class="s2">&quot;max_distance&quot;</span><span class="p">:</span> <span class="n">np</span><span class="o">.</span><span class="n">max</span><span class="p">(</span><span class="n">valid_distances</span><span class="p">)</span> <span class="k">if</span> <span class="n">valid_distances</span> <span class="k">else</span> <span class="n">np</span><span class="o">.</span><span class="n">nan</span><span class="p">,</span>
+            <span class="s2">&quot;min_distance&quot;</span><span class="p">:</span> <span class="n">np</span><span class="o">.</span><span class="n">min</span><span class="p">(</span><span class="n">valid_distances</span><span class="p">)</span> <span class="k">if</span> <span class="n">valid_distances</span> <span class="k">else</span> <span class="n">np</span><span class="o">.</span><span class="n">nan</span><span class="p">,</span>
+        <span class="p">}</span></div>
+
+
+<div class="viewcode-block" id="ABCMCMCPosterior.plot">
+<a class="viewcode-back" href="../../../api.html#scisbi.inference.ABCMCMCPosterior.plot">[docs]</a>
+    <span class="k">def</span><span class="w"> </span><span class="nf">plot</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">parameter_index</span><span class="p">:</span> <span class="n">Optional</span><span class="p">[</span><span class="nb">int</span><span class="p">]</span> <span class="o">=</span> <span class="kc">None</span><span class="p">,</span> <span class="n">bins</span><span class="p">:</span> <span class="nb">int</span> <span class="o">=</span> <span class="mi">30</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="kc">None</span><span class="p">:</span>
+<span class="w">        </span><span class="sd">&quot;&quot;&quot;</span>
+<span class="sd">        Plot a histogram of the posterior samples for a specific parameter or 1D samples.</span>
+
+<span class="sd">        Args:</span>
+<span class="sd">            parameter_index (Optional[int]): Index of the parameter to plot. If None,</span>
+<span class="sd">                                             assumes samples are 1D (default: None).</span>
+<span class="sd">            bins (int): Number of bins for the histogram (default: 30).</span>
+<span class="sd">        &quot;&quot;&quot;</span>
+        <span class="k">if</span> <span class="ow">not</span> <span class="bp">self</span><span class="o">.</span><span class="n">samples</span><span class="p">:</span>
+            <span class="k">raise</span> <span class="ne">ValueError</span><span class="p">(</span><span class="s2">&quot;No samples available to plot.&quot;</span><span class="p">)</span>
+
+        <span class="c1"># Handle 1D samples or extract the specified parameter</span>
+        <span class="k">if</span> <span class="n">parameter_index</span> <span class="ow">is</span> <span class="kc">None</span><span class="p">:</span>
+            <span class="k">if</span> <span class="nb">isinstance</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">samples</span><span class="p">[</span><span class="mi">0</span><span class="p">],</span> <span class="p">(</span><span class="nb">list</span><span class="p">,</span> <span class="nb">tuple</span><span class="p">)):</span>
+                <span class="k">raise</span> <span class="ne">ValueError</span><span class="p">(</span>
+                    <span class="s2">&quot;Samples are multi-dimensional. Specify parameter_index.&quot;</span>
+                <span class="p">)</span>
+            <span class="n">parameter_values</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">samples</span>
+        <span class="k">else</span><span class="p">:</span>
+            <span class="n">parameter_values</span> <span class="o">=</span> <span class="p">[</span><span class="n">sample</span><span class="p">[</span><span class="n">parameter_index</span><span class="p">]</span> <span class="k">for</span> <span class="n">sample</span> <span class="ow">in</span> <span class="bp">self</span><span class="o">.</span><span class="n">samples</span><span class="p">]</span>
+
+        <span class="n">plt</span><span class="o">.</span><span class="n">hist</span><span class="p">(</span><span class="n">parameter_values</span><span class="p">,</span> <span class="n">bins</span><span class="o">=</span><span class="n">bins</span><span class="p">,</span> <span class="n">density</span><span class="o">=</span><span class="kc">True</span><span class="p">,</span> <span class="n">alpha</span><span class="o">=</span><span class="mf">0.7</span><span class="p">,</span> <span class="n">color</span><span class="o">=</span><span class="s2">&quot;green&quot;</span><span class="p">)</span>
+        <span class="n">title</span> <span class="o">=</span> <span class="s2">&quot;MCMC Posterior Distribution&quot;</span> <span class="o">+</span> <span class="p">(</span>
+            <span class="sa">f</span><span class="s2">&quot; (Parameter </span><span class="si">{</span><span class="n">parameter_index</span><span class="si">}</span><span class="s2">)&quot;</span> <span class="k">if</span> <span class="n">parameter_index</span> <span class="ow">is</span> <span class="ow">not</span> <span class="kc">None</span> <span class="k">else</span> <span class="s2">&quot;&quot;</span>
+        <span class="p">)</span>
+        <span class="n">plt</span><span class="o">.</span><span class="n">title</span><span class="p">(</span><span class="n">title</span><span class="p">)</span>
+        <span class="n">plt</span><span class="o">.</span><span class="n">xlabel</span><span class="p">(</span>
+            <span class="sa">f</span><span class="s2">&quot;Parameter </span><span class="si">{</span><span class="n">parameter_index</span><span class="si">}</span><span class="s2">&quot;</span> <span class="k">if</span> <span class="n">parameter_index</span> <span class="ow">is</span> <span class="ow">not</span> <span class="kc">None</span> <span class="k">else</span> <span class="s2">&quot;Samples&quot;</span>
+        <span class="p">)</span>
+        <span class="n">plt</span><span class="o">.</span><span class="n">ylabel</span><span class="p">(</span><span class="s2">&quot;Density&quot;</span><span class="p">)</span>
+        <span class="n">plt</span><span class="o">.</span><span class="n">grid</span><span class="p">(</span><span class="kc">True</span><span class="p">)</span>
+        <span class="n">plt</span><span class="o">.</span><span class="n">show</span><span class="p">()</span></div>
+
+
+<div class="viewcode-block" id="ABCMCMCPosterior.plot_trace">
+<a class="viewcode-back" href="../../../api.html#scisbi.inference.ABCMCMCPosterior.plot_trace">[docs]</a>
+    <span class="k">def</span><span class="w"> </span><span class="nf">plot_trace</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">parameter_index</span><span class="p">:</span> <span class="n">Optional</span><span class="p">[</span><span class="nb">int</span><span class="p">]</span> <span class="o">=</span> <span class="kc">None</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="kc">None</span><span class="p">:</span>
+<span class="w">        </span><span class="sd">&quot;&quot;&quot;</span>
+<span class="sd">        Plot trace plot for chain diagnostics.</span>
+
+<span class="sd">        Args:</span>
+<span class="sd">            parameter_index (Optional[int]): Index of the parameter to plot. If None,</span>
+<span class="sd">                                             assumes samples are 1D.</span>
+<span class="sd">        &quot;&quot;&quot;</span>
+        <span class="k">if</span> <span class="ow">not</span> <span class="bp">self</span><span class="o">.</span><span class="n">samples</span><span class="p">:</span>
+            <span class="k">raise</span> <span class="ne">ValueError</span><span class="p">(</span><span class="s2">&quot;No samples available to plot.&quot;</span><span class="p">)</span>
+
+        <span class="c1"># Handle 1D samples or extract the specified parameter</span>
+        <span class="k">if</span> <span class="n">parameter_index</span> <span class="ow">is</span> <span class="kc">None</span><span class="p">:</span>
+            <span class="k">if</span> <span class="nb">isinstance</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">samples</span><span class="p">[</span><span class="mi">0</span><span class="p">],</span> <span class="p">(</span><span class="nb">list</span><span class="p">,</span> <span class="nb">tuple</span><span class="p">)):</span>
+                <span class="k">raise</span> <span class="ne">ValueError</span><span class="p">(</span>
+                    <span class="s2">&quot;Samples are multi-dimensional. Specify parameter_index.&quot;</span>
+                <span class="p">)</span>
+            <span class="n">parameter_values</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">samples</span>
+        <span class="k">else</span><span class="p">:</span>
+            <span class="n">parameter_values</span> <span class="o">=</span> <span class="p">[</span><span class="n">sample</span><span class="p">[</span><span class="n">parameter_index</span><span class="p">]</span> <span class="k">for</span> <span class="n">sample</span> <span class="ow">in</span> <span class="bp">self</span><span class="o">.</span><span class="n">samples</span><span class="p">]</span>
+
+        <span class="n">plt</span><span class="o">.</span><span class="n">figure</span><span class="p">(</span><span class="n">figsize</span><span class="o">=</span><span class="p">(</span><span class="mi">10</span><span class="p">,</span> <span class="mi">4</span><span class="p">))</span>
+        <span class="n">plt</span><span class="o">.</span><span class="n">plot</span><span class="p">(</span><span class="n">parameter_values</span><span class="p">,</span> <span class="n">alpha</span><span class="o">=</span><span class="mf">0.8</span><span class="p">,</span> <span class="n">color</span><span class="o">=</span><span class="s2">&quot;green&quot;</span><span class="p">)</span>
+        <span class="n">title</span> <span class="o">=</span> <span class="s2">&quot;MCMC Trace Plot&quot;</span> <span class="o">+</span> <span class="p">(</span>
+            <span class="sa">f</span><span class="s2">&quot; (Parameter </span><span class="si">{</span><span class="n">parameter_index</span><span class="si">}</span><span class="s2">)&quot;</span> <span class="k">if</span> <span class="n">parameter_index</span> <span class="ow">is</span> <span class="ow">not</span> <span class="kc">None</span> <span class="k">else</span> <span class="s2">&quot;&quot;</span>
+        <span class="p">)</span>
+        <span class="n">plt</span><span class="o">.</span><span class="n">title</span><span class="p">(</span><span class="n">title</span><span class="p">)</span>
+        <span class="n">plt</span><span class="o">.</span><span class="n">xlabel</span><span class="p">(</span><span class="s2">&quot;Iteration&quot;</span><span class="p">)</span>
+        <span class="n">plt</span><span class="o">.</span><span class="n">ylabel</span><span class="p">(</span>
+            <span class="sa">f</span><span class="s2">&quot;Parameter </span><span class="si">{</span><span class="n">parameter_index</span><span class="si">}</span><span class="s2">&quot;</span> <span class="k">if</span> <span class="n">parameter_index</span> <span class="ow">is</span> <span class="ow">not</span> <span class="kc">None</span> <span class="k">else</span> <span class="s2">&quot;Value&quot;</span>
+        <span class="p">)</span>
+        <span class="n">plt</span><span class="o">.</span><span class="n">grid</span><span class="p">(</span><span class="kc">True</span><span class="p">)</span>
+        <span class="n">plt</span><span class="o">.</span><span class="n">show</span><span class="p">()</span></div>
+
+
+<div class="viewcode-block" id="ABCMCMCPosterior.plot_acceptance_rate">
+<a class="viewcode-back" href="../../../api.html#scisbi.inference.ABCMCMCPosterior.plot_acceptance_rate">[docs]</a>
+    <span class="k">def</span><span class="w"> </span><span class="nf">plot_acceptance_rate</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">window_size</span><span class="p">:</span> <span class="nb">int</span> <span class="o">=</span> <span class="mi">100</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="kc">None</span><span class="p">:</span>
+<span class="w">        </span><span class="sd">&quot;&quot;&quot;</span>
+<span class="sd">        Plot running acceptance rate for chain diagnostics.</span>
+
+<span class="sd">        Args:</span>
+<span class="sd">            window_size (int): Window size for computing running average</span>
+<span class="sd">        &quot;&quot;&quot;</span>
+        <span class="k">if</span> <span class="nb">len</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">acceptance_indicators</span><span class="p">)</span> <span class="o">&lt;</span> <span class="n">window_size</span><span class="p">:</span>
+            <span class="n">window_size</span> <span class="o">=</span> <span class="nb">len</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">acceptance_indicators</span><span class="p">)</span>
+
+        <span class="n">running_acceptance</span> <span class="o">=</span> <span class="p">[]</span>
+        <span class="k">for</span> <span class="n">i</span> <span class="ow">in</span> <span class="nb">range</span><span class="p">(</span><span class="nb">len</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">acceptance_indicators</span><span class="p">)):</span>
+            <span class="n">start_idx</span> <span class="o">=</span> <span class="nb">max</span><span class="p">(</span><span class="mi">0</span><span class="p">,</span> <span class="n">i</span> <span class="o">-</span> <span class="n">window_size</span> <span class="o">+</span> <span class="mi">1</span><span class="p">)</span>
+            <span class="n">window_acceptance</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">mean</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">acceptance_indicators</span><span class="p">[</span><span class="n">start_idx</span> <span class="p">:</span> <span class="n">i</span> <span class="o">+</span> <span class="mi">1</span><span class="p">])</span>
+            <span class="n">running_acceptance</span><span class="o">.</span><span class="n">append</span><span class="p">(</span><span class="n">window_acceptance</span><span class="p">)</span>
+
+        <span class="n">plt</span><span class="o">.</span><span class="n">figure</span><span class="p">(</span><span class="n">figsize</span><span class="o">=</span><span class="p">(</span><span class="mi">10</span><span class="p">,</span> <span class="mi">4</span><span class="p">))</span>
+        <span class="n">plt</span><span class="o">.</span><span class="n">plot</span><span class="p">(</span><span class="n">running_acceptance</span><span class="p">,</span> <span class="n">color</span><span class="o">=</span><span class="s2">&quot;blue&quot;</span><span class="p">)</span>
+        <span class="n">plt</span><span class="o">.</span><span class="n">title</span><span class="p">(</span><span class="sa">f</span><span class="s2">&quot;Running Acceptance Rate (Window: </span><span class="si">{</span><span class="n">window_size</span><span class="si">}</span><span class="s2">)&quot;</span><span class="p">)</span>
+        <span class="n">plt</span><span class="o">.</span><span class="n">xlabel</span><span class="p">(</span><span class="s2">&quot;Iteration&quot;</span><span class="p">)</span>
+        <span class="n">plt</span><span class="o">.</span><span class="n">ylabel</span><span class="p">(</span><span class="s2">&quot;Acceptance Rate&quot;</span><span class="p">)</span>
+        <span class="n">plt</span><span class="o">.</span><span class="n">grid</span><span class="p">(</span><span class="kc">True</span><span class="p">)</span>
+        <span class="n">plt</span><span class="o">.</span><span class="n">axhline</span><span class="p">(</span>
+            <span class="n">y</span><span class="o">=</span><span class="bp">self</span><span class="o">.</span><span class="n">acceptance_rate</span><span class="p">,</span>
+            <span class="n">color</span><span class="o">=</span><span class="s2">&quot;red&quot;</span><span class="p">,</span>
+            <span class="n">linestyle</span><span class="o">=</span><span class="s2">&quot;--&quot;</span><span class="p">,</span>
+            <span class="n">label</span><span class="o">=</span><span class="sa">f</span><span class="s2">&quot;Overall: </span><span class="si">{</span><span class="bp">self</span><span class="o">.</span><span class="n">acceptance_rate</span><span class="si">:</span><span class="s2">.3f</span><span class="si">}</span><span class="s2">&quot;</span><span class="p">,</span>
+        <span class="p">)</span>
+        <span class="n">plt</span><span class="o">.</span><span class="n">legend</span><span class="p">()</span>
+        <span class="n">plt</span><span class="o">.</span><span class="n">show</span><span class="p">()</span></div>
+
+
+    <span class="k">def</span><span class="w"> </span><span class="fm">__len__</span><span class="p">(</span><span class="bp">self</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="nb">int</span><span class="p">:</span>
+<span class="w">        </span><span class="sd">&quot;&quot;&quot;Return number of samples.&quot;&quot;&quot;</span>
+        <span class="k">return</span> <span class="nb">len</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">samples</span><span class="p">)</span>
+
+    <span class="k">def</span><span class="w"> </span><span class="fm">__repr__</span><span class="p">(</span><span class="bp">self</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="nb">str</span><span class="p">:</span>
+        <span class="k">return</span> <span class="p">(</span>
+            <span class="sa">f</span><span class="s2">&quot;ABCMCMCPosterior(num_samples=</span><span class="si">{</span><span class="nb">len</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">samples</span><span class="p">)</span><span class="si">}</span><span class="s2">, &quot;</span>
+            <span class="sa">f</span><span class="s2">&quot;acceptance_rate=</span><span class="si">{</span><span class="bp">self</span><span class="o">.</span><span class="n">acceptance_rate</span><span class="si">:</span><span class="s2">.4f</span><span class="si">}</span><span class="s2">, &quot;</span>
+            <span class="sa">f</span><span class="s2">&quot;tolerance=</span><span class="si">{</span><span class="bp">self</span><span class="o">.</span><span class="n">tolerance</span><span class="si">}</span><span class="s2">)&quot;</span>
+        <span class="p">)</span></div>
+
+</pre></div>
+        </article>
+      </div>
+      <footer>
+
+        <div class="related-pages">
+
+
+        </div>
+        <div class="bottom-of-page">
+          <div class="left-details">
+            <div class="copyright">
+                Copyright &#169; 2025, Csongor Horváth
+            </div>
+            Made with <a href="https://www.sphinx-doc.org/">Sphinx</a> and <a class="muted-link" href="https://pradyunsg.me">@pradyunsg</a>'s
+
+            <a href="https://github.com/pradyunsg/furo">Furo</a>
+
+          </div>
+          <div class="right-details">
+
+          </div>
+        </div>
+
+      </footer>
+    </div>
+    <aside class="toc-drawer no-toc">
+
+
+
+    </aside>
+  </div>
+</div><script src="../../../_static/documentation_options.js?v=d45e8c67"></script>
+    <script src="../../../_static/doctools.js?v=9bcbadda"></script>
+    <script src="../../../_static/sphinx_highlight.js?v=dc90522c"></script>
+    <script src="../../../_static/scripts/furo.js?v=5fa4622c"></script>
+    </body>
+</html>
