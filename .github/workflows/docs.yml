@@ -9,7 +9,7 @@ on:
 
 jobs:
   docs:
-    runs-on: ubuntu-latest
+    runs-on: windows-latest
 
     steps:
       - name: Checkout code
@@ -34,32 +34,37 @@ jobs:
           pip install -r requirements.txt
           pip install -r docs/requirements.txt
           pip install -e .
+        shell: pwsh
 
       - name: Check dependencies
         run: |
           cd docs
           make check-deps
+        shell: pwsh
 
       - name: Clean previous builds
         run: |
           cd docs
           make clean
+        shell: pwsh
 
       - name: Build documentation
         run: |
           cd docs
           make html
+        shell: pwsh
 
       - name: Verify build
         run: |
           cd docs
-          if [ -d "_build/html" ] && [ -f "_build/html/index.html" ]; then
-            echo "✓ Documentation built successfully"
-            ls -la _build/html/
-          else
-            echo "✗ Documentation build failed"
+          if (Test-Path "_build/html" -PathType Container -and (Test-Path "_build/html/index.html")) {
+            Write-Host "✓ Documentation built successfully"
+            Get-ChildItem _build/html/ | Format-List
+          } else {
+            Write-Host "✗ Documentation build failed"
             exit 1
-          fi
+          }
+        shell: pwsh
 
       - name: Upload documentation artifacts
         uses: actions/upload-artifact@v4
