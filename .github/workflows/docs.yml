@@ -23,7 +23,7 @@ jobs:
       - name: Cache pip dependencies
         uses: actions/cache@v3
         with:
-          path: ~/.cache/pip
+          path: ~\AppData\Local\pip\Cache
           key: ${{ runner.os }}-pip-${{ hashFiles('**/requirements*.txt') }}
           restore-keys: |
             ${{ runner.os }}-pip-
@@ -36,30 +36,23 @@ jobs:
           pip install -e .
         shell: pwsh
 
-      - name: Check dependencies
-        run: |
-          cd docs
-          make check-deps
-        shell: pwsh
-
       - name: Clean previous builds
         run: |
           cd docs
-          make clean
+          .\make.bat clean
         shell: pwsh
 
       - name: Build documentation
         run: |
           cd docs
-          make html
+          .\make.bat html
         shell: pwsh
 
       - name: Verify build
         run: |
           cd docs
-          if (Test-Path "_build/html" -PathType Container -and (Test-Path "_build/html/index.html")) {
+          if (Test-Path "_build/html/index.html") {
             Write-Host "✓ Documentation built successfully"
-            Get-ChildItem _build/html/ | Format-List
           } else {
             Write-Host "✗ Documentation build failed"
             exit 1
@@ -68,7 +61,6 @@ jobs:
 
       - name: Upload documentation artifacts
         uses: actions/upload-artifact@v4
-        if: success()
         with:
           name: documentation
           path: docs/_build/html/
@@ -78,4 +70,5 @@ jobs:
         uses: peaceiris/actions-gh-pages@v3
         with:
           github_token: ${{ secrets.GITHUB_TOKEN }}
-          publish_dir: ./docs/_build/html
+          publish_dir: docs/_build/html
+          publish_branch: gh-pages
