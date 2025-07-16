@@ -1,0 +1,1078 @@
+<!doctype html>
+<html class="no-js" lang="en" data-content_root="../../../">
+  <head><meta charset="utf-8"/>
+    <meta name="viewport" content="width=device-width,initial-scale=1"/>
+    <meta name="color-scheme" content="light dark"><link rel="index" title="Index" href="../../../genindex.html" /><link rel="search" title="Search" href="../../../search.html" />
+
+    <!-- Generated with Sphinx 8.2.3 and Furo 2024.08.06 -->
+        <title>scisbi.inference.ABCSMC - scisbi v0.0.1</title>
+      <link rel="stylesheet" type="text/css" href="../../../_static/pygments.css?v=8f2a1f02" />
+    <link rel="stylesheet" type="text/css" href="../../../_static/styles/furo.css?v=354aac6f" />
+    <link rel="stylesheet" type="text/css" href="../../../_static/styles/furo-extensions.css?v=302659d7" />
+    
+    
+
+
+<style>
+  body {
+    --color-code-background: #f8f8f8;
+  --color-code-foreground: black;
+  
+  }
+  @media not print {
+    body[data-theme="dark"] {
+      --color-code-background: #202020;
+  --color-code-foreground: #d0d0d0;
+  
+    }
+    @media (prefers-color-scheme: dark) {
+      body:not([data-theme="light"]) {
+        --color-code-background: #202020;
+  --color-code-foreground: #d0d0d0;
+  
+      }
+    }
+  }
+</style></head>
+  <body>
+    
+    <script>
+      document.body.dataset.theme = localStorage.getItem("theme") || "auto";
+    </script>
+    
+
+<svg xmlns="http://www.w3.org/2000/svg" style="display: none;">
+  <symbol id="svg-toc" viewBox="0 0 24 24">
+    <title>Contents</title>
+    <svg stroke="currentColor" fill="currentColor" stroke-width="0" viewBox="0 0 1024 1024">
+      <path d="M408 442h480c4.4 0 8-3.6 8-8v-56c0-4.4-3.6-8-8-8H408c-4.4 0-8 3.6-8 8v56c0 4.4 3.6 8 8 8zm-8 204c0 4.4 3.6 8 8 8h480c4.4 0 8-3.6 8-8v-56c0-4.4-3.6-8-8-8H408c-4.4 0-8 3.6-8 8v56zm504-486H120c-4.4 0-8 3.6-8 8v56c0 4.4 3.6 8 8 8h784c4.4 0 8-3.6 8-8v-56c0-4.4-3.6-8-8-8zm0 632H120c-4.4 0-8 3.6-8 8v56c0 4.4 3.6 8 8 8h784c4.4 0 8-3.6 8-8v-56c0-4.4-3.6-8-8-8zM115.4 518.9L271.7 642c5.8 4.6 14.4.5 14.4-6.9V388.9c0-7.4-8.5-11.5-14.4-6.9L115.4 505.1a8.74 8.74 0 0 0 0 13.8z"/>
+    </svg>
+  </symbol>
+  <symbol id="svg-menu" viewBox="0 0 24 24">
+    <title>Menu</title>
+    <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="none" stroke="currentColor"
+      stroke-width="2" stroke-linecap="round" stroke-linejoin="round" class="feather-menu">
+      <line x1="3" y1="12" x2="21" y2="12"></line>
+      <line x1="3" y1="6" x2="21" y2="6"></line>
+      <line x1="3" y1="18" x2="21" y2="18"></line>
+    </svg>
+  </symbol>
+  <symbol id="svg-arrow-right" viewBox="0 0 24 24">
+    <title>Expand</title>
+    <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="none" stroke="currentColor"
+      stroke-width="2" stroke-linecap="round" stroke-linejoin="round" class="feather-chevron-right">
+      <polyline points="9 18 15 12 9 6"></polyline>
+    </svg>
+  </symbol>
+  <symbol id="svg-sun" viewBox="0 0 24 24">
+    <title>Light mode</title>
+    <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="none" stroke="currentColor"
+      stroke-width="1" stroke-linecap="round" stroke-linejoin="round" class="feather-sun">
+      <circle cx="12" cy="12" r="5"></circle>
+      <line x1="12" y1="1" x2="12" y2="3"></line>
+      <line x1="12" y1="21" x2="12" y2="23"></line>
+      <line x1="4.22" y1="4.22" x2="5.64" y2="5.64"></line>
+      <line x1="18.36" y1="18.36" x2="19.78" y2="19.78"></line>
+      <line x1="1" y1="12" x2="3" y2="12"></line>
+      <line x1="21" y1="12" x2="23" y2="12"></line>
+      <line x1="4.22" y1="19.78" x2="5.64" y2="18.36"></line>
+      <line x1="18.36" y1="5.64" x2="19.78" y2="4.22"></line>
+    </svg>
+  </symbol>
+  <symbol id="svg-moon" viewBox="0 0 24 24">
+    <title>Dark mode</title>
+    <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="none" stroke="currentColor"
+      stroke-width="1" stroke-linecap="round" stroke-linejoin="round" class="icon-tabler-moon">
+      <path stroke="none" d="M0 0h24v24H0z" fill="none" />
+      <path d="M12 3c.132 0 .263 0 .393 0a7.5 7.5 0 0 0 7.92 12.446a9 9 0 1 1 -8.313 -12.454z" />
+    </svg>
+  </symbol>
+  <symbol id="svg-sun-with-moon" viewBox="0 0 24 24">
+    <title>Auto light/dark, in light mode</title>
+    <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="none" stroke="currentColor"
+      stroke-width="1" stroke-linecap="round" stroke-linejoin="round"
+      class="icon-custom-derived-from-feather-sun-and-tabler-moon">
+      <path style="opacity: 50%" d="M 5.411 14.504 C 5.471 14.504 5.532 14.504 5.591 14.504 C 3.639 16.319 4.383 19.569 6.931 20.352 C 7.693 20.586 8.512 20.551 9.25 20.252 C 8.023 23.207 4.056 23.725 2.11 21.184 C 0.166 18.642 1.702 14.949 4.874 14.536 C 5.051 14.512 5.231 14.5 5.411 14.5 L 5.411 14.504 Z"/>
+      <line x1="14.5" y1="3.25" x2="14.5" y2="1.25"/>
+      <line x1="14.5" y1="15.85" x2="14.5" y2="17.85"/>
+      <line x1="10.044" y1="5.094" x2="8.63" y2="3.68"/>
+      <line x1="19" y1="14.05" x2="20.414" y2="15.464"/>
+      <line x1="8.2" y1="9.55" x2="6.2" y2="9.55"/>
+      <line x1="20.8" y1="9.55" x2="22.8" y2="9.55"/>
+      <line x1="10.044" y1="14.006" x2="8.63" y2="15.42"/>
+      <line x1="19" y1="5.05" x2="20.414" y2="3.636"/>
+      <circle cx="14.5" cy="9.55" r="3.6"/>
+    </svg>
+  </symbol>
+  <symbol id="svg-moon-with-sun" viewBox="0 0 24 24">
+    <title>Auto light/dark, in dark mode</title>
+    <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="none" stroke="currentColor"
+      stroke-width="1" stroke-linecap="round" stroke-linejoin="round"
+      class="icon-custom-derived-from-feather-sun-and-tabler-moon">
+      <path d="M 8.282 7.007 C 8.385 7.007 8.494 7.007 8.595 7.007 C 5.18 10.184 6.481 15.869 10.942 17.24 C 12.275 17.648 13.706 17.589 15 17.066 C 12.851 22.236 5.91 23.143 2.505 18.696 C -0.897 14.249 1.791 7.786 7.342 7.063 C 7.652 7.021 7.965 7 8.282 7 L 8.282 7.007 Z"/>
+      <line style="opacity: 50%" x1="18" y1="3.705" x2="18" y2="2.5"/>
+      <line style="opacity: 50%" x1="18" y1="11.295" x2="18" y2="12.5"/>
+      <line style="opacity: 50%" x1="15.316" y1="4.816" x2="14.464" y2="3.964"/>
+      <line style="opacity: 50%" x1="20.711" y1="10.212" x2="21.563" y2="11.063"/>
+      <line style="opacity: 50%" x1="14.205" y1="7.5" x2="13.001" y2="7.5"/>
+      <line style="opacity: 50%" x1="21.795" y1="7.5" x2="23" y2="7.5"/>
+      <line style="opacity: 50%" x1="15.316" y1="10.184" x2="14.464" y2="11.036"/>
+      <line style="opacity: 50%" x1="20.711" y1="4.789" x2="21.563" y2="3.937"/>
+      <circle style="opacity: 50%" cx="18" cy="7.5" r="2.169"/>
+    </svg>
+  </symbol>
+  <symbol id="svg-pencil" viewBox="0 0 24 24">
+    <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="none" stroke="currentColor"
+      stroke-width="1" stroke-linecap="round" stroke-linejoin="round" class="icon-tabler-pencil-code">
+      <path d="M4 20h4l10.5 -10.5a2.828 2.828 0 1 0 -4 -4l-10.5 10.5v4" />
+      <path d="M13.5 6.5l4 4" />
+      <path d="M20 21l2 -2l-2 -2" />
+      <path d="M17 17l-2 2l2 2" />
+    </svg>
+  </symbol>
+  <symbol id="svg-eye" viewBox="0 0 24 24">
+    <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="none" stroke="currentColor"
+      stroke-width="1" stroke-linecap="round" stroke-linejoin="round" class="icon-tabler-eye-code">
+      <path stroke="none" d="M0 0h24v24H0z" fill="none" />
+      <path d="M10 12a2 2 0 1 0 4 0a2 2 0 0 0 -4 0" />
+      <path
+        d="M11.11 17.958c-3.209 -.307 -5.91 -2.293 -8.11 -5.958c2.4 -4 5.4 -6 9 -6c3.6 0 6.6 2 9 6c-.21 .352 -.427 .688 -.647 1.008" />
+      <path d="M20 21l2 -2l-2 -2" />
+      <path d="M17 17l-2 2l2 2" />
+    </svg>
+  </symbol>
+</svg>
+
+<input type="checkbox" class="sidebar-toggle" name="__navigation" id="__navigation">
+<input type="checkbox" class="sidebar-toggle" name="__toc" id="__toc">
+<label class="overlay sidebar-overlay" for="__navigation">
+  <div class="visually-hidden">Hide navigation sidebar</div>
+</label>
+<label class="overlay toc-overlay" for="__toc">
+  <div class="visually-hidden">Hide table of contents sidebar</div>
+</label>
+
+<a class="skip-to-content muted-link" href="#furo-main-content">Skip to content</a>
+
+
+
+<div class="page">
+  <header class="mobile-header">
+    <div class="header-left">
+      <label class="nav-overlay-icon" for="__navigation">
+        <div class="visually-hidden">Toggle site navigation sidebar</div>
+        <i class="icon"><svg><use href="#svg-menu"></use></svg></i>
+      </label>
+    </div>
+    <div class="header-center">
+      <a href="../../../index.html"><div class="brand">scisbi v0.0.1</div></a>
+    </div>
+    <div class="header-right">
+      <div class="theme-toggle-container theme-toggle-header">
+        <button class="theme-toggle">
+          <div class="visually-hidden">Toggle Light / Dark / Auto color theme</div>
+          <svg class="theme-icon-when-auto-light"><use href="#svg-sun-with-moon"></use></svg>
+          <svg class="theme-icon-when-auto-dark"><use href="#svg-moon-with-sun"></use></svg>
+          <svg class="theme-icon-when-dark"><use href="#svg-moon"></use></svg>
+          <svg class="theme-icon-when-light"><use href="#svg-sun"></use></svg>
+        </button>
+      </div>
+      <label class="toc-overlay-icon toc-header-icon no-toc" for="__toc">
+        <div class="visually-hidden">Toggle table of contents sidebar</div>
+        <i class="icon"><svg><use href="#svg-toc"></use></svg></i>
+      </label>
+    </div>
+  </header>
+  <aside class="sidebar-drawer">
+    <div class="sidebar-container">
+      
+      <div class="sidebar-sticky"><a class="sidebar-brand" href="../../../index.html">
+  
+  
+  <span class="sidebar-brand-text">scisbi v0.0.1</span>
+  
+</a><form class="sidebar-search-container" method="get" action="../../../search.html" role="search">
+  <input class="sidebar-search" placeholder="Search" name="q" aria-label="Search">
+  <input type="hidden" name="check_keywords" value="yes">
+  <input type="hidden" name="area" value="default">
+</form>
+<div id="searchbox"></div><div class="sidebar-scroll"><div class="sidebar-tree">
+  <p class="caption" role="heading"><span class="caption-text">Documentation:</span></p>
+<ul>
+<li class="toctree-l1"><a class="reference internal" href="../../../overview.html">Overview</a></li>
+<li class="toctree-l1"><a class="reference internal" href="../../../quickstart.html">Quick Start</a></li>
+<li class="toctree-l1"><a class="reference internal" href="../../../api.html">API Reference</a></li>
+</ul>
+
+</div>
+</div>
+
+      </div>
+      
+    </div>
+  </aside>
+  <div class="main">
+    <div class="content">
+      <div class="article-container">
+        <a href="#" class="back-to-top muted-link">
+          <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24">
+            <path d="M13 20h-2V8l-5.5 5.5-1.42-1.42L12 4.16l7.92 7.92-1.42 1.42L13 8v12z"></path>
+          </svg>
+          <span>Back to top</span>
+        </a>
+        <div class="content-icon-container">
+          <div class="theme-toggle-container theme-toggle-content">
+            <button class="theme-toggle">
+              <div class="visually-hidden">Toggle Light / Dark / Auto color theme</div>
+              <svg class="theme-icon-when-auto-light"><use href="#svg-sun-with-moon"></use></svg>
+              <svg class="theme-icon-when-auto-dark"><use href="#svg-moon-with-sun"></use></svg>
+              <svg class="theme-icon-when-dark"><use href="#svg-moon"></use></svg>
+              <svg class="theme-icon-when-light"><use href="#svg-sun"></use></svg>
+            </button>
+          </div>
+          <label class="toc-overlay-icon toc-content-icon no-toc" for="__toc">
+            <div class="visually-hidden">Toggle table of contents sidebar</div>
+            <i class="icon"><svg><use href="#svg-toc"></use></svg></i>
+          </label>
+        </div>
+        <article role="main" id="furo-main-content">
+          <h1>Source code for scisbi.inference.ABCSMC</h1><div class="highlight"><pre>
+<span></span><span class="kn">import</span><span class="w"> </span><span class="nn">numpy</span><span class="w"> </span><span class="k">as</span><span class="w"> </span><span class="nn">np</span>
+<span class="kn">import</span><span class="w"> </span><span class="nn">matplotlib.pyplot</span><span class="w"> </span><span class="k">as</span><span class="w"> </span><span class="nn">plt</span>
+<span class="kn">from</span><span class="w"> </span><span class="nn">typing</span><span class="w"> </span><span class="kn">import</span> <span class="n">Any</span><span class="p">,</span> <span class="n">Callable</span><span class="p">,</span> <span class="n">List</span><span class="p">,</span> <span class="n">Optional</span><span class="p">,</span> <span class="n">Union</span><span class="p">,</span> <span class="n">Tuple</span>
+<span class="kn">from</span><span class="w"> </span><span class="nn">..base.inference</span><span class="w"> </span><span class="kn">import</span> <span class="n">BaseInferenceAlgorithm</span>
+<span class="kn">from</span><span class="w"> </span><span class="nn">..base.simulator</span><span class="w"> </span><span class="kn">import</span> <span class="n">BaseSimulator</span>
+<span class="kn">from</span><span class="w"> </span><span class="nn">..base.summary_statistic</span><span class="w"> </span><span class="kn">import</span> <span class="n">BaseSummaryStatistic</span>
+
+
+<div class="viewcode-block" id="ABCSMC">
+<a class="viewcode-back" href="../../../api.html#scisbi.inference.ABCSMC">[docs]</a>
+<span class="k">class</span><span class="w"> </span><span class="nc">ABCSMC</span><span class="p">(</span><span class="n">BaseInferenceAlgorithm</span><span class="p">):</span>
+<span class="w">    </span><span class="sd">&quot;&quot;&quot;</span>
+<span class="sd">    Approximate Bayesian Computation using Sequential Monte Carlo (ABC-SMC).</span>
+
+<span class="sd">    ABC-SMC is a likelihood-free inference method that improves upon ABC rejection</span>
+<span class="sd">    sampling and ABC-MCMC by using a population of particles that are propagated</span>
+<span class="sd">    through a sequence of intermediate distributions with decreasing tolerance</span>
+<span class="sd">    thresholds. This approach can avoid getting stuck in areas of low probability</span>
+<span class="sd">    and provides better exploration of the parameter space.</span>
+
+<span class="sd">    The algorithm implements the following procedure:</span>
+
+<span class="sd">    1. Initialize tolerance sequence ε₁ &gt; ε₂ &gt; ... &gt; εₜ ≥ 0.</span>
+<span class="sd">    2. For t = 0: Sample N particles {θⁱ₀} from prior π(θ).</span>
+<span class="sd">    3. For t &gt; 0:</span>
+<span class="sd">       a) Sample θ* from previous population with weights wₜ₋₁.</span>
+<span class="sd">       b) Perturb: θ** ~ Kₜ(θ|θ*) using perturbation kernel.</span>
+<span class="sd">       c) Check prior: if π(θ**) = 0, reject and resample.</span>
+<span class="sd">       d) Simulate: x* ~ f(x|θ**).</span>
+<span class="sd">       e) Accept if ρ(x*, x_obs) ≤ εₜ.</span>
+<span class="sd">    4. Calculate importance weights for accepted particles.</span>
+<span class="sd">    5. Repeat until final tolerance εₜ is reached.</span>
+
+<span class="sd">    The key advantages over other ABC methods:</span>
+
+<span class="sd">    - Population-based approach avoids local optima.</span>
+<span class="sd">    - Sequential refinement allows efficient exploration.</span>
+<span class="sd">    - Adaptive tolerance schedule improves convergence.</span>
+<span class="sd">    - Importance weighting maintains proper particle distribution.</span>
+
+<span class="sd">    References:</span>
+
+<span class="sd">    - Sisson, S. A., Fan, Y., &amp; Tanaka, M. M. (2007). Sequential Monte Carlo</span>
+<span class="sd">      without likelihoods. Proceedings of the National Academy of Sciences,</span>
+<span class="sd">      104(6), 1760-1765.</span>
+<span class="sd">    - Del Moral, P., Doucet, A., &amp; Jasra, A. (2006). Sequential Monte Carlo</span>
+<span class="sd">      samplers. Journal of the Royal Statistical Society, 68(3), 411-436.</span>
+<span class="sd">    - Toni, T., Welch, D., Strelkowa, N., Ipsen, A., &amp; Stumpf, M. P. (2009).</span>
+<span class="sd">      Approximate Bayesian computation scheme for parameter inference and model</span>
+<span class="sd">      selection in dynamical systems. Journal of the Royal Statistical Society,</span>
+<span class="sd">      71(3), 463-482.</span>
+
+<span class="sd">    &quot;&quot;&quot;</span>
+
+    <span class="k">def</span><span class="w"> </span><span class="fm">__init__</span><span class="p">(</span>
+        <span class="bp">self</span><span class="p">,</span>
+        <span class="n">simulator</span><span class="p">:</span> <span class="n">BaseSimulator</span><span class="p">,</span>
+        <span class="n">prior</span><span class="p">:</span> <span class="n">Any</span><span class="p">,</span>
+        <span class="n">distance_function</span><span class="p">:</span> <span class="n">Callable</span><span class="p">[[</span><span class="n">Any</span><span class="p">,</span> <span class="n">Any</span><span class="p">],</span> <span class="nb">float</span><span class="p">],</span>
+        <span class="n">tolerance_schedule</span><span class="p">:</span> <span class="n">List</span><span class="p">[</span><span class="nb">float</span><span class="p">],</span>
+        <span class="n">perturbation_kernel</span><span class="p">:</span> <span class="n">Callable</span><span class="p">[[</span><span class="n">Any</span><span class="p">],</span> <span class="n">Any</span><span class="p">],</span>
+        <span class="n">num_particles</span><span class="p">:</span> <span class="nb">int</span> <span class="o">=</span> <span class="mi">1000</span><span class="p">,</span>
+        <span class="n">summary_statistic</span><span class="p">:</span> <span class="n">Optional</span><span class="p">[</span><span class="n">BaseSummaryStatistic</span><span class="p">]</span> <span class="o">=</span> <span class="kc">None</span><span class="p">,</span>
+        <span class="o">**</span><span class="n">kwargs</span><span class="p">:</span> <span class="n">Any</span><span class="p">,</span>
+    <span class="p">):</span>
+<span class="w">        </span><span class="sd">&quot;&quot;&quot;</span>
+<span class="sd">        Initialize the ABC-SMC algorithm.</span>
+
+<span class="sd">        Args:</span>
+<span class="sd">            simulator (BaseSimulator): Simulator object with a &#39;simulate&#39; method</span>
+<span class="sd">                that generates synthetic data given parameters.</span>
+
+<span class="sd">            prior (Any): Prior distribution object with &#39;sample&#39; and &#39;log_prob&#39; methods.</span>
+<span class="sd">                Should support sampling parameter vectors θ ~ π(θ) and</span>
+<span class="sd">                computing log-probabilities log π(θ).</span>
+
+<span class="sd">            distance_function (Callable[[Any, Any], float]): Function ρ(x_sim, x_obs)</span>
+<span class="sd">                that computes the distance between simulated and observed</span>
+<span class="sd">                data. Should return a non-negative float value.</span>
+
+<span class="sd">            tolerance_schedule (List[float]): Decreasing sequence of tolerance thresholds</span>
+<span class="sd">                [ε₁, ε₂, ..., εₜ] where ε₁ &gt; ε₂ &gt; ... &gt; εₜ ≥ 0.</span>
+
+<span class="sd">            perturbation_kernel (Callable[[Any], Any]): Kernel Kₜ(θ|θ*) for perturbing</span>
+<span class="sd">                particles between iterations. Takes a particle and returns a</span>
+<span class="sd">                perturbed version.</span>
+
+<span class="sd">            num_particles (int): Number of particles N in the population (default: 1000).</span>
+
+<span class="sd">            summary_statistic (Optional[BaseSummaryStatistic]): Optional summary statistic</span>
+<span class="sd">                function to reduce data dimensionality before distance computation.</span>
+
+<span class="sd">            **kwargs (Optional): Additional configuration parameters such as:</span>
+
+<span class="sd">                - max_attempts_per_particle (int): Maximum attempts to accept</span>
+<span class="sd">                  each particle (default: 1000).</span>
+<span class="sd">                - verbose (bool): Whether to print progress information.</span>
+<span class="sd">                - adaptive_tolerance (bool): Whether to adaptively set tolerances</span>
+<span class="sd">                  based on population distances (default: False).</span>
+<span class="sd">                - effective_sample_size_threshold (float): Threshold for resampling</span>
+<span class="sd">                  when effective sample size drops too low (default: 0.5).</span>
+
+
+<span class="sd">        &quot;&quot;&quot;</span>
+        <span class="nb">super</span><span class="p">()</span><span class="o">.</span><span class="fm">__init__</span><span class="p">(</span><span class="n">simulator</span><span class="p">,</span> <span class="n">prior</span><span class="p">,</span> <span class="n">summary_statistic</span><span class="p">,</span> <span class="o">**</span><span class="n">kwargs</span><span class="p">)</span>
+
+        <span class="k">if</span> <span class="ow">not</span> <span class="nb">callable</span><span class="p">(</span><span class="n">distance_function</span><span class="p">):</span>
+            <span class="k">raise</span> <span class="ne">TypeError</span><span class="p">(</span><span class="s2">&quot;distance_function must be callable&quot;</span><span class="p">)</span>
+        <span class="k">if</span> <span class="ow">not</span> <span class="nb">callable</span><span class="p">(</span><span class="n">perturbation_kernel</span><span class="p">):</span>
+            <span class="k">raise</span> <span class="ne">TypeError</span><span class="p">(</span><span class="s2">&quot;perturbation_kernel must be callable&quot;</span><span class="p">)</span>
+        <span class="k">if</span> <span class="ow">not</span> <span class="nb">isinstance</span><span class="p">(</span><span class="n">tolerance_schedule</span><span class="p">,</span> <span class="nb">list</span><span class="p">)</span> <span class="ow">or</span> <span class="nb">len</span><span class="p">(</span><span class="n">tolerance_schedule</span><span class="p">)</span> <span class="o">==</span> <span class="mi">0</span><span class="p">:</span>
+            <span class="k">raise</span> <span class="ne">ValueError</span><span class="p">(</span><span class="s2">&quot;tolerance_schedule must be a non-empty list&quot;</span><span class="p">)</span>
+        <span class="k">if</span> <span class="ow">not</span> <span class="nb">all</span><span class="p">(</span><span class="n">tol</span> <span class="o">&gt;=</span> <span class="mi">0</span> <span class="k">for</span> <span class="n">tol</span> <span class="ow">in</span> <span class="n">tolerance_schedule</span><span class="p">):</span>
+            <span class="k">raise</span> <span class="ne">ValueError</span><span class="p">(</span><span class="s2">&quot;All tolerances must be non-negative&quot;</span><span class="p">)</span>
+        <span class="k">if</span> <span class="n">tolerance_schedule</span> <span class="o">!=</span> <span class="nb">sorted</span><span class="p">(</span><span class="n">tolerance_schedule</span><span class="p">,</span> <span class="n">reverse</span><span class="o">=</span><span class="kc">True</span><span class="p">):</span>
+            <span class="k">raise</span> <span class="ne">ValueError</span><span class="p">(</span><span class="s2">&quot;tolerance_schedule must be decreasing&quot;</span><span class="p">)</span>
+        <span class="k">if</span> <span class="n">num_particles</span> <span class="o">&lt;=</span> <span class="mi">0</span><span class="p">:</span>
+            <span class="k">raise</span> <span class="ne">ValueError</span><span class="p">(</span><span class="s2">&quot;num_particles must be positive&quot;</span><span class="p">)</span>
+
+        <span class="bp">self</span><span class="o">.</span><span class="n">distance_function</span> <span class="o">=</span> <span class="n">distance_function</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">tolerance_schedule</span> <span class="o">=</span> <span class="n">tolerance_schedule</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">perturbation_kernel</span> <span class="o">=</span> <span class="n">perturbation_kernel</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">num_particles</span> <span class="o">=</span> <span class="n">num_particles</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">max_attempts_per_particle</span> <span class="o">=</span> <span class="n">kwargs</span><span class="o">.</span><span class="n">get</span><span class="p">(</span><span class="s2">&quot;max_attempts_per_particle&quot;</span><span class="p">,</span> <span class="mi">1000</span><span class="p">)</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">verbose</span> <span class="o">=</span> <span class="n">kwargs</span><span class="o">.</span><span class="n">get</span><span class="p">(</span><span class="s2">&quot;verbose&quot;</span><span class="p">,</span> <span class="kc">False</span><span class="p">)</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">adaptive_tolerance</span> <span class="o">=</span> <span class="n">kwargs</span><span class="o">.</span><span class="n">get</span><span class="p">(</span><span class="s2">&quot;adaptive_tolerance&quot;</span><span class="p">,</span> <span class="kc">False</span><span class="p">)</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">ess_threshold</span> <span class="o">=</span> <span class="n">kwargs</span><span class="o">.</span><span class="n">get</span><span class="p">(</span><span class="s2">&quot;effective_sample_size_threshold&quot;</span><span class="p">,</span> <span class="mf">0.5</span><span class="p">)</span>
+
+<div class="viewcode-block" id="ABCSMC.infer">
+<a class="viewcode-back" href="../../../api.html#scisbi.inference.ABCSMC.infer">[docs]</a>
+    <span class="k">def</span><span class="w"> </span><span class="nf">infer</span><span class="p">(</span>
+        <span class="bp">self</span><span class="p">,</span>
+        <span class="n">observed_data</span><span class="p">:</span> <span class="n">Any</span><span class="p">,</span>
+        <span class="o">**</span><span class="n">kwargs</span><span class="p">:</span> <span class="n">Any</span><span class="p">,</span>
+    <span class="p">)</span> <span class="o">-&gt;</span> <span class="s2">&quot;ABCSMCPosterior&quot;</span><span class="p">:</span>
+<span class="w">        </span><span class="sd">&quot;&quot;&quot;</span>
+<span class="sd">        Perform ABC-SMC sampling to approximate the posterior distribution.</span>
+
+<span class="sd">        This method implements the core ABC-SMC algorithm as described in the</span>
+<span class="sd">        class docstring. It sequentially refines a population of particles</span>
+<span class="sd">        through decreasing tolerance thresholds until convergence.</span>
+
+<span class="sd">        Args:</span>
+<span class="sd">            observed_data (Any): The observed dataset x_obs to perform inference on.</span>
+<span class="sd">                               If summary_statistic was provided during initialization,</span>
+<span class="sd">                               this will be processed through the summary statistic.</span>
+<span class="sd">            **kwargs: Runtime parameters that override initialization settings:</span>
+<span class="sd">                     - tolerance_schedule (List[float]): Override tolerance sequence</span>
+<span class="sd">                     - num_particles (int): Override number of particles</span>
+<span class="sd">                     - max_attempts_per_particle (int): Override max attempts per particle</span>
+<span class="sd">                     - verbose (bool): Override verbosity setting</span>
+<span class="sd">                     - adaptive_tolerance (bool): Override adaptive tolerance setting</span>
+
+<span class="sd">        Returns:</span>
+<span class="sd">            ABCSMCPosterior: Object containing the final particle population and</span>
+<span class="sd">                           providing methods to query the approximate posterior.</span>
+
+<span class="sd">        Raises:</span>
+<span class="sd">            ValueError: If tolerance_schedule is invalid</span>
+<span class="sd">            RuntimeError: If algorithm fails to converge or max attempts exceeded</span>
+
+<span class="sd">        Note:</span>
+<span class="sd">            The choice of tolerance schedule is crucial for performance. Too aggressive</span>
+<span class="sd">            schedules may cause particle degeneracy, while too conservative schedules</span>
+<span class="sd">            are computationally inefficient. Consider using adaptive tolerance selection.</span>
+<span class="sd">        &quot;&quot;&quot;</span>
+        <span class="c1"># Override settings with runtime parameters</span>
+        <span class="n">tolerance_schedule</span> <span class="o">=</span> <span class="n">kwargs</span><span class="o">.</span><span class="n">get</span><span class="p">(</span><span class="s2">&quot;tolerance_schedule&quot;</span><span class="p">,</span> <span class="bp">self</span><span class="o">.</span><span class="n">tolerance_schedule</span><span class="p">)</span>
+        <span class="n">num_particles</span> <span class="o">=</span> <span class="n">kwargs</span><span class="o">.</span><span class="n">get</span><span class="p">(</span><span class="s2">&quot;num_particles&quot;</span><span class="p">,</span> <span class="bp">self</span><span class="o">.</span><span class="n">num_particles</span><span class="p">)</span>
+        <span class="n">max_attempts</span> <span class="o">=</span> <span class="n">kwargs</span><span class="o">.</span><span class="n">get</span><span class="p">(</span>
+            <span class="s2">&quot;max_attempts_per_particle&quot;</span><span class="p">,</span> <span class="bp">self</span><span class="o">.</span><span class="n">max_attempts_per_particle</span>
+        <span class="p">)</span>
+        <span class="n">verbose</span> <span class="o">=</span> <span class="n">kwargs</span><span class="o">.</span><span class="n">get</span><span class="p">(</span><span class="s2">&quot;verbose&quot;</span><span class="p">,</span> <span class="bp">self</span><span class="o">.</span><span class="n">verbose</span><span class="p">)</span>
+        <span class="n">adaptive_tolerance</span> <span class="o">=</span> <span class="n">kwargs</span><span class="o">.</span><span class="n">get</span><span class="p">(</span><span class="s2">&quot;adaptive_tolerance&quot;</span><span class="p">,</span> <span class="bp">self</span><span class="o">.</span><span class="n">adaptive_tolerance</span><span class="p">)</span>
+
+        <span class="c1"># Process observed data through summary statistic if provided</span>
+        <span class="k">if</span> <span class="bp">self</span><span class="o">.</span><span class="n">summary_statistic</span> <span class="ow">is</span> <span class="ow">not</span> <span class="kc">None</span><span class="p">:</span>
+            <span class="n">observed_summary</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">summary_statistic</span><span class="o">.</span><span class="n">compute</span><span class="p">(</span><span class="n">observed_data</span><span class="p">)</span>
+        <span class="k">else</span><span class="p">:</span>
+            <span class="n">observed_summary</span> <span class="o">=</span> <span class="n">observed_data</span>
+
+        <span class="c1"># Initialize storage for population evolution</span>
+        <span class="n">all_populations</span> <span class="o">=</span> <span class="p">[]</span>
+        <span class="n">all_weights</span> <span class="o">=</span> <span class="p">[]</span>
+        <span class="n">all_distances</span> <span class="o">=</span> <span class="p">[]</span>
+        <span class="n">iteration_info</span> <span class="o">=</span> <span class="p">[]</span>
+
+        <span class="k">if</span> <span class="n">verbose</span><span class="p">:</span>
+            <span class="nb">print</span><span class="p">(</span><span class="sa">f</span><span class="s2">&quot;Starting ABC-SMC with </span><span class="si">{</span><span class="n">num_particles</span><span class="si">}</span><span class="s2"> particles...&quot;</span><span class="p">)</span>
+            <span class="nb">print</span><span class="p">(</span><span class="sa">f</span><span class="s2">&quot;Tolerance schedule: </span><span class="si">{</span><span class="n">tolerance_schedule</span><span class="si">}</span><span class="s2">&quot;</span><span class="p">)</span>
+
+        <span class="c1"># Main ABC-SMC loop over tolerance levels</span>
+        <span class="n">current_particles</span> <span class="o">=</span> <span class="kc">None</span>
+        <span class="n">current_weights</span> <span class="o">=</span> <span class="kc">None</span>
+
+        <span class="k">for</span> <span class="n">t</span><span class="p">,</span> <span class="n">tolerance</span> <span class="ow">in</span> <span class="nb">enumerate</span><span class="p">(</span><span class="n">tolerance_schedule</span><span class="p">):</span>
+            <span class="k">if</span> <span class="n">verbose</span><span class="p">:</span>
+                <span class="nb">print</span><span class="p">(</span>
+                    <span class="sa">f</span><span class="s2">&quot;</span><span class="se">\n</span><span class="s2">Iteration </span><span class="si">{</span><span class="n">t</span><span class="w"> </span><span class="o">+</span><span class="w"> </span><span class="mi">1</span><span class="si">}</span><span class="s2">/</span><span class="si">{</span><span class="nb">len</span><span class="p">(</span><span class="n">tolerance_schedule</span><span class="p">)</span><span class="si">}</span><span class="s2">, tolerance = </span><span class="si">{</span><span class="n">tolerance</span><span class="si">:</span><span class="s2">.6f</span><span class="si">}</span><span class="s2">&quot;</span>
+                <span class="p">)</span>
+
+            <span class="c1"># S2: Generate particles for current tolerance level</span>
+            <span class="k">if</span> <span class="n">t</span> <span class="o">==</span> <span class="mi">0</span><span class="p">:</span>
+                <span class="c1"># S2.1: First iteration - sample from prior</span>
+                <span class="n">particles</span><span class="p">,</span> <span class="n">weights</span><span class="p">,</span> <span class="n">distances</span><span class="p">,</span> <span class="n">attempts</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">_sample_from_prior</span><span class="p">(</span>
+                    <span class="n">observed_summary</span><span class="p">,</span> <span class="n">tolerance</span><span class="p">,</span> <span class="n">num_particles</span><span class="p">,</span> <span class="n">max_attempts</span><span class="p">,</span> <span class="n">verbose</span>
+                <span class="p">)</span>
+            <span class="k">else</span><span class="p">:</span>
+                <span class="c1"># S2.1: Subsequent iterations - resample and perturb</span>
+                <span class="n">particles</span><span class="p">,</span> <span class="n">weights</span><span class="p">,</span> <span class="n">distances</span><span class="p">,</span> <span class="n">attempts</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">_resample_and_perturb</span><span class="p">(</span>
+                    <span class="n">current_particles</span><span class="p">,</span>
+                    <span class="n">current_weights</span><span class="p">,</span>
+                    <span class="n">observed_summary</span><span class="p">,</span>
+                    <span class="n">tolerance</span><span class="p">,</span>
+                    <span class="n">num_particles</span><span class="p">,</span>
+                    <span class="n">max_attempts</span><span class="p">,</span>
+                    <span class="n">verbose</span><span class="p">,</span>
+                <span class="p">)</span>
+
+            <span class="c1"># S3: Normalize weights</span>
+            <span class="k">if</span> <span class="nb">len</span><span class="p">(</span><span class="n">weights</span><span class="p">)</span> <span class="o">&gt;</span> <span class="mi">0</span><span class="p">:</span>
+                <span class="n">weights</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">array</span><span class="p">(</span><span class="n">weights</span><span class="p">)</span>
+                <span class="n">weights</span> <span class="o">=</span> <span class="n">weights</span> <span class="o">/</span> <span class="n">np</span><span class="o">.</span><span class="n">sum</span><span class="p">(</span><span class="n">weights</span><span class="p">)</span>
+            <span class="k">else</span><span class="p">:</span>
+                <span class="k">raise</span> <span class="ne">RuntimeError</span><span class="p">(</span><span class="sa">f</span><span class="s2">&quot;No particles accepted at tolerance </span><span class="si">{</span><span class="n">tolerance</span><span class="si">}</span><span class="s2">&quot;</span><span class="p">)</span>
+
+            <span class="c1"># Store population</span>
+            <span class="n">all_populations</span><span class="o">.</span><span class="n">append</span><span class="p">(</span><span class="n">particles</span><span class="o">.</span><span class="n">copy</span><span class="p">())</span>
+            <span class="n">all_weights</span><span class="o">.</span><span class="n">append</span><span class="p">(</span><span class="n">weights</span><span class="o">.</span><span class="n">copy</span><span class="p">())</span>
+            <span class="n">all_distances</span><span class="o">.</span><span class="n">append</span><span class="p">(</span><span class="n">distances</span><span class="o">.</span><span class="n">copy</span><span class="p">())</span>
+
+            <span class="c1"># Compute diagnostics</span>
+            <span class="n">ess</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">_effective_sample_size</span><span class="p">(</span><span class="n">weights</span><span class="p">)</span>
+            <span class="n">acceptance_rate</span> <span class="o">=</span> <span class="nb">len</span><span class="p">(</span><span class="n">particles</span><span class="p">)</span> <span class="o">/</span> <span class="n">attempts</span> <span class="k">if</span> <span class="n">attempts</span> <span class="o">&gt;</span> <span class="mi">0</span> <span class="k">else</span> <span class="mi">0</span>
+
+            <span class="n">iteration_info</span><span class="o">.</span><span class="n">append</span><span class="p">(</span>
+                <span class="p">{</span>
+                    <span class="s2">&quot;tolerance&quot;</span><span class="p">:</span> <span class="n">tolerance</span><span class="p">,</span>
+                    <span class="s2">&quot;num_particles&quot;</span><span class="p">:</span> <span class="nb">len</span><span class="p">(</span><span class="n">particles</span><span class="p">),</span>
+                    <span class="s2">&quot;effective_sample_size&quot;</span><span class="p">:</span> <span class="n">ess</span><span class="p">,</span>
+                    <span class="s2">&quot;acceptance_rate&quot;</span><span class="p">:</span> <span class="n">acceptance_rate</span><span class="p">,</span>
+                    <span class="s2">&quot;total_attempts&quot;</span><span class="p">:</span> <span class="n">attempts</span><span class="p">,</span>
+                    <span class="s2">&quot;mean_distance&quot;</span><span class="p">:</span> <span class="n">np</span><span class="o">.</span><span class="n">mean</span><span class="p">(</span><span class="n">distances</span><span class="p">),</span>
+                    <span class="s2">&quot;std_distance&quot;</span><span class="p">:</span> <span class="n">np</span><span class="o">.</span><span class="n">std</span><span class="p">(</span><span class="n">distances</span><span class="p">),</span>
+                <span class="p">}</span>
+            <span class="p">)</span>
+
+            <span class="k">if</span> <span class="n">verbose</span><span class="p">:</span>
+                <span class="nb">print</span><span class="p">(</span><span class="sa">f</span><span class="s2">&quot;Accepted </span><span class="si">{</span><span class="nb">len</span><span class="p">(</span><span class="n">particles</span><span class="p">)</span><span class="si">}</span><span class="s2"> particles (attempts: </span><span class="si">{</span><span class="n">attempts</span><span class="si">}</span><span class="s2">)&quot;</span><span class="p">)</span>
+                <span class="nb">print</span><span class="p">(</span><span class="sa">f</span><span class="s2">&quot;Acceptance rate: </span><span class="si">{</span><span class="n">acceptance_rate</span><span class="si">:</span><span class="s2">.4f</span><span class="si">}</span><span class="s2">&quot;</span><span class="p">)</span>
+                <span class="nb">print</span><span class="p">(</span><span class="sa">f</span><span class="s2">&quot;Effective sample size: </span><span class="si">{</span><span class="n">ess</span><span class="si">:</span><span class="s2">.1f</span><span class="si">}</span><span class="s2"> (</span><span class="si">{</span><span class="n">ess</span><span class="w"> </span><span class="o">/</span><span class="w"> </span><span class="nb">len</span><span class="p">(</span><span class="n">particles</span><span class="p">)</span><span class="si">:</span><span class="s2">.3f</span><span class="si">}</span><span class="s2">)&quot;</span><span class="p">)</span>
+                <span class="nb">print</span><span class="p">(</span><span class="sa">f</span><span class="s2">&quot;Distance: </span><span class="si">{</span><span class="n">np</span><span class="o">.</span><span class="n">mean</span><span class="p">(</span><span class="n">distances</span><span class="p">)</span><span class="si">:</span><span class="s2">.4f</span><span class="si">}</span><span class="s2"> ± </span><span class="si">{</span><span class="n">np</span><span class="o">.</span><span class="n">std</span><span class="p">(</span><span class="n">distances</span><span class="p">)</span><span class="si">:</span><span class="s2">.4f</span><span class="si">}</span><span class="s2">&quot;</span><span class="p">)</span>
+
+            <span class="c1"># Update for next iteration</span>
+            <span class="n">current_particles</span> <span class="o">=</span> <span class="n">particles</span>
+            <span class="n">current_weights</span> <span class="o">=</span> <span class="n">weights</span>
+
+            <span class="c1"># Adaptive tolerance adjustment</span>
+            <span class="k">if</span> <span class="n">adaptive_tolerance</span> <span class="ow">and</span> <span class="n">t</span> <span class="o">&lt;</span> <span class="nb">len</span><span class="p">(</span><span class="n">tolerance_schedule</span><span class="p">)</span> <span class="o">-</span> <span class="mi">1</span><span class="p">:</span>
+                <span class="n">next_tolerance</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">_adaptive_tolerance_update</span><span class="p">(</span>
+                    <span class="n">distances</span><span class="p">,</span> <span class="n">tolerance_schedule</span><span class="p">[</span><span class="n">t</span> <span class="o">+</span> <span class="mi">1</span><span class="p">]</span>
+                <span class="p">)</span>
+                <span class="k">if</span> <span class="n">verbose</span> <span class="ow">and</span> <span class="n">next_tolerance</span> <span class="o">!=</span> <span class="n">tolerance_schedule</span><span class="p">[</span><span class="n">t</span> <span class="o">+</span> <span class="mi">1</span><span class="p">]:</span>
+                    <span class="nb">print</span><span class="p">(</span>
+                        <span class="sa">f</span><span class="s2">&quot;Adaptive tolerance: </span><span class="si">{</span><span class="n">tolerance_schedule</span><span class="p">[</span><span class="n">t</span><span class="w"> </span><span class="o">+</span><span class="w"> </span><span class="mi">1</span><span class="p">]</span><span class="si">:</span><span class="s2">.6f</span><span class="si">}</span><span class="s2"> → </span><span class="si">{</span><span class="n">next_tolerance</span><span class="si">:</span><span class="s2">.6f</span><span class="si">}</span><span class="s2">&quot;</span>
+                    <span class="p">)</span>
+                <span class="n">tolerance_schedule</span><span class="p">[</span><span class="n">t</span> <span class="o">+</span> <span class="mi">1</span><span class="p">]</span> <span class="o">=</span> <span class="n">next_tolerance</span>
+
+        <span class="k">if</span> <span class="n">verbose</span><span class="p">:</span>
+            <span class="nb">print</span><span class="p">(</span><span class="s2">&quot;</span><span class="se">\n</span><span class="s2">ABC-SMC completed!&quot;</span><span class="p">)</span>
+            <span class="nb">print</span><span class="p">(</span><span class="sa">f</span><span class="s2">&quot;Final population: </span><span class="si">{</span><span class="nb">len</span><span class="p">(</span><span class="n">current_particles</span><span class="p">)</span><span class="si">}</span><span class="s2"> particles&quot;</span><span class="p">)</span>
+            <span class="n">final_ess</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">_effective_sample_size</span><span class="p">(</span><span class="n">current_weights</span><span class="p">)</span>
+            <span class="nb">print</span><span class="p">(</span><span class="sa">f</span><span class="s2">&quot;Final effective sample size: </span><span class="si">{</span><span class="n">final_ess</span><span class="si">:</span><span class="s2">.1f</span><span class="si">}</span><span class="s2">&quot;</span><span class="p">)</span>
+
+        <span class="c1"># Return ABC-SMC posterior object</span>
+        <span class="k">return</span> <span class="n">ABCSMCPosterior</span><span class="p">(</span>
+            <span class="n">particles</span><span class="o">=</span><span class="n">current_particles</span><span class="p">,</span>
+            <span class="n">weights</span><span class="o">=</span><span class="n">current_weights</span><span class="p">,</span>
+            <span class="n">distances</span><span class="o">=</span><span class="n">distances</span><span class="p">,</span>
+            <span class="n">tolerance_schedule</span><span class="o">=</span><span class="n">tolerance_schedule</span><span class="p">,</span>
+            <span class="n">all_populations</span><span class="o">=</span><span class="n">all_populations</span><span class="p">,</span>
+            <span class="n">all_weights</span><span class="o">=</span><span class="n">all_weights</span><span class="p">,</span>
+            <span class="n">all_distances</span><span class="o">=</span><span class="n">all_distances</span><span class="p">,</span>
+            <span class="n">iteration_info</span><span class="o">=</span><span class="n">iteration_info</span><span class="p">,</span>
+            <span class="n">num_particles</span><span class="o">=</span><span class="n">num_particles</span><span class="p">,</span>
+        <span class="p">)</span></div>
+
+
+    <span class="k">def</span><span class="w"> </span><span class="nf">_sample_from_prior</span><span class="p">(</span>
+        <span class="bp">self</span><span class="p">,</span>
+        <span class="n">observed_summary</span><span class="p">:</span> <span class="n">Any</span><span class="p">,</span>
+        <span class="n">tolerance</span><span class="p">:</span> <span class="nb">float</span><span class="p">,</span>
+        <span class="n">num_particles</span><span class="p">:</span> <span class="nb">int</span><span class="p">,</span>
+        <span class="n">max_attempts</span><span class="p">:</span> <span class="nb">int</span><span class="p">,</span>
+        <span class="n">verbose</span><span class="p">:</span> <span class="nb">bool</span><span class="p">,</span>
+    <span class="p">)</span> <span class="o">-&gt;</span> <span class="n">Tuple</span><span class="p">[</span><span class="n">List</span><span class="p">[</span><span class="n">Any</span><span class="p">],</span> <span class="n">List</span><span class="p">[</span><span class="nb">float</span><span class="p">],</span> <span class="n">List</span><span class="p">[</span><span class="nb">float</span><span class="p">],</span> <span class="nb">int</span><span class="p">]:</span>
+<span class="w">        </span><span class="sd">&quot;&quot;&quot;Sample initial population from prior distribution.&quot;&quot;&quot;</span>
+        <span class="n">particles</span> <span class="o">=</span> <span class="p">[]</span>
+        <span class="n">distances</span> <span class="o">=</span> <span class="p">[]</span>
+        <span class="n">attempts</span> <span class="o">=</span> <span class="mi">0</span>
+
+        <span class="k">while</span> <span class="p">(</span>
+            <span class="nb">len</span><span class="p">(</span><span class="n">particles</span><span class="p">)</span> <span class="o">&lt;</span> <span class="n">num_particles</span> <span class="ow">and</span> <span class="n">attempts</span> <span class="o">&lt;</span> <span class="n">max_attempts</span> <span class="o">*</span> <span class="n">num_particles</span>
+        <span class="p">):</span>
+            <span class="c1"># Sample from prior</span>
+            <span class="n">theta</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">prior</span><span class="o">.</span><span class="n">sample</span><span class="p">()</span>
+            <span class="n">attempts</span> <span class="o">+=</span> <span class="mi">1</span>
+
+            <span class="k">try</span><span class="p">:</span>
+                <span class="c1"># Simulate data</span>
+                <span class="n">simulated_data</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">simulator</span><span class="o">.</span><span class="n">simulate</span><span class="p">(</span>
+                    <span class="n">theta</span><span class="p">,</span> <span class="n">num_simulations</span><span class="o">=</span><span class="nb">len</span><span class="p">(</span><span class="n">observed_summary</span><span class="p">)</span>
+                <span class="p">)</span>
+
+                <span class="c1"># Apply summary statistic if provided</span>
+                <span class="k">if</span> <span class="bp">self</span><span class="o">.</span><span class="n">summary_statistic</span> <span class="ow">is</span> <span class="ow">not</span> <span class="kc">None</span><span class="p">:</span>
+                    <span class="n">simulated_summary</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">summary_statistic</span><span class="o">.</span><span class="n">compute</span><span class="p">(</span><span class="n">simulated_data</span><span class="p">)</span>
+                <span class="k">else</span><span class="p">:</span>
+                    <span class="n">simulated_summary</span> <span class="o">=</span> <span class="n">simulated_data</span>
+
+                <span class="c1"># Compute distance</span>
+                <span class="n">distance</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">distance_function</span><span class="p">(</span><span class="n">simulated_summary</span><span class="p">,</span> <span class="n">observed_summary</span><span class="p">)</span>
+
+                <span class="c1"># Accept if within tolerance</span>
+                <span class="k">if</span> <span class="n">distance</span> <span class="o">&lt;=</span> <span class="n">tolerance</span><span class="p">:</span>
+                    <span class="n">particles</span><span class="o">.</span><span class="n">append</span><span class="p">(</span><span class="n">theta</span><span class="p">)</span>
+                    <span class="n">distances</span><span class="o">.</span><span class="n">append</span><span class="p">(</span><span class="n">distance</span><span class="p">)</span>
+
+                    <span class="k">if</span> <span class="n">verbose</span> <span class="ow">and</span> <span class="nb">len</span><span class="p">(</span><span class="n">particles</span><span class="p">)</span> <span class="o">%</span> <span class="nb">max</span><span class="p">(</span><span class="mi">1</span><span class="p">,</span> <span class="n">num_particles</span> <span class="o">//</span> <span class="mi">10</span><span class="p">)</span> <span class="o">==</span> <span class="mi">0</span><span class="p">:</span>
+                        <span class="n">acceptance_rate</span> <span class="o">=</span> <span class="nb">len</span><span class="p">(</span><span class="n">particles</span><span class="p">)</span> <span class="o">/</span> <span class="n">attempts</span>
+                        <span class="nb">print</span><span class="p">(</span>
+                            <span class="sa">f</span><span class="s2">&quot;  Progress: </span><span class="si">{</span><span class="nb">len</span><span class="p">(</span><span class="n">particles</span><span class="p">)</span><span class="si">}</span><span class="s2">/</span><span class="si">{</span><span class="n">num_particles</span><span class="si">}</span><span class="s2"> &quot;</span>
+                            <span class="sa">f</span><span class="s2">&quot;(acceptance rate: </span><span class="si">{</span><span class="n">acceptance_rate</span><span class="si">:</span><span class="s2">.4f</span><span class="si">}</span><span class="s2">)&quot;</span>
+                        <span class="p">)</span>
+
+            <span class="k">except</span> <span class="ne">Exception</span><span class="p">:</span>
+                <span class="k">continue</span>  <span class="c1"># Skip failed simulations</span>
+
+        <span class="c1"># Initialize uniform weights for first iteration</span>
+        <span class="n">weights</span> <span class="o">=</span> <span class="p">[</span><span class="mf">1.0</span><span class="p">]</span> <span class="o">*</span> <span class="nb">len</span><span class="p">(</span><span class="n">particles</span><span class="p">)</span>
+
+        <span class="k">return</span> <span class="n">particles</span><span class="p">,</span> <span class="n">weights</span><span class="p">,</span> <span class="n">distances</span><span class="p">,</span> <span class="n">attempts</span>
+
+    <span class="k">def</span><span class="w"> </span><span class="nf">_resample_and_perturb</span><span class="p">(</span>
+        <span class="bp">self</span><span class="p">,</span>
+        <span class="n">previous_particles</span><span class="p">:</span> <span class="n">List</span><span class="p">[</span><span class="n">Any</span><span class="p">],</span>
+        <span class="n">previous_weights</span><span class="p">:</span> <span class="n">np</span><span class="o">.</span><span class="n">ndarray</span><span class="p">,</span>
+        <span class="n">observed_summary</span><span class="p">:</span> <span class="n">Any</span><span class="p">,</span>
+        <span class="n">tolerance</span><span class="p">:</span> <span class="nb">float</span><span class="p">,</span>
+        <span class="n">num_particles</span><span class="p">:</span> <span class="nb">int</span><span class="p">,</span>
+        <span class="n">max_attempts</span><span class="p">:</span> <span class="nb">int</span><span class="p">,</span>
+        <span class="n">verbose</span><span class="p">:</span> <span class="nb">bool</span><span class="p">,</span>
+    <span class="p">)</span> <span class="o">-&gt;</span> <span class="n">Tuple</span><span class="p">[</span><span class="n">List</span><span class="p">[</span><span class="n">Any</span><span class="p">],</span> <span class="n">List</span><span class="p">[</span><span class="nb">float</span><span class="p">],</span> <span class="n">List</span><span class="p">[</span><span class="nb">float</span><span class="p">],</span> <span class="nb">int</span><span class="p">]:</span>
+<span class="w">        </span><span class="sd">&quot;&quot;&quot;Resample from previous population and perturb particles.&quot;&quot;&quot;</span>
+        <span class="n">particles</span> <span class="o">=</span> <span class="p">[]</span>
+        <span class="n">weights</span> <span class="o">=</span> <span class="p">[]</span>
+        <span class="n">distances</span> <span class="o">=</span> <span class="p">[]</span>
+        <span class="n">attempts</span> <span class="o">=</span> <span class="mi">0</span>
+
+        <span class="c1"># Normalize previous weights for resampling</span>
+        <span class="k">if</span> <span class="n">np</span><span class="o">.</span><span class="n">sum</span><span class="p">(</span><span class="n">previous_weights</span><span class="p">)</span> <span class="o">&gt;</span> <span class="mi">0</span><span class="p">:</span>
+            <span class="n">resample_weights</span> <span class="o">=</span> <span class="n">previous_weights</span> <span class="o">/</span> <span class="n">np</span><span class="o">.</span><span class="n">sum</span><span class="p">(</span><span class="n">previous_weights</span><span class="p">)</span>
+        <span class="k">else</span><span class="p">:</span>
+            <span class="n">resample_weights</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">ones</span><span class="p">(</span><span class="nb">len</span><span class="p">(</span><span class="n">previous_particles</span><span class="p">))</span> <span class="o">/</span> <span class="nb">len</span><span class="p">(</span>
+                <span class="n">previous_particles</span>
+            <span class="p">)</span>
+
+        <span class="k">while</span> <span class="p">(</span>
+            <span class="nb">len</span><span class="p">(</span><span class="n">particles</span><span class="p">)</span> <span class="o">&lt;</span> <span class="n">num_particles</span> <span class="ow">and</span> <span class="n">attempts</span> <span class="o">&lt;</span> <span class="n">max_attempts</span> <span class="o">*</span> <span class="n">num_particles</span>
+        <span class="p">):</span>
+            <span class="n">attempts</span> <span class="o">+=</span> <span class="mi">1</span>
+
+            <span class="c1"># Sample particle from previous population with probability proportional to weights</span>
+            <span class="n">sampled_idx</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">random</span><span class="o">.</span><span class="n">choice</span><span class="p">(</span><span class="nb">len</span><span class="p">(</span><span class="n">previous_particles</span><span class="p">),</span> <span class="n">p</span><span class="o">=</span><span class="n">resample_weights</span><span class="p">)</span>
+            <span class="n">theta_star</span> <span class="o">=</span> <span class="n">previous_particles</span><span class="p">[</span><span class="n">sampled_idx</span><span class="p">]</span>
+
+            <span class="c1"># Perturb particle using perturbation kernel</span>
+            <span class="n">theta_candidate</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">perturbation_kernel</span><span class="p">(</span><span class="n">theta_star</span><span class="p">)</span>
+
+            <span class="c1"># Check prior probability</span>
+            <span class="k">if</span> <span class="bp">self</span><span class="o">.</span><span class="n">prior</span><span class="o">.</span><span class="n">log_prob</span><span class="p">(</span><span class="n">theta_candidate</span><span class="p">)</span> <span class="o">==</span> <span class="o">-</span><span class="n">np</span><span class="o">.</span><span class="n">inf</span><span class="p">:</span>
+                <span class="k">continue</span>  <span class="c1"># Reject if outside prior support</span>
+
+            <span class="k">try</span><span class="p">:</span>
+                <span class="c1"># Simulate data</span>
+                <span class="n">simulated_data</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">simulator</span><span class="o">.</span><span class="n">simulate</span><span class="p">(</span>
+                    <span class="n">theta_candidate</span><span class="p">,</span> <span class="n">num_simulations</span><span class="o">=</span><span class="nb">len</span><span class="p">(</span><span class="n">observed_summary</span><span class="p">)</span>
+                <span class="p">)</span>
+
+                <span class="c1"># Apply summary statistic if provided</span>
+                <span class="k">if</span> <span class="bp">self</span><span class="o">.</span><span class="n">summary_statistic</span> <span class="ow">is</span> <span class="ow">not</span> <span class="kc">None</span><span class="p">:</span>
+                    <span class="n">simulated_summary</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">summary_statistic</span><span class="o">.</span><span class="n">compute</span><span class="p">(</span><span class="n">simulated_data</span><span class="p">)</span>
+                <span class="k">else</span><span class="p">:</span>
+                    <span class="n">simulated_summary</span> <span class="o">=</span> <span class="n">simulated_data</span>
+
+                <span class="c1"># Compute distance</span>
+                <span class="n">distance</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">distance_function</span><span class="p">(</span><span class="n">simulated_summary</span><span class="p">,</span> <span class="n">observed_summary</span><span class="p">)</span>
+
+                <span class="c1"># Accept if within tolerance</span>
+                <span class="k">if</span> <span class="n">distance</span> <span class="o">&lt;=</span> <span class="n">tolerance</span><span class="p">:</span>
+                    <span class="n">particles</span><span class="o">.</span><span class="n">append</span><span class="p">(</span><span class="n">theta_candidate</span><span class="p">)</span>
+                    <span class="n">distances</span><span class="o">.</span><span class="n">append</span><span class="p">(</span><span class="n">distance</span><span class="p">)</span>
+
+                    <span class="c1"># Calculate importance weight</span>
+                    <span class="c1"># w_i = π(θ_i) / Σ_j w_{t-1}^j K_t(θ_{t-1}^j, θ_i)</span>
+                    <span class="n">numerator</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">exp</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">prior</span><span class="o">.</span><span class="n">log_prob</span><span class="p">(</span><span class="n">theta_candidate</span><span class="p">))</span>
+
+                    <span class="c1"># Compute denominator: sum over all previous particles</span>
+                    <span class="n">denominator</span> <span class="o">=</span> <span class="mf">0.0</span>
+                    <span class="k">for</span> <span class="n">j</span><span class="p">,</span> <span class="n">prev_theta</span> <span class="ow">in</span> <span class="nb">enumerate</span><span class="p">(</span><span class="n">previous_particles</span><span class="p">):</span>
+                        <span class="n">kernel_prob</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">_kernel_probability</span><span class="p">(</span>
+                            <span class="n">prev_theta</span><span class="p">,</span> <span class="n">theta_candidate</span>
+                        <span class="p">)</span>
+                        <span class="n">denominator</span> <span class="o">+=</span> <span class="n">previous_weights</span><span class="p">[</span><span class="n">j</span><span class="p">]</span> <span class="o">*</span> <span class="n">kernel_prob</span>
+
+                    <span class="k">if</span> <span class="n">denominator</span> <span class="o">&gt;</span> <span class="mi">0</span><span class="p">:</span>
+                        <span class="n">weight</span> <span class="o">=</span> <span class="n">numerator</span> <span class="o">/</span> <span class="n">denominator</span>
+                    <span class="k">else</span><span class="p">:</span>
+                        <span class="n">weight</span> <span class="o">=</span> <span class="mf">1.0</span>  <span class="c1"># Fallback for numerical issues</span>
+
+                    <span class="n">weights</span><span class="o">.</span><span class="n">append</span><span class="p">(</span><span class="n">weight</span><span class="p">)</span>
+
+                    <span class="k">if</span> <span class="n">verbose</span> <span class="ow">and</span> <span class="nb">len</span><span class="p">(</span><span class="n">particles</span><span class="p">)</span> <span class="o">%</span> <span class="nb">max</span><span class="p">(</span><span class="mi">1</span><span class="p">,</span> <span class="n">num_particles</span> <span class="o">//</span> <span class="mi">10</span><span class="p">)</span> <span class="o">==</span> <span class="mi">0</span><span class="p">:</span>
+                        <span class="n">acceptance_rate</span> <span class="o">=</span> <span class="nb">len</span><span class="p">(</span><span class="n">particles</span><span class="p">)</span> <span class="o">/</span> <span class="n">attempts</span>
+                        <span class="nb">print</span><span class="p">(</span>
+                            <span class="sa">f</span><span class="s2">&quot;  Progress: </span><span class="si">{</span><span class="nb">len</span><span class="p">(</span><span class="n">particles</span><span class="p">)</span><span class="si">}</span><span class="s2">/</span><span class="si">{</span><span class="n">num_particles</span><span class="si">}</span><span class="s2"> &quot;</span>
+                            <span class="sa">f</span><span class="s2">&quot;(acceptance rate: </span><span class="si">{</span><span class="n">acceptance_rate</span><span class="si">:</span><span class="s2">.4f</span><span class="si">}</span><span class="s2">)&quot;</span>
+                        <span class="p">)</span>
+
+            <span class="k">except</span> <span class="ne">Exception</span><span class="p">:</span>
+                <span class="k">continue</span>  <span class="c1"># Skip failed simulations</span>
+
+        <span class="k">return</span> <span class="n">particles</span><span class="p">,</span> <span class="n">weights</span><span class="p">,</span> <span class="n">distances</span><span class="p">,</span> <span class="n">attempts</span>
+
+    <span class="k">def</span><span class="w"> </span><span class="nf">_kernel_probability</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">theta_from</span><span class="p">:</span> <span class="n">Any</span><span class="p">,</span> <span class="n">theta_to</span><span class="p">:</span> <span class="n">Any</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="nb">float</span><span class="p">:</span>
+<span class="w">        </span><span class="sd">&quot;&quot;&quot;</span>
+<span class="sd">        Compute probability density of perturbation kernel K(θ_to | θ_from).</span>
+
+<span class="sd">        This is a simplified implementation assuming a symmetric kernel.</span>
+<span class="sd">        For more complex kernels, this method should be overridden.</span>
+<span class="sd">        &quot;&quot;&quot;</span>
+        <span class="c1"># For symmetric kernels, return 1.0</span>
+        <span class="c1"># In practice, this should compute the actual kernel probability</span>
+        <span class="k">return</span> <span class="mf">1.0</span>
+
+    <span class="k">def</span><span class="w"> </span><span class="nf">_effective_sample_size</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">weights</span><span class="p">:</span> <span class="n">np</span><span class="o">.</span><span class="n">ndarray</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="nb">float</span><span class="p">:</span>
+<span class="w">        </span><span class="sd">&quot;&quot;&quot;Compute effective sample size of weighted particles.&quot;&quot;&quot;</span>
+        <span class="k">if</span> <span class="nb">len</span><span class="p">(</span><span class="n">weights</span><span class="p">)</span> <span class="o">==</span> <span class="mi">0</span><span class="p">:</span>
+            <span class="k">return</span> <span class="mf">0.0</span>
+        <span class="n">normalized_weights</span> <span class="o">=</span> <span class="n">weights</span> <span class="o">/</span> <span class="n">np</span><span class="o">.</span><span class="n">sum</span><span class="p">(</span><span class="n">weights</span><span class="p">)</span>
+        <span class="k">return</span> <span class="mf">1.0</span> <span class="o">/</span> <span class="n">np</span><span class="o">.</span><span class="n">sum</span><span class="p">(</span><span class="n">normalized_weights</span><span class="o">**</span><span class="mi">2</span><span class="p">)</span>
+
+    <span class="k">def</span><span class="w"> </span><span class="nf">_adaptive_tolerance_update</span><span class="p">(</span>
+        <span class="bp">self</span><span class="p">,</span> <span class="n">distances</span><span class="p">:</span> <span class="n">List</span><span class="p">[</span><span class="nb">float</span><span class="p">],</span> <span class="n">scheduled_tolerance</span><span class="p">:</span> <span class="nb">float</span>
+    <span class="p">)</span> <span class="o">-&gt;</span> <span class="nb">float</span><span class="p">:</span>
+<span class="w">        </span><span class="sd">&quot;&quot;&quot;</span>
+<span class="sd">        Adaptively update tolerance based on current distance distribution.</span>
+
+<span class="sd">        Uses the median or a percentile of current distances as the next tolerance.</span>
+<span class="sd">        &quot;&quot;&quot;</span>
+        <span class="k">if</span> <span class="nb">len</span><span class="p">(</span><span class="n">distances</span><span class="p">)</span> <span class="o">==</span> <span class="mi">0</span><span class="p">:</span>
+            <span class="k">return</span> <span class="n">scheduled_tolerance</span>
+
+        <span class="c1"># Use median of current distances, but don&#39;t exceed scheduled tolerance</span>
+        <span class="n">adaptive_tol</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">median</span><span class="p">(</span><span class="n">distances</span><span class="p">)</span>
+        <span class="k">return</span> <span class="nb">min</span><span class="p">(</span><span class="n">adaptive_tol</span><span class="p">,</span> <span class="n">scheduled_tolerance</span><span class="p">)</span></div>
+
+
+
+<div class="viewcode-block" id="ABCSMCPosterior">
+<a class="viewcode-back" href="../../../api.html#scisbi.inference.ABCSMCPosterior">[docs]</a>
+<span class="k">class</span><span class="w"> </span><span class="nc">ABCSMCPosterior</span><span class="p">:</span>
+<span class="w">    </span><span class="sd">&quot;&quot;&quot;</span>
+<span class="sd">    Container for ABC-SMC sampling results representing the approximate posterior.</span>
+
+<span class="sd">    This class stores the final particle population from ABC-SMC and provides methods</span>
+<span class="sd">    to query and analyze the approximate posterior distribution. It also contains</span>
+<span class="sd">    the complete evolution history of the particle population through all tolerance levels.</span>
+<span class="sd">    &quot;&quot;&quot;</span>
+
+    <span class="k">def</span><span class="w"> </span><span class="fm">__init__</span><span class="p">(</span>
+        <span class="bp">self</span><span class="p">,</span>
+        <span class="n">particles</span><span class="p">:</span> <span class="n">List</span><span class="p">[</span><span class="n">Any</span><span class="p">],</span>
+        <span class="n">weights</span><span class="p">:</span> <span class="n">np</span><span class="o">.</span><span class="n">ndarray</span><span class="p">,</span>
+        <span class="n">distances</span><span class="p">:</span> <span class="n">List</span><span class="p">[</span><span class="nb">float</span><span class="p">],</span>
+        <span class="n">tolerance_schedule</span><span class="p">:</span> <span class="n">List</span><span class="p">[</span><span class="nb">float</span><span class="p">],</span>
+        <span class="n">all_populations</span><span class="p">:</span> <span class="n">List</span><span class="p">[</span><span class="n">List</span><span class="p">[</span><span class="n">Any</span><span class="p">]],</span>
+        <span class="n">all_weights</span><span class="p">:</span> <span class="n">List</span><span class="p">[</span><span class="n">np</span><span class="o">.</span><span class="n">ndarray</span><span class="p">],</span>
+        <span class="n">all_distances</span><span class="p">:</span> <span class="n">List</span><span class="p">[</span><span class="n">List</span><span class="p">[</span><span class="nb">float</span><span class="p">]],</span>
+        <span class="n">iteration_info</span><span class="p">:</span> <span class="n">List</span><span class="p">[</span><span class="nb">dict</span><span class="p">],</span>
+        <span class="n">num_particles</span><span class="p">:</span> <span class="nb">int</span><span class="p">,</span>
+    <span class="p">):</span>
+<span class="w">        </span><span class="sd">&quot;&quot;&quot;</span>
+<span class="sd">        Initialize the ABC-SMC posterior object.</span>
+
+<span class="sd">        Args:</span>
+<span class="sd">            particles (List[Any]): Final particle population</span>
+<span class="sd">            weights (np.ndarray): Final particle weights</span>
+<span class="sd">            distances (List[float]): Final particle distances</span>
+<span class="sd">            tolerance_schedule (List[float]): Tolerance sequence used</span>
+<span class="sd">            all_populations (List[List[Any]]): Particle populations for each iteration</span>
+<span class="sd">            all_weights (List[np.ndarray]): Particle weights for each iteration</span>
+<span class="sd">            all_distances (List[List[float]]): Particle distances for each iteration</span>
+<span class="sd">            iteration_info (List[dict]): Diagnostic information for each iteration</span>
+<span class="sd">            num_particles (int): Target number of particles</span>
+<span class="sd">        &quot;&quot;&quot;</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">particles</span> <span class="o">=</span> <span class="n">particles</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">weights</span> <span class="o">=</span> <span class="n">weights</span> <span class="o">/</span> <span class="n">np</span><span class="o">.</span><span class="n">sum</span><span class="p">(</span><span class="n">weights</span><span class="p">)</span> <span class="k">if</span> <span class="n">np</span><span class="o">.</span><span class="n">sum</span><span class="p">(</span><span class="n">weights</span><span class="p">)</span> <span class="o">&gt;</span> <span class="mi">0</span> <span class="k">else</span> <span class="n">weights</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">distances</span> <span class="o">=</span> <span class="n">distances</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">tolerance_schedule</span> <span class="o">=</span> <span class="n">tolerance_schedule</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">all_populations</span> <span class="o">=</span> <span class="n">all_populations</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">all_weights</span> <span class="o">=</span> <span class="n">all_weights</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">all_distances</span> <span class="o">=</span> <span class="n">all_distances</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">iteration_info</span> <span class="o">=</span> <span class="n">iteration_info</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">num_particles</span> <span class="o">=</span> <span class="n">num_particles</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">final_tolerance</span> <span class="o">=</span> <span class="n">tolerance_schedule</span><span class="p">[</span><span class="o">-</span><span class="mi">1</span><span class="p">]</span> <span class="k">if</span> <span class="n">tolerance_schedule</span> <span class="k">else</span> <span class="mf">0.0</span>
+
+<div class="viewcode-block" id="ABCSMCPosterior.sample">
+<a class="viewcode-back" href="../../../api.html#scisbi.inference.ABCSMCPosterior.sample">[docs]</a>
+    <span class="k">def</span><span class="w"> </span><span class="nf">sample</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">num_samples</span><span class="p">:</span> <span class="nb">int</span> <span class="o">=</span> <span class="mi">1</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="n">Union</span><span class="p">[</span><span class="n">Any</span><span class="p">,</span> <span class="n">List</span><span class="p">[</span><span class="n">Any</span><span class="p">]]:</span>
+<span class="w">        </span><span class="sd">&quot;&quot;&quot;</span>
+<span class="sd">        Draw samples from the ABC-SMC posterior using importance sampling.</span>
+
+<span class="sd">        Args:</span>
+<span class="sd">            num_samples (int): Number of samples to draw</span>
+
+<span class="sd">        Returns:</span>
+<span class="sd">            Single sample if num_samples=1, otherwise list of samples</span>
+<span class="sd">        &quot;&quot;&quot;</span>
+        <span class="k">if</span> <span class="nb">len</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">particles</span><span class="p">)</span> <span class="o">==</span> <span class="mi">0</span><span class="p">:</span>
+            <span class="k">raise</span> <span class="ne">ValueError</span><span class="p">(</span><span class="s2">&quot;No particles available for sampling&quot;</span><span class="p">)</span>
+
+        <span class="c1"># Sample with probability proportional to weights</span>
+        <span class="n">indices</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">random</span><span class="o">.</span><span class="n">choice</span><span class="p">(</span>
+            <span class="nb">len</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">particles</span><span class="p">),</span> <span class="n">size</span><span class="o">=</span><span class="n">num_samples</span><span class="p">,</span> <span class="n">replace</span><span class="o">=</span><span class="kc">True</span><span class="p">,</span> <span class="n">p</span><span class="o">=</span><span class="bp">self</span><span class="o">.</span><span class="n">weights</span>
+        <span class="p">)</span>
+
+        <span class="k">if</span> <span class="n">num_samples</span> <span class="o">==</span> <span class="mi">1</span><span class="p">:</span>
+            <span class="k">return</span> <span class="bp">self</span><span class="o">.</span><span class="n">particles</span><span class="p">[</span><span class="n">indices</span><span class="p">[</span><span class="mi">0</span><span class="p">]]</span>
+        <span class="k">else</span><span class="p">:</span>
+            <span class="k">return</span> <span class="p">[</span><span class="bp">self</span><span class="o">.</span><span class="n">particles</span><span class="p">[</span><span class="n">i</span><span class="p">]</span> <span class="k">for</span> <span class="n">i</span> <span class="ow">in</span> <span class="n">indices</span><span class="p">]</span></div>
+
+
+<div class="viewcode-block" id="ABCSMCPosterior.get_particles">
+<a class="viewcode-back" href="../../../api.html#scisbi.inference.ABCSMCPosterior.get_particles">[docs]</a>
+    <span class="k">def</span><span class="w"> </span><span class="nf">get_particles</span><span class="p">(</span><span class="bp">self</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="n">List</span><span class="p">[</span><span class="n">Any</span><span class="p">]:</span>
+<span class="w">        </span><span class="sd">&quot;&quot;&quot;Return all particles.&quot;&quot;&quot;</span>
+        <span class="k">return</span> <span class="bp">self</span><span class="o">.</span><span class="n">particles</span><span class="o">.</span><span class="n">copy</span><span class="p">()</span></div>
+
+
+<div class="viewcode-block" id="ABCSMCPosterior.get_weights">
+<a class="viewcode-back" href="../../../api.html#scisbi.inference.ABCSMCPosterior.get_weights">[docs]</a>
+    <span class="k">def</span><span class="w"> </span><span class="nf">get_weights</span><span class="p">(</span><span class="bp">self</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="n">np</span><span class="o">.</span><span class="n">ndarray</span><span class="p">:</span>
+<span class="w">        </span><span class="sd">&quot;&quot;&quot;Return all particle weights.&quot;&quot;&quot;</span>
+        <span class="k">return</span> <span class="bp">self</span><span class="o">.</span><span class="n">weights</span><span class="o">.</span><span class="n">copy</span><span class="p">()</span></div>
+
+
+<div class="viewcode-block" id="ABCSMCPosterior.get_distances">
+<a class="viewcode-back" href="../../../api.html#scisbi.inference.ABCSMCPosterior.get_distances">[docs]</a>
+    <span class="k">def</span><span class="w"> </span><span class="nf">get_distances</span><span class="p">(</span><span class="bp">self</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="n">List</span><span class="p">[</span><span class="nb">float</span><span class="p">]:</span>
+<span class="w">        </span><span class="sd">&quot;&quot;&quot;Return all particle distances.&quot;&quot;&quot;</span>
+        <span class="k">return</span> <span class="bp">self</span><span class="o">.</span><span class="n">distances</span><span class="o">.</span><span class="n">copy</span><span class="p">()</span></div>
+
+
+<div class="viewcode-block" id="ABCSMCPosterior.get_iteration_info">
+<a class="viewcode-back" href="../../../api.html#scisbi.inference.ABCSMCPosterior.get_iteration_info">[docs]</a>
+    <span class="k">def</span><span class="w"> </span><span class="nf">get_iteration_info</span><span class="p">(</span><span class="bp">self</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="n">List</span><span class="p">[</span><span class="nb">dict</span><span class="p">]:</span>
+<span class="w">        </span><span class="sd">&quot;&quot;&quot;Return diagnostic information for each iteration.&quot;&quot;&quot;</span>
+        <span class="k">return</span> <span class="bp">self</span><span class="o">.</span><span class="n">iteration_info</span><span class="o">.</span><span class="n">copy</span><span class="p">()</span></div>
+
+
+<div class="viewcode-block" id="ABCSMCPosterior.effective_sample_size">
+<a class="viewcode-back" href="../../../api.html#scisbi.inference.ABCSMCPosterior.effective_sample_size">[docs]</a>
+    <span class="k">def</span><span class="w"> </span><span class="nf">effective_sample_size</span><span class="p">(</span><span class="bp">self</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="nb">float</span><span class="p">:</span>
+<span class="w">        </span><span class="sd">&quot;&quot;&quot;Compute effective sample size of final population.&quot;&quot;&quot;</span>
+        <span class="k">if</span> <span class="nb">len</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">weights</span><span class="p">)</span> <span class="o">==</span> <span class="mi">0</span><span class="p">:</span>
+            <span class="k">return</span> <span class="mf">0.0</span>
+        <span class="k">return</span> <span class="mf">1.0</span> <span class="o">/</span> <span class="n">np</span><span class="o">.</span><span class="n">sum</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">weights</span><span class="o">**</span><span class="mi">2</span><span class="p">)</span></div>
+
+
+<div class="viewcode-block" id="ABCSMCPosterior.summary_statistics">
+<a class="viewcode-back" href="../../../api.html#scisbi.inference.ABCSMCPosterior.summary_statistics">[docs]</a>
+    <span class="k">def</span><span class="w"> </span><span class="nf">summary_statistics</span><span class="p">(</span><span class="bp">self</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="nb">dict</span><span class="p">:</span>
+<span class="w">        </span><span class="sd">&quot;&quot;&quot;</span>
+<span class="sd">        Compute summary statistics of the ABC-SMC posterior.</span>
+
+<span class="sd">        Returns:</span>
+<span class="sd">            Dictionary with posterior and algorithm summary information</span>
+<span class="sd">        &quot;&quot;&quot;</span>
+        <span class="n">final_info</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">iteration_info</span><span class="p">[</span><span class="o">-</span><span class="mi">1</span><span class="p">]</span> <span class="k">if</span> <span class="bp">self</span><span class="o">.</span><span class="n">iteration_info</span> <span class="k">else</span> <span class="p">{}</span>
+
+        <span class="k">return</span> <span class="p">{</span>
+            <span class="s2">&quot;num_particles&quot;</span><span class="p">:</span> <span class="nb">len</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">particles</span><span class="p">),</span>
+            <span class="s2">&quot;effective_sample_size&quot;</span><span class="p">:</span> <span class="bp">self</span><span class="o">.</span><span class="n">effective_sample_size</span><span class="p">(),</span>
+            <span class="s2">&quot;final_tolerance&quot;</span><span class="p">:</span> <span class="bp">self</span><span class="o">.</span><span class="n">final_tolerance</span><span class="p">,</span>
+            <span class="s2">&quot;num_iterations&quot;</span><span class="p">:</span> <span class="nb">len</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">tolerance_schedule</span><span class="p">),</span>
+            <span class="s2">&quot;tolerance_schedule&quot;</span><span class="p">:</span> <span class="bp">self</span><span class="o">.</span><span class="n">tolerance_schedule</span><span class="p">,</span>
+            <span class="s2">&quot;final_acceptance_rate&quot;</span><span class="p">:</span> <span class="n">final_info</span><span class="o">.</span><span class="n">get</span><span class="p">(</span><span class="s2">&quot;acceptance_rate&quot;</span><span class="p">,</span> <span class="mf">0.0</span><span class="p">),</span>
+            <span class="s2">&quot;final_mean_distance&quot;</span><span class="p">:</span> <span class="n">final_info</span><span class="o">.</span><span class="n">get</span><span class="p">(</span><span class="s2">&quot;mean_distance&quot;</span><span class="p">,</span> <span class="n">np</span><span class="o">.</span><span class="n">nan</span><span class="p">),</span>
+            <span class="s2">&quot;final_std_distance&quot;</span><span class="p">:</span> <span class="n">final_info</span><span class="o">.</span><span class="n">get</span><span class="p">(</span><span class="s2">&quot;std_distance&quot;</span><span class="p">,</span> <span class="n">np</span><span class="o">.</span><span class="n">nan</span><span class="p">),</span>
+            <span class="s2">&quot;mean_distance&quot;</span><span class="p">:</span> <span class="n">np</span><span class="o">.</span><span class="n">mean</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">distances</span><span class="p">)</span> <span class="k">if</span> <span class="bp">self</span><span class="o">.</span><span class="n">distances</span> <span class="k">else</span> <span class="n">np</span><span class="o">.</span><span class="n">nan</span><span class="p">,</span>
+            <span class="s2">&quot;max_distance&quot;</span><span class="p">:</span> <span class="n">np</span><span class="o">.</span><span class="n">max</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">distances</span><span class="p">)</span> <span class="k">if</span> <span class="bp">self</span><span class="o">.</span><span class="n">distances</span> <span class="k">else</span> <span class="n">np</span><span class="o">.</span><span class="n">nan</span><span class="p">,</span>
+            <span class="s2">&quot;min_distance&quot;</span><span class="p">:</span> <span class="n">np</span><span class="o">.</span><span class="n">min</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">distances</span><span class="p">)</span> <span class="k">if</span> <span class="bp">self</span><span class="o">.</span><span class="n">distances</span> <span class="k">else</span> <span class="n">np</span><span class="o">.</span><span class="n">nan</span><span class="p">,</span>
+        <span class="p">}</span></div>
+
+
+<div class="viewcode-block" id="ABCSMCPosterior.plot">
+<a class="viewcode-back" href="../../../api.html#scisbi.inference.ABCSMCPosterior.plot">[docs]</a>
+    <span class="k">def</span><span class="w"> </span><span class="nf">plot</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">parameter_index</span><span class="p">:</span> <span class="n">Optional</span><span class="p">[</span><span class="nb">int</span><span class="p">]</span> <span class="o">=</span> <span class="kc">None</span><span class="p">,</span> <span class="n">bins</span><span class="p">:</span> <span class="nb">int</span> <span class="o">=</span> <span class="mi">30</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="kc">None</span><span class="p">:</span>
+<span class="w">        </span><span class="sd">&quot;&quot;&quot;</span>
+<span class="sd">        Plot a histogram of the posterior samples for a specific parameter or 1D samples.</span>
+
+<span class="sd">        Args:</span>
+<span class="sd">            parameter_index (Optional[int]): Index of the parameter to plot. If None,</span>
+<span class="sd">                                             assumes samples are 1D (default: None).</span>
+<span class="sd">            bins (int): Number of bins for the histogram (default: 30).</span>
+<span class="sd">        &quot;&quot;&quot;</span>
+        <span class="k">if</span> <span class="ow">not</span> <span class="bp">self</span><span class="o">.</span><span class="n">particles</span><span class="p">:</span>
+            <span class="k">raise</span> <span class="ne">ValueError</span><span class="p">(</span><span class="s2">&quot;No particles available to plot.&quot;</span><span class="p">)</span>
+
+        <span class="c1"># Handle 1D samples or extract the specified parameter</span>
+        <span class="k">if</span> <span class="n">parameter_index</span> <span class="ow">is</span> <span class="kc">None</span><span class="p">:</span>
+            <span class="k">if</span> <span class="nb">isinstance</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">particles</span><span class="p">[</span><span class="mi">0</span><span class="p">],</span> <span class="p">(</span><span class="nb">list</span><span class="p">,</span> <span class="nb">tuple</span><span class="p">)):</span>
+                <span class="k">raise</span> <span class="ne">ValueError</span><span class="p">(</span>
+                    <span class="s2">&quot;Samples are multi-dimensional. Specify parameter_index.&quot;</span>
+                <span class="p">)</span>
+            <span class="n">parameter_values</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">particles</span>
+        <span class="k">else</span><span class="p">:</span>
+            <span class="n">parameter_values</span> <span class="o">=</span> <span class="p">[</span>
+                <span class="n">particle</span><span class="p">[</span><span class="n">parameter_index</span><span class="p">]</span> <span class="k">for</span> <span class="n">particle</span> <span class="ow">in</span> <span class="bp">self</span><span class="o">.</span><span class="n">particles</span>
+            <span class="p">]</span>
+
+        <span class="n">plt</span><span class="o">.</span><span class="n">hist</span><span class="p">(</span>
+            <span class="n">parameter_values</span><span class="p">,</span>
+            <span class="n">bins</span><span class="o">=</span><span class="n">bins</span><span class="p">,</span>
+            <span class="n">density</span><span class="o">=</span><span class="kc">True</span><span class="p">,</span>
+            <span class="n">alpha</span><span class="o">=</span><span class="mf">0.7</span><span class="p">,</span>
+            <span class="n">color</span><span class="o">=</span><span class="s2">&quot;purple&quot;</span><span class="p">,</span>
+            <span class="n">edgecolor</span><span class="o">=</span><span class="s2">&quot;black&quot;</span><span class="p">,</span>
+            <span class="n">weights</span><span class="o">=</span><span class="bp">self</span><span class="o">.</span><span class="n">weights</span><span class="p">,</span>
+        <span class="p">)</span>
+        <span class="n">title</span> <span class="o">=</span> <span class="s2">&quot;SMC Posterior Distribution&quot;</span> <span class="o">+</span> <span class="p">(</span>
+            <span class="sa">f</span><span class="s2">&quot; (Parameter </span><span class="si">{</span><span class="n">parameter_index</span><span class="si">}</span><span class="s2">)&quot;</span> <span class="k">if</span> <span class="n">parameter_index</span> <span class="ow">is</span> <span class="ow">not</span> <span class="kc">None</span> <span class="k">else</span> <span class="s2">&quot;&quot;</span>
+        <span class="p">)</span>
+        <span class="n">plt</span><span class="o">.</span><span class="n">title</span><span class="p">(</span><span class="n">title</span><span class="p">)</span>
+        <span class="n">plt</span><span class="o">.</span><span class="n">xlabel</span><span class="p">(</span>
+            <span class="sa">f</span><span class="s2">&quot;Parameter </span><span class="si">{</span><span class="n">parameter_index</span><span class="si">}</span><span class="s2">&quot;</span> <span class="k">if</span> <span class="n">parameter_index</span> <span class="ow">is</span> <span class="ow">not</span> <span class="kc">None</span> <span class="k">else</span> <span class="s2">&quot;Samples&quot;</span>
+        <span class="p">)</span>
+        <span class="n">plt</span><span class="o">.</span><span class="n">ylabel</span><span class="p">(</span><span class="s2">&quot;Density&quot;</span><span class="p">)</span>
+        <span class="n">plt</span><span class="o">.</span><span class="n">grid</span><span class="p">(</span><span class="kc">True</span><span class="p">,</span> <span class="n">alpha</span><span class="o">=</span><span class="mf">0.3</span><span class="p">)</span>
+        <span class="n">plt</span><span class="o">.</span><span class="n">show</span><span class="p">()</span></div>
+
+
+<div class="viewcode-block" id="ABCSMCPosterior.plot_evolution">
+<a class="viewcode-back" href="../../../api.html#scisbi.inference.ABCSMCPosterior.plot_evolution">[docs]</a>
+    <span class="k">def</span><span class="w"> </span><span class="nf">plot_evolution</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">parameter_index</span><span class="p">:</span> <span class="n">Optional</span><span class="p">[</span><span class="nb">int</span><span class="p">]</span> <span class="o">=</span> <span class="kc">None</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="kc">None</span><span class="p">:</span>
+<span class="w">        </span><span class="sd">&quot;&quot;&quot;</span>
+<span class="sd">        Plot the evolution of particle distributions across tolerance levels.</span>
+
+<span class="sd">        Args:</span>
+<span class="sd">            parameter_index (Optional[int]): Index of the parameter to plot. If None,</span>
+<span class="sd">                                             assumes samples are 1D.</span>
+<span class="sd">        &quot;&quot;&quot;</span>
+        <span class="k">if</span> <span class="ow">not</span> <span class="bp">self</span><span class="o">.</span><span class="n">all_populations</span><span class="p">:</span>
+            <span class="k">raise</span> <span class="ne">ValueError</span><span class="p">(</span><span class="s2">&quot;No population history available to plot.&quot;</span><span class="p">)</span>
+
+        <span class="n">num_iterations</span> <span class="o">=</span> <span class="nb">len</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">all_populations</span><span class="p">)</span>
+        <span class="n">fig</span><span class="p">,</span> <span class="n">axes</span> <span class="o">=</span> <span class="n">plt</span><span class="o">.</span><span class="n">subplots</span><span class="p">(</span><span class="mi">1</span><span class="p">,</span> <span class="nb">min</span><span class="p">(</span><span class="n">num_iterations</span><span class="p">,</span> <span class="mi">4</span><span class="p">),</span> <span class="n">figsize</span><span class="o">=</span><span class="p">(</span><span class="mi">15</span><span class="p">,</span> <span class="mi">4</span><span class="p">))</span>
+
+        <span class="k">if</span> <span class="n">num_iterations</span> <span class="o">==</span> <span class="mi">1</span><span class="p">:</span>
+            <span class="n">axes</span> <span class="o">=</span> <span class="p">[</span><span class="n">axes</span><span class="p">]</span>
+        <span class="k">elif</span> <span class="n">num_iterations</span> <span class="o">&gt;</span> <span class="mi">4</span><span class="p">:</span>
+            <span class="c1"># Show first, some middle, and last iterations</span>
+            <span class="n">indices</span> <span class="o">=</span> <span class="p">[</span>
+                <span class="mi">0</span><span class="p">,</span>
+                <span class="n">num_iterations</span> <span class="o">//</span> <span class="mi">3</span><span class="p">,</span>
+                <span class="mi">2</span> <span class="o">*</span> <span class="n">num_iterations</span> <span class="o">//</span> <span class="mi">3</span><span class="p">,</span>
+                <span class="n">num_iterations</span> <span class="o">-</span> <span class="mi">1</span><span class="p">,</span>
+            <span class="p">]</span>
+            <span class="n">indices</span> <span class="o">=</span> <span class="nb">list</span><span class="p">(</span><span class="nb">set</span><span class="p">(</span><span class="n">indices</span><span class="p">))[:</span><span class="mi">4</span><span class="p">]</span>  <span class="c1"># Remove duplicates and limit to 4</span>
+        <span class="k">else</span><span class="p">:</span>
+            <span class="n">indices</span> <span class="o">=</span> <span class="nb">list</span><span class="p">(</span><span class="nb">range</span><span class="p">(</span><span class="n">num_iterations</span><span class="p">))</span>
+
+        <span class="k">for</span> <span class="n">i</span><span class="p">,</span> <span class="n">iter_idx</span> <span class="ow">in</span> <span class="nb">enumerate</span><span class="p">(</span><span class="n">indices</span><span class="p">):</span>
+            <span class="n">particles</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">all_populations</span><span class="p">[</span><span class="n">iter_idx</span><span class="p">]</span>
+            <span class="n">weights</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">all_weights</span><span class="p">[</span><span class="n">iter_idx</span><span class="p">]</span>
+            <span class="n">tolerance</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">tolerance_schedule</span><span class="p">[</span><span class="n">iter_idx</span><span class="p">]</span>
+
+            <span class="c1"># Extract parameter values</span>
+            <span class="k">if</span> <span class="n">parameter_index</span> <span class="ow">is</span> <span class="kc">None</span><span class="p">:</span>
+                <span class="k">if</span> <span class="nb">isinstance</span><span class="p">(</span><span class="n">particles</span><span class="p">[</span><span class="mi">0</span><span class="p">],</span> <span class="p">(</span><span class="nb">list</span><span class="p">,</span> <span class="nb">tuple</span><span class="p">)):</span>
+                    <span class="k">raise</span> <span class="ne">ValueError</span><span class="p">(</span>
+                        <span class="s2">&quot;Samples are multi-dimensional. Specify parameter_index.&quot;</span>
+                    <span class="p">)</span>
+                <span class="n">parameter_values</span> <span class="o">=</span> <span class="n">particles</span>
+            <span class="k">else</span><span class="p">:</span>
+                <span class="n">parameter_values</span> <span class="o">=</span> <span class="p">[</span><span class="n">particle</span><span class="p">[</span><span class="n">parameter_index</span><span class="p">]</span> <span class="k">for</span> <span class="n">particle</span> <span class="ow">in</span> <span class="n">particles</span><span class="p">]</span>
+
+            <span class="k">if</span> <span class="n">i</span> <span class="o">&lt;</span> <span class="nb">len</span><span class="p">(</span><span class="n">axes</span><span class="p">):</span>
+                <span class="n">axes</span><span class="p">[</span><span class="n">i</span><span class="p">]</span><span class="o">.</span><span class="n">hist</span><span class="p">(</span>
+                    <span class="n">parameter_values</span><span class="p">,</span>
+                    <span class="n">bins</span><span class="o">=</span><span class="mi">25</span><span class="p">,</span>
+                    <span class="n">density</span><span class="o">=</span><span class="kc">True</span><span class="p">,</span>
+                    <span class="n">alpha</span><span class="o">=</span><span class="mf">0.7</span><span class="p">,</span>
+                    <span class="n">color</span><span class="o">=</span><span class="s2">&quot;purple&quot;</span><span class="p">,</span>
+                    <span class="n">edgecolor</span><span class="o">=</span><span class="s2">&quot;black&quot;</span><span class="p">,</span>
+                    <span class="n">weights</span><span class="o">=</span><span class="n">weights</span><span class="p">,</span>
+                <span class="p">)</span>
+                <span class="n">axes</span><span class="p">[</span><span class="n">i</span><span class="p">]</span><span class="o">.</span><span class="n">set_title</span><span class="p">(</span><span class="sa">f</span><span class="s2">&quot;Iteration </span><span class="si">{</span><span class="n">iter_idx</span><span class="w"> </span><span class="o">+</span><span class="w"> </span><span class="mi">1</span><span class="si">}</span><span class="se">\n</span><span class="s2">ε = </span><span class="si">{</span><span class="n">tolerance</span><span class="si">:</span><span class="s2">.4f</span><span class="si">}</span><span class="s2">&quot;</span><span class="p">)</span>
+                <span class="n">axes</span><span class="p">[</span><span class="n">i</span><span class="p">]</span><span class="o">.</span><span class="n">set_xlabel</span><span class="p">(</span>
+                    <span class="sa">f</span><span class="s2">&quot;Parameter </span><span class="si">{</span><span class="n">parameter_index</span><span class="si">}</span><span class="s2">&quot;</span>
+                    <span class="k">if</span> <span class="n">parameter_index</span> <span class="ow">is</span> <span class="ow">not</span> <span class="kc">None</span>
+                    <span class="k">else</span> <span class="s2">&quot;Value&quot;</span>
+                <span class="p">)</span>
+                <span class="k">if</span> <span class="n">i</span> <span class="o">==</span> <span class="mi">0</span><span class="p">:</span>
+                    <span class="n">axes</span><span class="p">[</span><span class="n">i</span><span class="p">]</span><span class="o">.</span><span class="n">set_ylabel</span><span class="p">(</span><span class="s2">&quot;Density&quot;</span><span class="p">)</span>
+                <span class="n">axes</span><span class="p">[</span><span class="n">i</span><span class="p">]</span><span class="o">.</span><span class="n">grid</span><span class="p">(</span><span class="kc">True</span><span class="p">,</span> <span class="n">alpha</span><span class="o">=</span><span class="mf">0.3</span><span class="p">)</span>
+
+        <span class="n">plt</span><span class="o">.</span><span class="n">suptitle</span><span class="p">(</span><span class="s2">&quot;ABC-SMC: Evolution of Particle Distribution&quot;</span><span class="p">,</span> <span class="n">fontsize</span><span class="o">=</span><span class="mi">16</span><span class="p">)</span>
+        <span class="n">plt</span><span class="o">.</span><span class="n">tight_layout</span><span class="p">()</span>
+        <span class="n">plt</span><span class="o">.</span><span class="n">show</span><span class="p">()</span></div>
+
+
+<div class="viewcode-block" id="ABCSMCPosterior.plot_diagnostics">
+<a class="viewcode-back" href="../../../api.html#scisbi.inference.ABCSMCPosterior.plot_diagnostics">[docs]</a>
+    <span class="k">def</span><span class="w"> </span><span class="nf">plot_diagnostics</span><span class="p">(</span><span class="bp">self</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="kc">None</span><span class="p">:</span>
+<span class="w">        </span><span class="sd">&quot;&quot;&quot;Plot diagnostic information across iterations.&quot;&quot;&quot;</span>
+        <span class="k">if</span> <span class="ow">not</span> <span class="bp">self</span><span class="o">.</span><span class="n">iteration_info</span><span class="p">:</span>
+            <span class="k">raise</span> <span class="ne">ValueError</span><span class="p">(</span><span class="s2">&quot;No iteration information available.&quot;</span><span class="p">)</span>
+
+        <span class="n">fig</span><span class="p">,</span> <span class="n">axes</span> <span class="o">=</span> <span class="n">plt</span><span class="o">.</span><span class="n">subplots</span><span class="p">(</span><span class="mi">2</span><span class="p">,</span> <span class="mi">2</span><span class="p">,</span> <span class="n">figsize</span><span class="o">=</span><span class="p">(</span><span class="mi">15</span><span class="p">,</span> <span class="mi">10</span><span class="p">))</span>
+
+        <span class="n">iterations</span> <span class="o">=</span> <span class="nb">range</span><span class="p">(</span><span class="mi">1</span><span class="p">,</span> <span class="nb">len</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">iteration_info</span><span class="p">)</span> <span class="o">+</span> <span class="mi">1</span><span class="p">)</span>
+
+        <span class="c1"># Tolerance schedule</span>
+        <span class="n">tolerances</span> <span class="o">=</span> <span class="p">[</span><span class="n">info</span><span class="p">[</span><span class="s2">&quot;tolerance&quot;</span><span class="p">]</span> <span class="k">for</span> <span class="n">info</span> <span class="ow">in</span> <span class="bp">self</span><span class="o">.</span><span class="n">iteration_info</span><span class="p">]</span>
+        <span class="n">axes</span><span class="p">[</span><span class="mi">0</span><span class="p">,</span> <span class="mi">0</span><span class="p">]</span><span class="o">.</span><span class="n">semilogy</span><span class="p">(</span>
+            <span class="n">iterations</span><span class="p">,</span> <span class="n">tolerances</span><span class="p">,</span> <span class="s2">&quot;o-&quot;</span><span class="p">,</span> <span class="n">color</span><span class="o">=</span><span class="s2">&quot;blue&quot;</span><span class="p">,</span> <span class="n">linewidth</span><span class="o">=</span><span class="mi">2</span><span class="p">,</span> <span class="n">markersize</span><span class="o">=</span><span class="mi">6</span>
+        <span class="p">)</span>
+        <span class="n">axes</span><span class="p">[</span><span class="mi">0</span><span class="p">,</span> <span class="mi">0</span><span class="p">]</span><span class="o">.</span><span class="n">set_title</span><span class="p">(</span><span class="s2">&quot;Tolerance Schedule&quot;</span><span class="p">)</span>
+        <span class="n">axes</span><span class="p">[</span><span class="mi">0</span><span class="p">,</span> <span class="mi">0</span><span class="p">]</span><span class="o">.</span><span class="n">set_xlabel</span><span class="p">(</span><span class="s2">&quot;Iteration&quot;</span><span class="p">)</span>
+        <span class="n">axes</span><span class="p">[</span><span class="mi">0</span><span class="p">,</span> <span class="mi">0</span><span class="p">]</span><span class="o">.</span><span class="n">set_ylabel</span><span class="p">(</span><span class="s2">&quot;Tolerance (log scale)&quot;</span><span class="p">)</span>
+        <span class="n">axes</span><span class="p">[</span><span class="mi">0</span><span class="p">,</span> <span class="mi">0</span><span class="p">]</span><span class="o">.</span><span class="n">grid</span><span class="p">(</span><span class="kc">True</span><span class="p">,</span> <span class="n">alpha</span><span class="o">=</span><span class="mf">0.3</span><span class="p">)</span>
+
+        <span class="c1"># Effective sample size</span>
+        <span class="n">ess_values</span> <span class="o">=</span> <span class="p">[</span><span class="n">info</span><span class="p">[</span><span class="s2">&quot;effective_sample_size&quot;</span><span class="p">]</span> <span class="k">for</span> <span class="n">info</span> <span class="ow">in</span> <span class="bp">self</span><span class="o">.</span><span class="n">iteration_info</span><span class="p">]</span>
+        <span class="n">axes</span><span class="p">[</span><span class="mi">0</span><span class="p">,</span> <span class="mi">1</span><span class="p">]</span><span class="o">.</span><span class="n">plot</span><span class="p">(</span>
+            <span class="n">iterations</span><span class="p">,</span> <span class="n">ess_values</span><span class="p">,</span> <span class="s2">&quot;o-&quot;</span><span class="p">,</span> <span class="n">color</span><span class="o">=</span><span class="s2">&quot;green&quot;</span><span class="p">,</span> <span class="n">linewidth</span><span class="o">=</span><span class="mi">2</span><span class="p">,</span> <span class="n">markersize</span><span class="o">=</span><span class="mi">6</span>
+        <span class="p">)</span>
+        <span class="n">axes</span><span class="p">[</span><span class="mi">0</span><span class="p">,</span> <span class="mi">1</span><span class="p">]</span><span class="o">.</span><span class="n">axhline</span><span class="p">(</span>
+            <span class="n">y</span><span class="o">=</span><span class="bp">self</span><span class="o">.</span><span class="n">num_particles</span> <span class="o">/</span> <span class="mi">2</span><span class="p">,</span> <span class="n">color</span><span class="o">=</span><span class="s2">&quot;red&quot;</span><span class="p">,</span> <span class="n">linestyle</span><span class="o">=</span><span class="s2">&quot;--&quot;</span><span class="p">,</span> <span class="n">label</span><span class="o">=</span><span class="s2">&quot;50% threshold&quot;</span>
+        <span class="p">)</span>
+        <span class="n">axes</span><span class="p">[</span><span class="mi">0</span><span class="p">,</span> <span class="mi">1</span><span class="p">]</span><span class="o">.</span><span class="n">set_title</span><span class="p">(</span><span class="s2">&quot;Effective Sample Size&quot;</span><span class="p">)</span>
+        <span class="n">axes</span><span class="p">[</span><span class="mi">0</span><span class="p">,</span> <span class="mi">1</span><span class="p">]</span><span class="o">.</span><span class="n">set_xlabel</span><span class="p">(</span><span class="s2">&quot;Iteration&quot;</span><span class="p">)</span>
+        <span class="n">axes</span><span class="p">[</span><span class="mi">0</span><span class="p">,</span> <span class="mi">1</span><span class="p">]</span><span class="o">.</span><span class="n">set_ylabel</span><span class="p">(</span><span class="s2">&quot;ESS&quot;</span><span class="p">)</span>
+        <span class="n">axes</span><span class="p">[</span><span class="mi">0</span><span class="p">,</span> <span class="mi">1</span><span class="p">]</span><span class="o">.</span><span class="n">legend</span><span class="p">()</span>
+        <span class="n">axes</span><span class="p">[</span><span class="mi">0</span><span class="p">,</span> <span class="mi">1</span><span class="p">]</span><span class="o">.</span><span class="n">grid</span><span class="p">(</span><span class="kc">True</span><span class="p">,</span> <span class="n">alpha</span><span class="o">=</span><span class="mf">0.3</span><span class="p">)</span>
+
+        <span class="c1"># Acceptance rate</span>
+        <span class="n">acceptance_rates</span> <span class="o">=</span> <span class="p">[</span><span class="n">info</span><span class="p">[</span><span class="s2">&quot;acceptance_rate&quot;</span><span class="p">]</span> <span class="k">for</span> <span class="n">info</span> <span class="ow">in</span> <span class="bp">self</span><span class="o">.</span><span class="n">iteration_info</span><span class="p">]</span>
+        <span class="n">axes</span><span class="p">[</span><span class="mi">1</span><span class="p">,</span> <span class="mi">0</span><span class="p">]</span><span class="o">.</span><span class="n">plot</span><span class="p">(</span>
+            <span class="n">iterations</span><span class="p">,</span>
+            <span class="n">acceptance_rates</span><span class="p">,</span>
+            <span class="s2">&quot;o-&quot;</span><span class="p">,</span>
+            <span class="n">color</span><span class="o">=</span><span class="s2">&quot;orange&quot;</span><span class="p">,</span>
+            <span class="n">linewidth</span><span class="o">=</span><span class="mi">2</span><span class="p">,</span>
+            <span class="n">markersize</span><span class="o">=</span><span class="mi">6</span><span class="p">,</span>
+        <span class="p">)</span>
+        <span class="n">axes</span><span class="p">[</span><span class="mi">1</span><span class="p">,</span> <span class="mi">0</span><span class="p">]</span><span class="o">.</span><span class="n">set_title</span><span class="p">(</span><span class="s2">&quot;Acceptance Rate&quot;</span><span class="p">)</span>
+        <span class="n">axes</span><span class="p">[</span><span class="mi">1</span><span class="p">,</span> <span class="mi">0</span><span class="p">]</span><span class="o">.</span><span class="n">set_xlabel</span><span class="p">(</span><span class="s2">&quot;Iteration&quot;</span><span class="p">)</span>
+        <span class="n">axes</span><span class="p">[</span><span class="mi">1</span><span class="p">,</span> <span class="mi">0</span><span class="p">]</span><span class="o">.</span><span class="n">set_ylabel</span><span class="p">(</span><span class="s2">&quot;Acceptance Rate&quot;</span><span class="p">)</span>
+        <span class="n">axes</span><span class="p">[</span><span class="mi">1</span><span class="p">,</span> <span class="mi">0</span><span class="p">]</span><span class="o">.</span><span class="n">set_ylim</span><span class="p">(</span><span class="mi">0</span><span class="p">,</span> <span class="mi">1</span><span class="p">)</span>
+        <span class="n">axes</span><span class="p">[</span><span class="mi">1</span><span class="p">,</span> <span class="mi">0</span><span class="p">]</span><span class="o">.</span><span class="n">grid</span><span class="p">(</span><span class="kc">True</span><span class="p">,</span> <span class="n">alpha</span><span class="o">=</span><span class="mf">0.3</span><span class="p">)</span>
+
+        <span class="c1"># Mean distance</span>
+        <span class="n">mean_distances</span> <span class="o">=</span> <span class="p">[</span><span class="n">info</span><span class="p">[</span><span class="s2">&quot;mean_distance&quot;</span><span class="p">]</span> <span class="k">for</span> <span class="n">info</span> <span class="ow">in</span> <span class="bp">self</span><span class="o">.</span><span class="n">iteration_info</span><span class="p">]</span>
+        <span class="n">axes</span><span class="p">[</span><span class="mi">1</span><span class="p">,</span> <span class="mi">1</span><span class="p">]</span><span class="o">.</span><span class="n">semilogy</span><span class="p">(</span>
+            <span class="n">iterations</span><span class="p">,</span> <span class="n">mean_distances</span><span class="p">,</span> <span class="s2">&quot;o-&quot;</span><span class="p">,</span> <span class="n">color</span><span class="o">=</span><span class="s2">&quot;red&quot;</span><span class="p">,</span> <span class="n">linewidth</span><span class="o">=</span><span class="mi">2</span><span class="p">,</span> <span class="n">markersize</span><span class="o">=</span><span class="mi">6</span>
+        <span class="p">)</span>
+        <span class="n">axes</span><span class="p">[</span><span class="mi">1</span><span class="p">,</span> <span class="mi">1</span><span class="p">]</span><span class="o">.</span><span class="n">set_title</span><span class="p">(</span><span class="s2">&quot;Mean Distance&quot;</span><span class="p">)</span>
+        <span class="n">axes</span><span class="p">[</span><span class="mi">1</span><span class="p">,</span> <span class="mi">1</span><span class="p">]</span><span class="o">.</span><span class="n">set_xlabel</span><span class="p">(</span><span class="s2">&quot;Iteration&quot;</span><span class="p">)</span>
+        <span class="n">axes</span><span class="p">[</span><span class="mi">1</span><span class="p">,</span> <span class="mi">1</span><span class="p">]</span><span class="o">.</span><span class="n">set_ylabel</span><span class="p">(</span><span class="s2">&quot;Mean Distance (log scale)&quot;</span><span class="p">)</span>
+        <span class="n">axes</span><span class="p">[</span><span class="mi">1</span><span class="p">,</span> <span class="mi">1</span><span class="p">]</span><span class="o">.</span><span class="n">grid</span><span class="p">(</span><span class="kc">True</span><span class="p">,</span> <span class="n">alpha</span><span class="o">=</span><span class="mf">0.3</span><span class="p">)</span>
+
+        <span class="n">plt</span><span class="o">.</span><span class="n">suptitle</span><span class="p">(</span><span class="s2">&quot;ABC-SMC: Algorithm Diagnostics&quot;</span><span class="p">,</span> <span class="n">fontsize</span><span class="o">=</span><span class="mi">16</span><span class="p">)</span>
+        <span class="n">plt</span><span class="o">.</span><span class="n">tight_layout</span><span class="p">()</span>
+        <span class="n">plt</span><span class="o">.</span><span class="n">show</span><span class="p">()</span></div>
+
+
+    <span class="k">def</span><span class="w"> </span><span class="fm">__len__</span><span class="p">(</span><span class="bp">self</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="nb">int</span><span class="p">:</span>
+<span class="w">        </span><span class="sd">&quot;&quot;&quot;Return number of particles.&quot;&quot;&quot;</span>
+        <span class="k">return</span> <span class="nb">len</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">particles</span><span class="p">)</span>
+
+    <span class="k">def</span><span class="w"> </span><span class="fm">__repr__</span><span class="p">(</span><span class="bp">self</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="nb">str</span><span class="p">:</span>
+        <span class="n">ess</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">effective_sample_size</span><span class="p">()</span>
+        <span class="k">return</span> <span class="p">(</span>
+            <span class="sa">f</span><span class="s2">&quot;ABCSMCPosterior(num_particles=</span><span class="si">{</span><span class="nb">len</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">particles</span><span class="p">)</span><span class="si">}</span><span class="s2">, &quot;</span>
+            <span class="sa">f</span><span class="s2">&quot;effective_sample_size=</span><span class="si">{</span><span class="n">ess</span><span class="si">:</span><span class="s2">.1f</span><span class="si">}</span><span class="s2">, &quot;</span>
+            <span class="sa">f</span><span class="s2">&quot;final_tolerance=</span><span class="si">{</span><span class="bp">self</span><span class="o">.</span><span class="n">final_tolerance</span><span class="si">}</span><span class="s2">)&quot;</span>
+        <span class="p">)</span></div>
+
+</pre></div>
+        </article>
+      </div>
+      <footer>
+        
+        <div class="related-pages">
+          
+          
+        </div>
+        <div class="bottom-of-page">
+          <div class="left-details">
+            <div class="copyright">
+                Copyright &#169; 2025, Csongor Horváth
+            </div>
+            Made with <a href="https://www.sphinx-doc.org/">Sphinx</a> and <a class="muted-link" href="https://pradyunsg.me">@pradyunsg</a>'s
+            
+            <a href="https://github.com/pradyunsg/furo">Furo</a>
+            
+          </div>
+          <div class="right-details">
+            
+          </div>
+        </div>
+        
+      </footer>
+    </div>
+    <aside class="toc-drawer no-toc">
+      
+      
+      
+    </aside>
+  </div>
+</div><script src="../../../_static/documentation_options.js?v=d45e8c67"></script>
+    <script src="../../../_static/doctools.js?v=9bcbadda"></script>
+    <script src="../../../_static/sphinx_highlight.js?v=dc90522c"></script>
+    <script src="../../../_static/scripts/furo.js?v=5fa4622c"></script>
+    </body>
+</html>
