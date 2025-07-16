@@ -1,6 +1,7 @@
 name: Build Documentation
 
 on:
+  workflow_dispatch:
   pull_request:
     branches: [main]
   push:
@@ -27,70 +28,36 @@ jobs:
           restore-keys: |
             ${{ runner.os }}-pip-
 
-      - name: Install dependencies and project
+      - name: Install dependencies
         run: |
           python -m pip install --upgrade pip
           pip install -r requirements.txt
           pip install -r docs/requirements.txt
           pip install -e .
 
+      - name: Check dependencies
+        run: |
+          cd docs
+          make check-deps
+
       - name: Clean previous builds
         run: |
           cd docs
-          echo "Current directory: $(pwd)"
-          echo "Available files:"
-          ls -la
-          echo "Running make clean..."
           make clean
-          echo "Clean completed successfully"
 
-      - name: Check build environment
+      - name: Build documentation
         run: |
           cd docs
-          echo "Checking dependencies and environment..."
-          make check-deps
-          echo "Environment check completed"
-
-      - name: Build Sphinx documentation
-        run: |
-          cd docs
-          echo "Building documentation with enhanced error reporting..."
           make html
-          echo "Build completed successfully"
 
-      - name: Debug build (on failure)
-        if: failure()
+      - name: Verify build
         run: |
           cd docs
-          echo "=== DEBUGGING FAILED BUILD ==="
-          echo "Running debug build with maximum verbosity..."
-          make debug || true
-          echo ""
-          echo "=== PACKAGE STRUCTURE ==="
-          find ../src/scisbi -name "*.py" | head -20
-          echo ""
-          echo "=== SPHINX CONFIGURATION ==="
-          cat conf.py | grep -E "(extensions|sys\.path)" || true
-          echo ""
-          echo "=== AVAILABLE TARGETS ==="
-          make help
-
-      - name: Verify build output
-        run: |
-          cd docs
-          echo "Verifying build output..."
-          if [ -d "_build/html" ]; then
-            echo "✓ HTML build directory exists"
-            echo "Build contents:"
+          if [ -d "_build/html" ] && [ -f "_build/html/index.html" ]; then
+            echo "✓ Documentation built successfully"
             ls -la _build/html/
-            if [ -f "_build/html/index.html" ]; then
-              echo "✓ Index file created successfully"
-            else
-              echo "✗ Index file missing"
-              exit 1
-            fi
           else
-            echo "✗ HTML build directory missing"
+            echo "✗ Documentation build failed"
             exit 1
           fi
 
