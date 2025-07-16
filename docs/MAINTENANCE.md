@@ -92,3 +92,9 @@ To customize the documentation:
 - Add new `.rst` or `.md` files for additional content
 - Modify `docs/conf.py` for Sphinx settings
 - Update `docs/api.rst` to change API documentation structure
+
+# Maintenance
+
+- Keep dependencies up to date in `requirements.txt` and `docs/requirements.txt`.
+- Regenerate API docs with `sphinx-apidoc -o api ../src/scisbi` as needed.
+- Update this documentation as the project evolves.

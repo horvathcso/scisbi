@@ -1,5 +1,6 @@
 # Introduction
 
-Welcome to the documentation for **scisbi - Scientific Machine Learning package for Simulation Based Inference**.
+Welcome to the scisbi documentation! This package provides tools for scientific machine learning and simulation-based inference.
 
-This library is designed to...
+- For installation and usage, see the Usage section.
+- For API details, see the API Reference.

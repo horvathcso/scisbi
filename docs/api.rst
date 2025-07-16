@@ -1,40 +1,10 @@
 API Reference
 =============
 
-.. currentmodule:: scisbi
+The API documentation below is auto-generated from the source code using Sphinx and sphinx-apidoc.
+All modules in the ``scisbi`` package are included.
 
-Base Module
------------
+.. toctree::
+   :maxdepth: 2
 
-.. autosummary::
-   :toctree: _autosummary
-   :recursive:
-
-   scisbi.base
-
-Inference Methods
------------------
-
-.. autosummary::
-   :toctree: _autosummary
-   :recursive:
-
-   scisbi.inference
-
-Simulators
-----------
-
-.. autosummary::
-   :toctree: _autosummary
-   :recursive:
-
-   scisbi.simulator
-
-Summary Statistics
-------------------
-
-.. autosummary::
-   :toctree: _autosummary
-   :recursive:
-
-   scisbi.summary_statistic
+   modules
