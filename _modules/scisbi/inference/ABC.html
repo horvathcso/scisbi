@@ -412,7 +412,6 @@
 
             <span class="c1"># Step 1: Sample parameters from prior</span>
             <span class="n">theta_candidate</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">prior</span><span class="o">.</span><span class="n">sample</span><span class="p">()</span>
-
             <span class="c1"># Step 2: Simulate data with candidate parameters</span>
             <span class="n">simulated_data</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">simulator</span><span class="o">.</span><span class="n">simulate</span><span class="p">(</span>
                 <span class="n">theta_candidate</span><span class="p">,</span> <span class="n">num_simulations</span><span class="o">=</span><span class="nb">len</span><span class="p">(</span><span class="n">observed_summary</span><span class="p">)</span>
