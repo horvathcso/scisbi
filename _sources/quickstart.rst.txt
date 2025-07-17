@@ -19,7 +19,7 @@ Here's a simple example of using scisbi:
 
    import scisbi
 
-
+   # Example usage will be added here
    print(f"scisbi version: {scisbi.__version__}")
 
 Next Steps

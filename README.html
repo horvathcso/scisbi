@@ -1,14 +1,15 @@
 <!doctype html>
-<html class="no-js" lang="en" data-content_root="../">
+<html class="no-js" lang="en" data-content_root="./">
   <head><meta charset="utf-8"/>
     <meta name="viewport" content="width=device-width,initial-scale=1"/>
-    <meta name="color-scheme" content="light dark"><link rel="index" title="Index" href="../genindex.html" /><link rel="search" title="Search" href="../search.html" />
+    <meta name="color-scheme" content="light dark"><meta name="viewport" content="width=device-width, initial-scale=1" />
+<link rel="index" title="Index" href="genindex.html" /><link rel="search" title="Search" href="search.html" />
 
     <!-- Generated with Sphinx 8.2.3 and Furo 2024.08.06 -->
-        <title>Overview: module code - scisbi v0.0.1</title>
-      <link rel="stylesheet" type="text/css" href="../_static/pygments.css?v=8f2a1f02" />
-    <link rel="stylesheet" type="text/css" href="../_static/styles/furo.css?v=354aac6f" />
-    <link rel="stylesheet" type="text/css" href="../_static/styles/furo-extensions.css?v=302659d7" />
+        <title>Documentation Build Guide - scisbi v0.0.1</title>
+      <link rel="stylesheet" type="text/css" href="_static/pygments.css?v=8f2a1f02" />
+    <link rel="stylesheet" type="text/css" href="_static/styles/furo.css?v=354aac6f" />
+    <link rel="stylesheet" type="text/css" href="_static/styles/furo-extensions.css?v=302659d7" />
 
 
 
@@ -165,7 +166,7 @@
       </label>
     </div>
     <div class="header-center">
-      <a href="../index.html"><div class="brand">scisbi v0.0.1</div></a>
+      <a href="index.html"><div class="brand">scisbi v0.0.1</div></a>
     </div>
     <div class="header-right">
       <div class="theme-toggle-container theme-toggle-header">
@@ -177,7 +178,7 @@
           <svg class="theme-icon-when-light"><use href="#svg-sun"></use></svg>
         </button>
       </div>
-      <label class="toc-overlay-icon toc-header-icon no-toc" for="__toc">
+      <label class="toc-overlay-icon toc-header-icon" for="__toc">
         <div class="visually-hidden">Toggle table of contents sidebar</div>
         <i class="icon"><svg><use href="#svg-toc"></use></svg></i>
       </label>
@@ -186,12 +187,12 @@
   <aside class="sidebar-drawer">
     <div class="sidebar-container">
 
-      <div class="sidebar-sticky"><a class="sidebar-brand" href="../index.html">
+      <div class="sidebar-sticky"><a class="sidebar-brand" href="index.html">
 
 
   <span class="sidebar-brand-text">scisbi v0.0.1</span>
 
-</a><form class="sidebar-search-container" method="get" action="../search.html" role="search">
+</a><form class="sidebar-search-container" method="get" action="search.html" role="search">
   <input class="sidebar-search" placeholder="Search" name="q" aria-label="Search">
   <input type="hidden" name="check_keywords" value="yes">
   <input type="hidden" name="area" value="default">
@@ -199,9 +200,9 @@
 <div id="searchbox"></div><div class="sidebar-scroll"><div class="sidebar-tree">
   <p class="caption" role="heading"><span class="caption-text">Documentation:</span></p>
 <ul>
-<li class="toctree-l1"><a class="reference internal" href="../overview.html">Overview</a></li>
-<li class="toctree-l1"><a class="reference internal" href="../quickstart.html">Quick Start</a></li>
-<li class="toctree-l1"><a class="reference internal" href="../api.html">API Reference</a></li>
+<li class="toctree-l1"><a class="reference internal" href="overview.html">Overview</a></li>
+<li class="toctree-l1"><a class="reference internal" href="quickstart.html">Quick Start</a></li>
+<li class="toctree-l1"><a class="reference internal" href="api.html">API Reference</a></li>
 </ul>
 
 </div>
@@ -221,7 +222,13 @@
           <span>Back to top</span>
         </a>
         <div class="content-icon-container">
-          <div class="theme-toggle-container theme-toggle-content">
+          <div class="view-this-page">
+  <a class="muted-link" href="_sources/README.md.txt" title="View this page">
+    <svg><use href="#svg-eye"></use></svg>
+    <span class="visually-hidden">View this page</span>
+  </a>
+</div>
+<div class="theme-toggle-container theme-toggle-content">
             <button class="theme-toggle">
               <div class="visually-hidden">Toggle Light / Dark / Auto color theme</div>
               <svg class="theme-icon-when-auto-light"><use href="#svg-sun-with-moon"></use></svg>
@@ -230,23 +237,101 @@
               <svg class="theme-icon-when-light"><use href="#svg-sun"></use></svg>
             </button>
           </div>
-          <label class="toc-overlay-icon toc-content-icon no-toc" for="__toc">
+          <label class="toc-overlay-icon toc-content-icon" for="__toc">
             <div class="visually-hidden">Toggle table of contents sidebar</div>
             <i class="icon"><svg><use href="#svg-toc"></use></svg></i>
           </label>
         </div>
         <article role="main" id="furo-main-content">
-          <h1>All modules for which code is available</h1>
-<ul><li><a href="scisbi/base/inference.html">scisbi.base.inference</a></li>
-<li><a href="scisbi/base/simulator.html">scisbi.base.simulator</a></li>
-<li><a href="scisbi/base/summary_statistic.html">scisbi.base.summary_statistic</a></li>
-<li><a href="scisbi/base/workflow.html">scisbi.base.workflow</a></li>
-<li><a href="scisbi/inference/ABC.html">scisbi.inference.ABC</a></li>
-<li><a href="scisbi/inference/ABCMCMC.html">scisbi.inference.ABCMCMC</a></li>
-<li><a href="scisbi/inference/ABCSMC.html">scisbi.inference.ABCSMC</a></li>
-<li><a href="scisbi/inference/JANA.html">scisbi.inference.JANA</a></li>
-<li><a href="scisbi/inference/Simformer.html">scisbi.inference.Simformer</a></li>
+          <section id="documentation-build-guide">
+<h1>Documentation Build Guide<a class="headerlink" href="#documentation-build-guide" title="Link to this heading">¶</a></h1>
+<p>This documentation system uses Sphinx with a minimal, clean configuration.</p>
+<section id="quick-start">
+<h2>Quick Start<a class="headerlink" href="#quick-start" title="Link to this heading">¶</a></h2>
+<section id="local-development">
+<h3>Local Development<a class="headerlink" href="#local-development" title="Link to this heading">¶</a></h3>
+<p><strong>Windows:</strong></p>
+<div class="highlight-bash notranslate"><div class="highlight"><pre><span></span><span class="nb">cd</span><span class="w"> </span>docs
+make.bat<span class="w"> </span>html
+</pre></div>
+</div>
+<p><strong>Linux/macOS:</strong></p>
+<div class="highlight-bash notranslate"><div class="highlight"><pre><span></span><span class="nb">cd</span><span class="w"> </span>docs
+make<span class="w"> </span>html
+</pre></div>
+</div>
+</section>
+<section id="dependencies">
+<h3>Dependencies<a class="headerlink" href="#dependencies" title="Link to this heading">¶</a></h3>
+<p>Install required packages:</p>
+<div class="highlight-bash notranslate"><div class="highlight"><pre><span></span>pip<span class="w"> </span>install<span class="w"> </span>-r<span class="w"> </span>docs/requirements.txt
+</pre></div>
+</div>
+<p>Dependencies include:</p>
+<ul class="simple">
+<li><p><code class="docutils literal notranslate"><span class="pre">sphinx&gt;=5.0</span></code> - Documentation builder</p></li>
+<li><p><code class="docutils literal notranslate"><span class="pre">furo</span></code> - Clean, modern theme</p></li>
+<li><p><code class="docutils literal notranslate"><span class="pre">myst-parser</span></code> - Markdown support</p></li>
 </ul>
+</section>
+</section>
+<section id="structure">
+<h2>Structure<a class="headerlink" href="#structure" title="Link to this heading">¶</a></h2>
+<div class="highlight-default notranslate"><div class="highlight"><pre><span></span>docs/
+├── conf.py           # Sphinx configuration
+├── index.rst         # Main documentation index
+├── overview.rst      # Project overview
+├── quickstart.rst    # Getting started guide
+├── api.rst          # API reference
+├── requirements.txt  # Documentation dependencies
+├── Makefile         # Linux/macOS build commands
+├── make.bat         # Windows build commands
+├── _static/         # Static files (CSS, images)
+├── _templates/      # Custom Jinja2 templates
+└── _build/          # Generated documentation (auto-created)
+</pre></div>
+</div>
+</section>
+<section id="available-commands">
+<h2>Available Commands<a class="headerlink" href="#available-commands" title="Link to this heading">¶</a></h2>
+<ul class="simple">
+<li><p><code class="docutils literal notranslate"><span class="pre">make</span> <span class="pre">html</span></code> / <code class="docutils literal notranslate"><span class="pre">make.bat</span> <span class="pre">html</span></code> - Build HTML documentation</p></li>
+<li><p><code class="docutils literal notranslate"><span class="pre">make</span> <span class="pre">clean</span></code> / <code class="docutils literal notranslate"><span class="pre">make.bat</span> <span class="pre">clean</span></code> - Remove build files</p></li>
+<li><p><code class="docutils literal notranslate"><span class="pre">make</span> <span class="pre">check-deps</span></code> / <code class="docutils literal notranslate"><span class="pre">make.bat</span> <span class="pre">check-deps</span></code> - Verify dependencies</p></li>
+</ul>
+</section>
+<section id="github-actions">
+<h2>GitHub Actions<a class="headerlink" href="#github-actions" title="Link to this heading">¶</a></h2>
+<p>Documentation is automatically built and deployed via GitHub Actions:</p>
+<ul class="simple">
+<li><p><strong>Trigger:</strong> Push or PR to <code class="docutils literal notranslate"><span class="pre">main</span></code> branch</p></li>
+<li><p><strong>Build:</strong> Runs on Ubuntu with Python 3.11</p></li>
+<li><p><strong>Deploy:</strong> GitHub Pages (main branch only)</p></li>
+</ul>
+</section>
+<section id="features">
+<h2>Features<a class="headerlink" href="#features" title="Link to this heading">¶</a></h2>
+<ul class="simple">
+<li><p><strong>Auto-generated API docs</strong> from docstrings</p></li>
+<li><p><strong>Modern Furo theme</strong> with dark/light mode</p></li>
+<li><p><strong>Markdown support</strong> via MyST parser</p></li>
+<li><p><strong>Search functionality</strong> built-in</p></li>
+<li><p><strong>Mobile responsive</strong> design</p></li>
+<li><p><strong>Fast builds</strong> with minimal warnings</p></li>
+</ul>
+</section>
+<section id="customization">
+<h2>Customization<a class="headerlink" href="#customization" title="Link to this heading">¶</a></h2>
+<ul class="simple">
+<li><p><strong>Theme settings:</strong> Edit <code class="docutils literal notranslate"><span class="pre">html_*</span></code> options in <code class="docutils literal notranslate"><span class="pre">conf.py</span></code></p></li>
+<li><p><strong>Static files:</strong> Add CSS/JS to <code class="docutils literal notranslate"><span class="pre">_static/</span></code></p></li>
+<li><p><strong>Templates:</strong> Customize layouts in <code class="docutils literal notranslate"><span class="pre">_templates/</span></code></p></li>
+<li><p><strong>Extensions:</strong> Add Sphinx extensions to <code class="docutils literal notranslate"><span class="pre">extensions</span></code> list</p></li>
+</ul>
+<p>The system is designed to be simple, maintainable, and produce clean, professional documentation with minimal configuration.</p>
+</section>
+</section>
+
         </article>
       </div>
       <footer>
@@ -272,15 +357,43 @@
 
       </footer>
     </div>
-    <aside class="toc-drawer no-toc">
+    <aside class="toc-drawer">
 
+
+      <div class="toc-sticky toc-scroll">
+        <div class="toc-title-container">
+          <span class="toc-title">
+            On this page
+          </span>
+        </div>
+        <div class="toc-tree-container">
+          <div class="toc-tree">
+            <ul>
+<li><a class="reference internal" href="#">Documentation Build Guide</a><ul>
+<li><a class="reference internal" href="#quick-start">Quick Start</a><ul>
+<li><a class="reference internal" href="#local-development">Local Development</a></li>
+<li><a class="reference internal" href="#dependencies">Dependencies</a></li>
+</ul>
+</li>
+<li><a class="reference internal" href="#structure">Structure</a></li>
+<li><a class="reference internal" href="#available-commands">Available Commands</a></li>
+<li><a class="reference internal" href="#github-actions">GitHub Actions</a></li>
+<li><a class="reference internal" href="#features">Features</a></li>
+<li><a class="reference internal" href="#customization">Customization</a></li>
+</ul>
+</li>
+</ul>
+
+          </div>
+        </div>
+      </div>
 
 
     </aside>
   </div>
-</div><script src="../_static/documentation_options.js?v=d45e8c67"></script>
-    <script src="../_static/doctools.js?v=9bcbadda"></script>
-    <script src="../_static/sphinx_highlight.js?v=dc90522c"></script>
-    <script src="../_static/scripts/furo.js?v=5fa4622c"></script>
+</div><script src="_static/documentation_options.js?v=d45e8c67"></script>
+    <script src="_static/doctools.js?v=9bcbadda"></script>
+    <script src="_static/sphinx_highlight.js?v=dc90522c"></script>
+    <script src="_static/scripts/furo.js?v=5fa4622c"></script>
     </body>
 </html>
