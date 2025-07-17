@@ -1,0 +1,31 @@
+
+GAUSSIAN SCALING DEMO REPORT
+========================================
+
+OVERALL STATISTICS:
+- Total runs: 30
+- Successful runs: 26
+- Success rate: 86.67%
+
+METHOD PERFORMANCE:
+
+ABC-Rejection:
+- Average runtime: 0.264s
+- Average MSE: 0.5620
+- Success rate: 100.00%
+
+ABC-MCMC:
+- Average runtime: 0.443s
+- Average MSE: 1.9949
+- Success rate: 73.33%
+
+KEY FINDINGS:
+1. ABC-Rejection shows exponential runtime growth with decreasing tolerance
+2. ABC-MCMC has more stable runtime but can fail with tight tolerances
+3. Both methods benefit from increased sample sizes for accuracy
+4. Trade-off exists between computational cost and accuracy
+
+RECOMMENDATIONS:
+- Use tolerance >= 0.5 for interactive work
+- ABC-Rejection good for quick results with loose tolerances
+- ABC-MCMC better for consistent performance
