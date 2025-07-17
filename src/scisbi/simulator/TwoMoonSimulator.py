@@ -37,7 +37,7 @@ class TwoMoonsSimulator(BaseSimulator):
             Numpy array of shape [2*num_simulations, 2] containing the flattened data points.
         """
         if parameters is not None and len(parameters) >= 4:
-            noise = parameters[0]
+            noise = abs(parameters[0])  # Ensure noise is always positive
             moon_radius = parameters[1]
             moon_width = parameters[2]
             moon_distance = parameters[3]

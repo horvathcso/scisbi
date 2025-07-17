@@ -185,6 +185,9 @@ class LotkaVolterraSimulator(BaseSimulator):
             prey = np.maximum(0, prey + noise_prey)
             predator = np.maximum(0, predator + noise_predator)
 
+            if len(prey) != self.n_points:
+                i -= 1
+                continue
             trajectories[i, 0] = prey
             trajectories[i, 1] = predator
 
