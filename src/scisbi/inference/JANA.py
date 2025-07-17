@@ -46,19 +46,28 @@ class JANAPosterior:
         else:
             observed_summary = observed_data
 
+        print(observed_summary.shape)
         observed_tensor = (
             torch.from_numpy(np.atleast_2d(observed_summary)).float().to(self.device)
         )
-
         with torch.no_grad():
             # Tile observed_tensor to match num_samples for batch processing
-            x = observed_tensor.repeat(num_samples, 1)
-
+            x = observed_tensor
+            print(x.shape)
             # Sample from prior to get z
             z_samples = self.prior.sample(num_samples)
             if z_samples.ndim == 1:
                 z_samples = z_samples.reshape(1, -1)
             z = torch.from_numpy(z_samples).float().to(self.device)
+
+            # Ensure z matches the batch size of x
+            if z.shape[0] != x.shape[0]:
+                if z.shape[0] == 1:
+                    z = z.repeat(x.shape[0], 1)
+                else:
+                    raise ValueError(
+                        f"Batch size mismatch: x has {x.shape[0]} samples, z has {z.shape[0]} samples"
+                    )
 
             samples = self.model(x, z).cpu().numpy()
 
@@ -95,6 +104,68 @@ class JANA(BaseInferenceAlgorithm):
 
         self.model = model.to(self.device)
 
+    def _transform_parameters(self, parameters):
+        """
+        Transform parameters to ensure they meet simulator constraints.
+        Generic implementation that handles different simulator types.
+        """
+        if isinstance(parameters, torch.Tensor):
+            params = parameters.clone()
+            # For Gaussian simulators, ensure std parameters are positive
+            # For multivariate case, second half are std parameters
+            if params.ndim > 1:
+                # Batch case
+                param_dim = params.shape[-1]
+                if param_dim > 2:  # Multivariate case
+                    # Second half are std parameters
+                    std_start = param_dim // 2
+                    params[:, std_start:] = torch.abs(params[:, std_start:])
+                elif param_dim == 2:  # Univariate case
+                    params[:, -1] = torch.abs(params[:, -1])
+            else:
+                # Single parameter vector
+                param_dim = len(params)
+                if param_dim > 2:  # Multivariate case
+                    std_start = param_dim // 2
+                    params[std_start:] = torch.abs(params[std_start:])
+                elif param_dim == 2:  # Univariate case
+                    params[-1] = torch.abs(params[-1])
+
+            # Return as tensor/array for multivariate, dict for univariate
+            if params.ndim == 1:
+                if len(params) == 2:  # Univariate Gaussian
+                    return {"mean": params[0].item(), "std": params[1].item()}
+                else:
+                    # Multivariate case - return as array
+                    return params.detach().cpu().numpy()
+            else:
+                # Batch case - return as tensor
+                return params
+        else:
+            params = np.copy(parameters)
+            if params.ndim == 1:
+                param_dim = len(params)
+                if param_dim > 2:  # Multivariate case
+                    std_start = param_dim // 2
+                    params[std_start:] = np.abs(params[std_start:])
+                elif param_dim == 2:  # Univariate case
+                    params[-1] = abs(params[-1])
+
+                # Return dict only for univariate case
+                if param_dim == 2:
+                    return {"mean": params[0], "std": params[1]}
+                else:
+                    return params
+            else:
+                # Batch case - ensure std parameters are positive
+                param_dim = params.shape[-1]
+                if param_dim > 2:
+                    std_start = param_dim // 2
+                    params[:, std_start:] = np.abs(params[:, std_start:])
+                elif param_dim == 2:
+                    params[:, -1] = np.abs(params[:, -1])
+                return params
+
     def infer(
         self,
         observed_data: Optional[Any] = None,
@@ -122,9 +193,18 @@ class JANA(BaseInferenceAlgorithm):
 
         simulated_data = []
         for i in trange(num_simulations, desc="Simulations", disable=not verbose):
-            sim_data = self.simulator.simulate(thetas[i])
+            # Transform parameters to ensure they meet simulator constraints
+            transformed_params = self._transform_parameters(thetas[i])
+            sim_data = self.simulator.simulate(transformed_params)
             if self.summary_statistic:
                 sim_data = self.summary_statistic.compute(sim_data)
+
+            # Ensure data is flattened for neural network compatibility
+            if hasattr(sim_data, "shape"):
+                sim_data = sim_data.flatten()
+            elif isinstance(sim_data, list):
+                sim_data = np.array(sim_data).flatten()
+
             simulated_data.append(sim_data)
 
         thetas = torch.from_numpy(np.array(thetas)).float()
@@ -170,8 +250,10 @@ class JANA(BaseInferenceAlgorithm):
 
                 # Sample z from prior
                 z_samples = self.prior.sample(x_batch.shape[0])
+                # Always ensure z_samples is 2D with correct batch size
                 if z_samples.ndim == 1:
                     z_samples = z_samples.reshape(1, -1)
+                    z_samples = np.repeat(z_samples, x_batch.shape[0], axis=0)
                 z_batch = torch.from_numpy(z_samples).float().to(self.device)
 
                 theta_pred = self.model(x_batch, z_batch)
@@ -194,8 +276,10 @@ class JANA(BaseInferenceAlgorithm):
                         theta_batch.to(self.device),
                     )
                     z_samples = self.prior.sample(x_batch.shape[0])
+                    # Always ensure z_samples is 2D with correct batch size
                     if z_samples.ndim == 1:
                         z_samples = z_samples.reshape(1, -1)
+                        z_samples = np.repeat(z_samples, x_batch.shape[0], axis=0)
                     z_batch = torch.from_numpy(z_samples).float().to(self.device)
                     theta_pred = self.model(x_batch, z_batch)
                     loss = nn.MSELoss()(theta_pred, theta_batch)

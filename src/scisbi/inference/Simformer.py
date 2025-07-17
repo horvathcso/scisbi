@@ -376,7 +376,6 @@ class Simformer(BaseInferenceAlgorithm):
             # Sample parameters for this sequence
             seq_params = []
             seq_data = []
-
             for j in range(sequence_length):
                 # Sample parameter
                 param = self.prior.sample()
@@ -391,12 +390,10 @@ class Simformer(BaseInferenceAlgorithm):
                         param = param.flatten()
                 else:
                     param = np.atleast_1d(param)
-
                 # Simulate data
                 sim_data = self.simulator.simulate(param)
                 if self.summary_statistic:
                     sim_data = self.summary_statistic.compute(sim_data)
-
                 # Ensure sim_data is 1D
                 if isinstance(sim_data, (list, tuple)):
                     sim_data = np.array(sim_data)
@@ -411,7 +408,6 @@ class Simformer(BaseInferenceAlgorithm):
             # Store sequence
             all_sequences.append(np.array(seq_data))
             all_params.append(np.array(seq_params))
-
             # Generate observed data (last simulation in sequence)
             observed_param = seq_params[-1]
             observed_data = self.simulator.simulate(observed_param)

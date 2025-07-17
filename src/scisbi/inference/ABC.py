@@ -169,7 +169,6 @@ class ABCRejectionSampling(BaseInferenceAlgorithm):
 
             # Step 1: Sample parameters from prior
             theta_candidate = self.prior.sample()
-
             # Step 2: Simulate data with candidate parameters
             simulated_data = self.simulator.simulate(
                 theta_candidate, num_simulations=len(observed_summary)
