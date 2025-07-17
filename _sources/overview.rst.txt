@@ -18,8 +18,6 @@ Key Features
 
 - **Inference Methods**: ABC, ABCMC, ABCSMC, JANA, Simformer
 - **Simulators**: Gaussian, Gaussian Mixture, GRN, Lotka-Volterra, Two Moon
-- **Summary Statistics**: Built-in and customizable statistical summaries
-- **Flexible Workflow**: Easy-to-use base classes and workflows
 
 Getting Started
 ---------------
