@@ -8,11 +8,13 @@ A personal project with multiple aims:
 
 # Installation
 
-The 0.0.1-alpha release can be installed through pip.
+The 0.0.1-alpha release can be installed through pip with CUDA backend.
 
 ```
 pip install --pre scisbi
 ```
+
+In case you would want to use torch on cpu, then you can clone the repository, modify the requirement file and install locally.
 
 # Bugs
 The library is most likely not maintained in any way furter and contains a significant amount of known bugs. The only part which might be suitable for usage is the ABC based inference methods, though their implementation is not optimized in any way, so even those are not encouraged to be used.
