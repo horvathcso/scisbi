@@ -5,7 +5,7 @@
     <meta name="color-scheme" content="light dark"><link rel="index" title="Index" href="../../../genindex.html" /><link rel="search" title="Search" href="../../../search.html" />
 
     <!-- Generated with Sphinx 8.2.3 and Furo 2025.07.19 -->
-        <title>scisbi.base.workflow - scisbi v0.0.1</title>
+        <title>scisbi.simulator.GaussianSimulator - scisbi v0.0.1</title>
       <link rel="stylesheet" type="text/css" href="../../../_static/pygments.css?v=d111a655" />
     <link rel="stylesheet" type="text/css" href="../../../_static/styles/furo.css?v=25af2a20" />
     <link rel="stylesheet" type="text/css" href="../../../_static/styles/furo-extensions.css?v=8dab3a3b" />
@@ -235,82 +235,102 @@
           </label>
         </div>
         <article role="main" id="furo-main-content">
-          <h1>Source code for scisbi.base.workflow</h1><div class="highlight"><pre>
-<span></span><span class="c1"># scisbi/base/workflow.py</span>
-
-<span class="kn">import</span><span class="w"> </span><span class="nn">abc</span>
-<span class="kn">from</span><span class="w"> </span><span class="nn">typing</span><span class="w"> </span><span class="kn">import</span> <span class="n">Any</span><span class="p">,</span> <span class="n">Dict</span><span class="p">,</span> <span class="n">Optional</span>  <span class="c1"># Import necessary types</span>
-
-<span class="c1"># Import base classes for type hinting</span>
-<span class="kn">from</span><span class="w"> </span><span class="nn">.inference</span><span class="w"> </span><span class="kn">import</span> <span class="n">BaseInferenceAlgorithm</span>
-<span class="kn">from</span><span class="w"> </span><span class="nn">.simulator</span><span class="w"> </span><span class="kn">import</span> <span class="n">BaseSimulator</span>
-<span class="kn">from</span><span class="w"> </span><span class="nn">.summary_statistic</span><span class="w"> </span><span class="kn">import</span> <span class="n">BaseSummaryStatistic</span>
+          <h1>Source code for scisbi.simulator.GaussianSimulator</h1><div class="highlight"><pre>
+<span></span><span class="kn">import</span><span class="w"> </span><span class="nn">numpy</span><span class="w"> </span><span class="k">as</span><span class="w"> </span><span class="nn">np</span>
+<span class="kn">from</span><span class="w"> </span><span class="nn">scisbi.base.simulator</span><span class="w"> </span><span class="kn">import</span> <span class="n">BaseSimulator</span>
 
 
-<div class="viewcode-block" id="BaseWorkflow">
-<a class="viewcode-back" href="../../../api.html#scisbi.base.BaseWorkflow">[docs]</a>
-<span class="k">class</span><span class="w"> </span><span class="nc">BaseWorkflow</span><span class="p">(</span><span class="n">abc</span><span class="o">.</span><span class="n">ABC</span><span class="p">):</span>
+<div class="viewcode-block" id="GaussianSimulator">
+<a class="viewcode-back" href="../../../api.html#scisbi.simulator.GaussianSimulator">[docs]</a>
+<span class="k">class</span><span class="w"> </span><span class="nc">GaussianSimulator</span><span class="p">(</span><span class="n">BaseSimulator</span><span class="p">):</span>
 <span class="w">    </span><span class="sd">&quot;&quot;&quot;</span>
-<span class="sd">    Abstract base class for defining and executing a complete SBI workflow.</span>
+<span class="sd">    Simulator for data from a Gaussian distribution.</span>
 
-<span class="sd">    A workflow combines a simulator, prior, inference algorithm, summary statistic, etc.</span>
+<span class="sd">    This simulator generates observations from a Gaussian (normal) distribution</span>
+<span class="sd">    with configurable mean and standard deviation parameters.</span>
 <span class="sd">    &quot;&quot;&quot;</span>
 
-    <span class="k">def</span><span class="w"> </span><span class="fm">__init__</span><span class="p">(</span>
-        <span class="bp">self</span><span class="p">,</span>
-        <span class="n">simulator</span><span class="p">:</span> <span class="n">BaseSimulator</span><span class="p">,</span>
-        <span class="n">prior</span><span class="p">:</span> <span class="n">Any</span><span class="p">,</span>
-        <span class="n">inference_algorithm</span><span class="p">:</span> <span class="n">BaseInferenceAlgorithm</span><span class="p">,</span>
-        <span class="n">summary_statistic</span><span class="p">:</span> <span class="n">Optional</span><span class="p">[</span><span class="n">BaseSummaryStatistic</span><span class="p">]</span> <span class="o">=</span> <span class="kc">None</span><span class="p">,</span>
-        <span class="o">**</span><span class="n">kwargs</span><span class="p">:</span> <span class="n">Any</span><span class="p">,</span>
-    <span class="p">):</span>
+    <span class="k">def</span><span class="w"> </span><span class="fm">__init__</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">dimensions</span><span class="o">=</span><span class="mi">1</span><span class="p">,</span> <span class="n">use_covariance</span><span class="o">=</span><span class="kc">False</span><span class="p">,</span> <span class="n">seed</span><span class="o">=</span><span class="kc">None</span><span class="p">,</span> <span class="o">**</span><span class="n">kwargs</span><span class="p">):</span>
 <span class="w">        </span><span class="sd">&quot;&quot;&quot;</span>
-<span class="sd">        Intializes the workflow.</span>
+<span class="sd">        Initialize the Gaussian simulator.</span>
 
 <span class="sd">        Args:</span>
-<span class="sd">            simulator (BaseSimulator): The simulator instance.</span>
-<span class="sd">            prior (Any): The prior instance.</span>
-<span class="sd">            inference_algorithm (BaseInferenceAlgorithm): The inference algorithm instance.</span>
-<span class="sd">            summary_statistic (Optional[BaseSummaryStatistic]): The summary statistic instance.</span>
-<span class="sd">            **kwargs: Workflow-specific configuration.</span>
+<span class="sd">            dimensions (int): Number of dimensions for the Gaussian. Default is 1 (univariate).</span>
+<span class="sd">            use_covariance (bool): If True, use full covariance matrix for multivariate</span>
+<span class="sd">                                   Gaussian. Only applies when dimensions &gt; 1. Default is False.</span>
+<span class="sd">            seed (int, optional): Random seed for reproducibility.</span>
+<span class="sd">            **kwargs: Additional configuration parameters passed to BaseSimulator.</span>
 <span class="sd">        &quot;&quot;&quot;</span>
-        <span class="c1"># Type checks (can be kept for runtime validation if desired)</span>
-        <span class="k">if</span> <span class="ow">not</span> <span class="nb">isinstance</span><span class="p">(</span><span class="n">simulator</span><span class="p">,</span> <span class="n">BaseSimulator</span><span class="p">):</span>
-            <span class="k">raise</span> <span class="ne">TypeError</span><span class="p">(</span><span class="s2">&quot;simulator must be an instance of BaseSimulator&quot;</span><span class="p">)</span>
-        <span class="k">if</span> <span class="ow">not</span> <span class="nb">isinstance</span><span class="p">(</span><span class="n">prior</span><span class="p">,</span> <span class="n">Any</span><span class="p">):</span>
-            <span class="k">raise</span> <span class="ne">TypeError</span><span class="p">(</span><span class="s2">&quot;prior must be an instance of Any&quot;</span><span class="p">)</span>
-        <span class="k">if</span> <span class="ow">not</span> <span class="nb">isinstance</span><span class="p">(</span><span class="n">inference_algorithm</span><span class="p">,</span> <span class="n">BaseInferenceAlgorithm</span><span class="p">):</span>
-            <span class="k">raise</span> <span class="ne">TypeError</span><span class="p">(</span>
-                <span class="s2">&quot;inference_algorithm must be an instance of BaseInferenceAlgorithm&quot;</span>
-            <span class="p">)</span>
-        <span class="k">if</span> <span class="n">summary_statistic</span> <span class="ow">is</span> <span class="ow">not</span> <span class="kc">None</span> <span class="ow">and</span> <span class="ow">not</span> <span class="nb">isinstance</span><span class="p">(</span>
-            <span class="n">summary_statistic</span><span class="p">,</span> <span class="n">BaseSummaryStatistic</span>
-        <span class="p">):</span>
-            <span class="k">raise</span> <span class="ne">TypeError</span><span class="p">(</span><span class="s2">&quot;summary_statistic must be a BaseSummaryStatistic or None&quot;</span><span class="p">)</span>
+        <span class="nb">super</span><span class="p">()</span><span class="o">.</span><span class="fm">__init__</span><span class="p">(</span><span class="o">**</span><span class="n">kwargs</span><span class="p">)</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">dimensions</span> <span class="o">=</span> <span class="n">dimensions</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">use_covariance</span> <span class="o">=</span> <span class="n">use_covariance</span> <span class="ow">and</span> <span class="n">dimensions</span> <span class="o">&gt;</span> <span class="mi">1</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">rng</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">random</span><span class="o">.</span><span class="n">RandomState</span><span class="p">(</span><span class="n">seed</span><span class="p">)</span> <span class="k">if</span> <span class="n">seed</span> <span class="ow">is</span> <span class="ow">not</span> <span class="kc">None</span> <span class="k">else</span> <span class="n">np</span><span class="o">.</span><span class="n">random</span>
 
-        <span class="bp">self</span><span class="o">.</span><span class="n">simulator</span><span class="p">:</span> <span class="n">BaseSimulator</span> <span class="o">=</span> <span class="n">simulator</span>
-        <span class="bp">self</span><span class="o">.</span><span class="n">prior</span><span class="p">:</span> <span class="n">Any</span> <span class="o">=</span> <span class="n">prior</span>
-        <span class="bp">self</span><span class="o">.</span><span class="n">inference_algorithm</span><span class="p">:</span> <span class="n">BaseInferenceAlgorithm</span> <span class="o">=</span> <span class="n">inference_algorithm</span>
-        <span class="bp">self</span><span class="o">.</span><span class="n">summary_statistic</span><span class="p">:</span> <span class="n">Optional</span><span class="p">[</span><span class="n">BaseSummaryStatistic</span><span class="p">]</span> <span class="o">=</span> <span class="n">summary_statistic</span>
-        <span class="bp">self</span><span class="o">.</span><span class="n">config</span><span class="p">:</span> <span class="n">Dict</span><span class="p">[</span><span class="nb">str</span><span class="p">,</span> <span class="n">Any</span><span class="p">]</span> <span class="o">=</span> <span class="n">kwargs</span>
-
-<div class="viewcode-block" id="BaseWorkflow.run">
-<a class="viewcode-back" href="../../../api.html#scisbi.base.BaseWorkflow.run">[docs]</a>
-    <span class="nd">@abc</span><span class="o">.</span><span class="n">abstractmethod</span>
-    <span class="k">def</span><span class="w"> </span><span class="nf">run</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">observed_data</span><span class="p">:</span> <span class="n">Any</span><span class="p">,</span> <span class="n">num_simulations</span><span class="p">:</span> <span class="nb">int</span><span class="p">,</span> <span class="o">**</span><span class="n">kwargs</span><span class="p">:</span> <span class="n">Any</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="n">Any</span><span class="p">:</span>
+<div class="viewcode-block" id="GaussianSimulator.simulate">
+<a class="viewcode-back" href="../../../api.html#scisbi.simulator.GaussianSimulator.simulate">[docs]</a>
+    <span class="k">def</span><span class="w"> </span><span class="nf">simulate</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">parameters</span><span class="p">,</span> <span class="n">num_simulations</span><span class="o">=</span><span class="mi">1</span><span class="p">):</span>
 <span class="w">        </span><span class="sd">&quot;&quot;&quot;</span>
-<span class="sd">        Executes the complete SBI workflow.</span>
+<span class="sd">        Generate samples from a Gaussian distribution with given parameters.</span>
 
 <span class="sd">        Args:</span>
-<span class="sd">            observed_data (Any): The observed data.</span>
-<span class="sd">                                 Format depends on the simulator output. Use Any.</span>
-<span class="sd">            num_simulations (int): The number of simulations to run for inference.</span>
-<span class="sd">            **kwargs: Additional parameters for running the workflow.</span>
+<span class="sd">            parameters (dict or array-like): Parameters for the Gaussian distribution.</span>
+<span class="sd">                If dict: Should contain &#39;mean&#39; and &#39;std&#39; or &#39;cov&#39; keys.</span>
+<span class="sd">                If array-like: First half represents mean, second half represents std or</span>
+<span class="sd">                flattened covariance (if use_covariance=True).</span>
+<span class="sd">            num_simulations (int): Number of samples to generate.</span>
 
 <span class="sd">        Returns:</span>
-<span class="sd">            Any: The estimated posterior distribution.</span>
+<span class="sd">            np.ndarray: Array of shape (num_simulations, dimensions) containing</span>
+<span class="sd">                        the simulated observations.</span>
 <span class="sd">        &quot;&quot;&quot;</span>
-        <span class="k">pass</span></div>
+        <span class="nb">super</span><span class="p">()</span><span class="o">.</span><span class="n">simulate</span><span class="p">(</span><span class="n">parameters</span><span class="p">,</span> <span class="n">num_simulations</span><span class="p">)</span>
+
+        <span class="c1"># Process parameters based on their type</span>
+        <span class="k">if</span> <span class="nb">isinstance</span><span class="p">(</span><span class="n">parameters</span><span class="p">,</span> <span class="nb">dict</span><span class="p">):</span>
+            <span class="n">mean</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">asarray</span><span class="p">(</span><span class="n">parameters</span><span class="p">[</span><span class="s2">&quot;mean&quot;</span><span class="p">])</span>
+            <span class="k">if</span> <span class="bp">self</span><span class="o">.</span><span class="n">use_covariance</span><span class="p">:</span>
+                <span class="n">cov</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">asarray</span><span class="p">(</span><span class="n">parameters</span><span class="p">[</span><span class="s2">&quot;cov&quot;</span><span class="p">])</span>
+            <span class="k">else</span><span class="p">:</span>
+                <span class="n">std</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">asarray</span><span class="p">(</span><span class="n">parameters</span><span class="p">[</span><span class="s2">&quot;std&quot;</span><span class="p">])</span>
+        <span class="k">else</span><span class="p">:</span>
+            <span class="n">parameters</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">asarray</span><span class="p">(</span><span class="n">parameters</span><span class="p">)</span>
+            <span class="k">if</span> <span class="nb">len</span><span class="p">(</span><span class="n">parameters</span><span class="p">)</span> <span class="o">==</span> <span class="mi">2</span> <span class="o">*</span> <span class="bp">self</span><span class="o">.</span><span class="n">dimensions</span><span class="p">:</span>
+                <span class="n">mean</span> <span class="o">=</span> <span class="n">parameters</span><span class="p">[:</span> <span class="bp">self</span><span class="o">.</span><span class="n">dimensions</span><span class="p">]</span>
+                <span class="n">std</span> <span class="o">=</span> <span class="n">parameters</span><span class="p">[</span><span class="bp">self</span><span class="o">.</span><span class="n">dimensions</span> <span class="p">:]</span>
+            <span class="k">elif</span> <span class="p">(</span>
+                <span class="bp">self</span><span class="o">.</span><span class="n">use_covariance</span>
+                <span class="ow">and</span> <span class="nb">len</span><span class="p">(</span><span class="n">parameters</span><span class="p">)</span> <span class="o">==</span> <span class="bp">self</span><span class="o">.</span><span class="n">dimensions</span> <span class="o">+</span> <span class="bp">self</span><span class="o">.</span><span class="n">dimensions</span><span class="o">**</span><span class="mi">2</span>
+            <span class="p">):</span>
+                <span class="n">mean</span> <span class="o">=</span> <span class="n">parameters</span><span class="p">[:</span> <span class="bp">self</span><span class="o">.</span><span class="n">dimensions</span><span class="p">]</span>
+                <span class="n">cov</span> <span class="o">=</span> <span class="n">parameters</span><span class="p">[</span><span class="bp">self</span><span class="o">.</span><span class="n">dimensions</span> <span class="p">:]</span><span class="o">.</span><span class="n">reshape</span><span class="p">(</span>
+                    <span class="bp">self</span><span class="o">.</span><span class="n">dimensions</span><span class="p">,</span> <span class="bp">self</span><span class="o">.</span><span class="n">dimensions</span>
+                <span class="p">)</span>
+            <span class="k">else</span><span class="p">:</span>
+                <span class="k">raise</span> <span class="ne">ValueError</span><span class="p">(</span>
+                    <span class="sa">f</span><span class="s2">&quot;Parameters shape </span><span class="si">{</span><span class="n">parameters</span><span class="o">.</span><span class="n">shape</span><span class="si">}</span><span class="s2"> does not match expected format&quot;</span>
+                <span class="p">)</span>
+
+        <span class="c1"># Generate samples</span>
+        <span class="k">if</span> <span class="bp">self</span><span class="o">.</span><span class="n">dimensions</span> <span class="o">==</span> <span class="mi">1</span><span class="p">:</span>
+            <span class="c1"># Univariate case</span>
+            <span class="n">samples</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">rng</span><span class="o">.</span><span class="n">normal</span><span class="p">(</span>
+                <span class="n">loc</span><span class="o">=</span><span class="n">mean</span><span class="p">,</span> <span class="n">scale</span><span class="o">=</span><span class="n">std</span><span class="p">,</span> <span class="n">size</span><span class="o">=</span><span class="p">(</span><span class="n">num_simulations</span><span class="p">,</span> <span class="bp">self</span><span class="o">.</span><span class="n">dimensions</span><span class="p">)</span>
+            <span class="p">)</span>
+        <span class="k">else</span><span class="p">:</span>
+            <span class="c1"># Multivariate case</span>
+            <span class="k">if</span> <span class="bp">self</span><span class="o">.</span><span class="n">use_covariance</span><span class="p">:</span>
+                <span class="c1"># Ensure covariance matrix is symmetric and positive semi-definite</span>
+                <span class="n">cov</span> <span class="o">=</span> <span class="p">(</span><span class="n">cov</span> <span class="o">+</span> <span class="n">cov</span><span class="o">.</span><span class="n">T</span><span class="p">)</span> <span class="o">/</span> <span class="mi">2</span>
+                <span class="n">samples</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">rng</span><span class="o">.</span><span class="n">multivariate_normal</span><span class="p">(</span>
+                    <span class="n">mean</span><span class="o">=</span><span class="n">mean</span><span class="p">,</span> <span class="n">cov</span><span class="o">=</span><span class="n">cov</span><span class="p">,</span> <span class="n">size</span><span class="o">=</span><span class="n">num_simulations</span>
+                <span class="p">)</span>
+            <span class="k">else</span><span class="p">:</span>
+                <span class="c1"># Independent multivariate sampling using diagonal covariance</span>
+                <span class="n">samples</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">rng</span><span class="o">.</span><span class="n">normal</span><span class="p">(</span>
+                    <span class="n">loc</span><span class="o">=</span><span class="n">mean</span><span class="p">,</span> <span class="n">scale</span><span class="o">=</span><span class="n">std</span><span class="p">,</span> <span class="n">size</span><span class="o">=</span><span class="p">(</span><span class="n">num_simulations</span><span class="p">,</span> <span class="bp">self</span><span class="o">.</span><span class="n">dimensions</span><span class="p">)</span>
+                <span class="p">)</span>
+
+        <span class="k">return</span> <span class="n">samples</span></div>
 </div>
 
 </pre></div>

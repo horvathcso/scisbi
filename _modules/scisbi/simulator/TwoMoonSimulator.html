@@ -5,7 +5,7 @@
     <meta name="color-scheme" content="light dark"><link rel="index" title="Index" href="../../../genindex.html" /><link rel="search" title="Search" href="../../../search.html" />
 
     <!-- Generated with Sphinx 8.2.3 and Furo 2025.07.19 -->
-        <title>scisbi.base.workflow - scisbi v0.0.1</title>
+        <title>scisbi.simulator.TwoMoonSimulator - scisbi v0.0.1</title>
       <link rel="stylesheet" type="text/css" href="../../../_static/pygments.css?v=d111a655" />
     <link rel="stylesheet" type="text/css" href="../../../_static/styles/furo.css?v=25af2a20" />
     <link rel="stylesheet" type="text/css" href="../../../_static/styles/furo-extensions.css?v=8dab3a3b" />
@@ -235,82 +235,88 @@
           </label>
         </div>
         <article role="main" id="furo-main-content">
-          <h1>Source code for scisbi.base.workflow</h1><div class="highlight"><pre>
-<span></span><span class="c1"># scisbi/base/workflow.py</span>
-
-<span class="kn">import</span><span class="w"> </span><span class="nn">abc</span>
-<span class="kn">from</span><span class="w"> </span><span class="nn">typing</span><span class="w"> </span><span class="kn">import</span> <span class="n">Any</span><span class="p">,</span> <span class="n">Dict</span><span class="p">,</span> <span class="n">Optional</span>  <span class="c1"># Import necessary types</span>
-
-<span class="c1"># Import base classes for type hinting</span>
-<span class="kn">from</span><span class="w"> </span><span class="nn">.inference</span><span class="w"> </span><span class="kn">import</span> <span class="n">BaseInferenceAlgorithm</span>
-<span class="kn">from</span><span class="w"> </span><span class="nn">.simulator</span><span class="w"> </span><span class="kn">import</span> <span class="n">BaseSimulator</span>
-<span class="kn">from</span><span class="w"> </span><span class="nn">.summary_statistic</span><span class="w"> </span><span class="kn">import</span> <span class="n">BaseSummaryStatistic</span>
+          <h1>Source code for scisbi.simulator.TwoMoonSimulator</h1><div class="highlight"><pre>
+<span></span><span class="kn">import</span><span class="w"> </span><span class="nn">numpy</span><span class="w"> </span><span class="k">as</span><span class="w"> </span><span class="nn">np</span>
+<span class="kn">from</span><span class="w"> </span><span class="nn">scisbi.base.simulator</span><span class="w"> </span><span class="kn">import</span> <span class="n">BaseSimulator</span>
 
 
-<div class="viewcode-block" id="BaseWorkflow">
-<a class="viewcode-back" href="../../../api.html#scisbi.base.BaseWorkflow">[docs]</a>
-<span class="k">class</span><span class="w"> </span><span class="nc">BaseWorkflow</span><span class="p">(</span><span class="n">abc</span><span class="o">.</span><span class="n">ABC</span><span class="p">):</span>
+<div class="viewcode-block" id="TwoMoonsSimulator">
+<a class="viewcode-back" href="../../../api.html#scisbi.simulator.TwoMoonsSimulator">[docs]</a>
+<span class="k">class</span><span class="w"> </span><span class="nc">TwoMoonsSimulator</span><span class="p">(</span><span class="n">BaseSimulator</span><span class="p">):</span>
 <span class="w">    </span><span class="sd">&quot;&quot;&quot;</span>
-<span class="sd">    Abstract base class for defining and executing a complete SBI workflow.</span>
+<span class="sd">    Simulator for generating two moons dataset.</span>
 
-<span class="sd">    A workflow combines a simulator, prior, inference algorithm, summary statistic, etc.</span>
+<span class="sd">    Parameters:</span>
+<span class="sd">        noise: Standard deviation of Gaussian noise to add to the data (default: 0.1)</span>
+<span class="sd">        moon_radius: Radius of the moons (default: 1.0)</span>
+<span class="sd">        moon_width: Width of the moons (default: 0.8)</span>
+<span class="sd">        moon_distance: Vertical distance between moons (default: 0.5)</span>
 <span class="sd">    &quot;&quot;&quot;</span>
 
     <span class="k">def</span><span class="w"> </span><span class="fm">__init__</span><span class="p">(</span>
-        <span class="bp">self</span><span class="p">,</span>
-        <span class="n">simulator</span><span class="p">:</span> <span class="n">BaseSimulator</span><span class="p">,</span>
-        <span class="n">prior</span><span class="p">:</span> <span class="n">Any</span><span class="p">,</span>
-        <span class="n">inference_algorithm</span><span class="p">:</span> <span class="n">BaseInferenceAlgorithm</span><span class="p">,</span>
-        <span class="n">summary_statistic</span><span class="p">:</span> <span class="n">Optional</span><span class="p">[</span><span class="n">BaseSummaryStatistic</span><span class="p">]</span> <span class="o">=</span> <span class="kc">None</span><span class="p">,</span>
-        <span class="o">**</span><span class="n">kwargs</span><span class="p">:</span> <span class="n">Any</span><span class="p">,</span>
+        <span class="bp">self</span><span class="p">,</span> <span class="n">noise</span><span class="o">=</span><span class="mf">0.1</span><span class="p">,</span> <span class="n">moon_radius</span><span class="o">=</span><span class="mf">1.0</span><span class="p">,</span> <span class="n">moon_width</span><span class="o">=</span><span class="mf">0.8</span><span class="p">,</span> <span class="n">moon_distance</span><span class="o">=-</span><span class="mf">0.25</span><span class="p">,</span> <span class="o">**</span><span class="n">kwargs</span>
     <span class="p">):</span>
+        <span class="nb">super</span><span class="p">()</span><span class="o">.</span><span class="fm">__init__</span><span class="p">(</span><span class="o">**</span><span class="n">kwargs</span><span class="p">)</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">noise</span> <span class="o">=</span> <span class="n">noise</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">moon_radius</span> <span class="o">=</span> <span class="n">moon_radius</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">moon_width</span> <span class="o">=</span> <span class="n">moon_width</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">moon_distance</span> <span class="o">=</span> <span class="n">moon_distance</span>
+
+<div class="viewcode-block" id="TwoMoonsSimulator.simulate">
+<a class="viewcode-back" href="../../../api.html#scisbi.simulator.TwoMoonsSimulator.simulate">[docs]</a>
+    <span class="k">def</span><span class="w"> </span><span class="nf">simulate</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">parameters</span><span class="p">,</span> <span class="n">num_simulations</span><span class="o">=</span><span class="mi">1</span><span class="p">):</span>
 <span class="w">        </span><span class="sd">&quot;&quot;&quot;</span>
-<span class="sd">        Intializes the workflow.</span>
+<span class="sd">        Generate samples from the two moons distribution.</span>
 
 <span class="sd">        Args:</span>
-<span class="sd">            simulator (BaseSimulator): The simulator instance.</span>
-<span class="sd">            prior (Any): The prior instance.</span>
-<span class="sd">            inference_algorithm (BaseInferenceAlgorithm): The inference algorithm instance.</span>
-<span class="sd">            summary_statistic (Optional[BaseSummaryStatistic]): The summary statistic instance.</span>
-<span class="sd">            **kwargs: Workflow-specific configuration.</span>
-<span class="sd">        &quot;&quot;&quot;</span>
-        <span class="c1"># Type checks (can be kept for runtime validation if desired)</span>
-        <span class="k">if</span> <span class="ow">not</span> <span class="nb">isinstance</span><span class="p">(</span><span class="n">simulator</span><span class="p">,</span> <span class="n">BaseSimulator</span><span class="p">):</span>
-            <span class="k">raise</span> <span class="ne">TypeError</span><span class="p">(</span><span class="s2">&quot;simulator must be an instance of BaseSimulator&quot;</span><span class="p">)</span>
-        <span class="k">if</span> <span class="ow">not</span> <span class="nb">isinstance</span><span class="p">(</span><span class="n">prior</span><span class="p">,</span> <span class="n">Any</span><span class="p">):</span>
-            <span class="k">raise</span> <span class="ne">TypeError</span><span class="p">(</span><span class="s2">&quot;prior must be an instance of Any&quot;</span><span class="p">)</span>
-        <span class="k">if</span> <span class="ow">not</span> <span class="nb">isinstance</span><span class="p">(</span><span class="n">inference_algorithm</span><span class="p">,</span> <span class="n">BaseInferenceAlgorithm</span><span class="p">):</span>
-            <span class="k">raise</span> <span class="ne">TypeError</span><span class="p">(</span>
-                <span class="s2">&quot;inference_algorithm must be an instance of BaseInferenceAlgorithm&quot;</span>
-            <span class="p">)</span>
-        <span class="k">if</span> <span class="n">summary_statistic</span> <span class="ow">is</span> <span class="ow">not</span> <span class="kc">None</span> <span class="ow">and</span> <span class="ow">not</span> <span class="nb">isinstance</span><span class="p">(</span>
-            <span class="n">summary_statistic</span><span class="p">,</span> <span class="n">BaseSummaryStatistic</span>
-        <span class="p">):</span>
-            <span class="k">raise</span> <span class="ne">TypeError</span><span class="p">(</span><span class="s2">&quot;summary_statistic must be a BaseSummaryStatistic or None&quot;</span><span class="p">)</span>
-
-        <span class="bp">self</span><span class="o">.</span><span class="n">simulator</span><span class="p">:</span> <span class="n">BaseSimulator</span> <span class="o">=</span> <span class="n">simulator</span>
-        <span class="bp">self</span><span class="o">.</span><span class="n">prior</span><span class="p">:</span> <span class="n">Any</span> <span class="o">=</span> <span class="n">prior</span>
-        <span class="bp">self</span><span class="o">.</span><span class="n">inference_algorithm</span><span class="p">:</span> <span class="n">BaseInferenceAlgorithm</span> <span class="o">=</span> <span class="n">inference_algorithm</span>
-        <span class="bp">self</span><span class="o">.</span><span class="n">summary_statistic</span><span class="p">:</span> <span class="n">Optional</span><span class="p">[</span><span class="n">BaseSummaryStatistic</span><span class="p">]</span> <span class="o">=</span> <span class="n">summary_statistic</span>
-        <span class="bp">self</span><span class="o">.</span><span class="n">config</span><span class="p">:</span> <span class="n">Dict</span><span class="p">[</span><span class="nb">str</span><span class="p">,</span> <span class="n">Any</span><span class="p">]</span> <span class="o">=</span> <span class="n">kwargs</span>
-
-<div class="viewcode-block" id="BaseWorkflow.run">
-<a class="viewcode-back" href="../../../api.html#scisbi.base.BaseWorkflow.run">[docs]</a>
-    <span class="nd">@abc</span><span class="o">.</span><span class="n">abstractmethod</span>
-    <span class="k">def</span><span class="w"> </span><span class="nf">run</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">observed_data</span><span class="p">:</span> <span class="n">Any</span><span class="p">,</span> <span class="n">num_simulations</span><span class="p">:</span> <span class="nb">int</span><span class="p">,</span> <span class="o">**</span><span class="n">kwargs</span><span class="p">:</span> <span class="n">Any</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="n">Any</span><span class="p">:</span>
-<span class="w">        </span><span class="sd">&quot;&quot;&quot;</span>
-<span class="sd">        Executes the complete SBI workflow.</span>
-
-<span class="sd">        Args:</span>
-<span class="sd">            observed_data (Any): The observed data.</span>
-<span class="sd">                                 Format depends on the simulator output. Use Any.</span>
-<span class="sd">            num_simulations (int): The number of simulations to run for inference.</span>
-<span class="sd">            **kwargs: Additional parameters for running the workflow.</span>
+<span class="sd">            parameters: Numpy array of shape [n_params] containing:</span>
+<span class="sd">                        [noise, moon_radius, moon_width, moon_distance]</span>
+<span class="sd">                        If None, uses the default values from initialization.</span>
+<span class="sd">            num_simulations: Number of samples to generate per moon.</span>
+<span class="sd">                             Total samples will be 2*num_simulations.</span>
 
 <span class="sd">        Returns:</span>
-<span class="sd">            Any: The estimated posterior distribution.</span>
+<span class="sd">            Numpy array of shape [2*num_simulations, 2] containing the flattened data points.</span>
 <span class="sd">        &quot;&quot;&quot;</span>
-        <span class="k">pass</span></div>
+        <span class="k">if</span> <span class="n">parameters</span> <span class="ow">is</span> <span class="ow">not</span> <span class="kc">None</span> <span class="ow">and</span> <span class="nb">len</span><span class="p">(</span><span class="n">parameters</span><span class="p">)</span> <span class="o">&gt;=</span> <span class="mi">4</span><span class="p">:</span>
+            <span class="n">noise</span> <span class="o">=</span> <span class="nb">abs</span><span class="p">(</span><span class="n">parameters</span><span class="p">[</span><span class="mi">0</span><span class="p">])</span>  <span class="c1"># Ensure noise is always positive</span>
+            <span class="n">moon_radius</span> <span class="o">=</span> <span class="n">parameters</span><span class="p">[</span><span class="mi">1</span><span class="p">]</span>
+            <span class="n">moon_width</span> <span class="o">=</span> <span class="n">parameters</span><span class="p">[</span><span class="mi">2</span><span class="p">]</span>
+            <span class="n">moon_distance</span> <span class="o">=</span> <span class="n">parameters</span><span class="p">[</span><span class="mi">3</span><span class="p">]</span>
+        <span class="k">else</span><span class="p">:</span>
+            <span class="n">noise</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">noise</span>
+            <span class="n">moon_radius</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">moon_radius</span>
+            <span class="n">moon_width</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">moon_width</span>
+            <span class="n">moon_distance</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">moon_distance</span>
+            <span class="n">parameters</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">zeros</span><span class="p">(</span><span class="mi">4</span><span class="p">)</span>
+            <span class="n">parameters</span><span class="p">[</span><span class="mi">0</span><span class="p">]</span> <span class="o">=</span> <span class="n">noise</span>
+            <span class="n">parameters</span><span class="p">[</span><span class="mi">1</span><span class="p">]</span> <span class="o">=</span> <span class="n">moon_radius</span>
+            <span class="n">parameters</span><span class="p">[</span><span class="mi">2</span><span class="p">]</span> <span class="o">=</span> <span class="n">moon_width</span>
+            <span class="n">parameters</span><span class="p">[</span><span class="mi">3</span><span class="p">]</span> <span class="o">=</span> <span class="n">moon_distance</span>
+
+        <span class="nb">super</span><span class="p">()</span><span class="o">.</span><span class="n">simulate</span><span class="p">(</span><span class="n">parameters</span><span class="p">,</span> <span class="n">num_simulations</span><span class="p">)</span>
+
+        <span class="c1"># Generate first moon</span>
+        <span class="n">t</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">linspace</span><span class="p">(</span><span class="mi">0</span><span class="p">,</span> <span class="n">np</span><span class="o">.</span><span class="n">pi</span><span class="p">,</span> <span class="n">num_simulations</span><span class="p">)</span>
+        <span class="n">x1</span> <span class="o">=</span> <span class="n">moon_radius</span> <span class="o">*</span> <span class="n">np</span><span class="o">.</span><span class="n">cos</span><span class="p">(</span><span class="n">t</span><span class="p">)</span>
+        <span class="n">y1</span> <span class="o">=</span> <span class="n">moon_radius</span> <span class="o">*</span> <span class="n">np</span><span class="o">.</span><span class="n">sin</span><span class="p">(</span><span class="n">t</span><span class="p">)</span>
+
+        <span class="c1"># Generate second moon</span>
+        <span class="n">x2</span> <span class="o">=</span> <span class="n">moon_radius</span> <span class="o">*</span> <span class="n">np</span><span class="o">.</span><span class="n">cos</span><span class="p">(</span><span class="n">t</span> <span class="o">+</span> <span class="n">np</span><span class="o">.</span><span class="n">pi</span><span class="p">)</span> <span class="o">+</span> <span class="n">moon_width</span>
+        <span class="n">y2</span> <span class="o">=</span> <span class="n">moon_radius</span> <span class="o">*</span> <span class="n">np</span><span class="o">.</span><span class="n">sin</span><span class="p">(</span><span class="n">t</span> <span class="o">+</span> <span class="n">np</span><span class="o">.</span><span class="n">pi</span><span class="p">)</span> <span class="o">-</span> <span class="n">moon_distance</span>
+
+        <span class="c1"># Combine moons</span>
+        <span class="n">x</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">concatenate</span><span class="p">([</span><span class="n">x1</span><span class="p">,</span> <span class="n">x2</span><span class="p">])</span>
+        <span class="n">y</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">concatenate</span><span class="p">([</span><span class="n">y1</span><span class="p">,</span> <span class="n">y2</span><span class="p">])</span>
+
+        <span class="c1"># Add noise</span>
+        <span class="n">x</span> <span class="o">+=</span> <span class="n">np</span><span class="o">.</span><span class="n">random</span><span class="o">.</span><span class="n">normal</span><span class="p">(</span><span class="mi">0</span><span class="p">,</span> <span class="n">noise</span><span class="p">,</span> <span class="n">size</span><span class="o">=</span><span class="nb">len</span><span class="p">(</span><span class="n">x</span><span class="p">))</span>
+        <span class="n">y</span> <span class="o">+=</span> <span class="n">np</span><span class="o">.</span><span class="n">random</span><span class="o">.</span><span class="n">normal</span><span class="p">(</span><span class="mi">0</span><span class="p">,</span> <span class="n">noise</span><span class="p">,</span> <span class="n">size</span><span class="o">=</span><span class="nb">len</span><span class="p">(</span><span class="n">y</span><span class="p">))</span>
+
+        <span class="c1"># Combine into one array and flatten</span>
+        <span class="n">points</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">column_stack</span><span class="p">((</span><span class="n">x</span><span class="p">,</span> <span class="n">y</span><span class="p">))</span>
+
+        <span class="k">return</span> <span class="n">points</span></div>
 </div>
 
 </pre></div>

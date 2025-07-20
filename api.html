@@ -5,42 +5,42 @@
     <meta name="color-scheme" content="light dark"><meta name="viewport" content="width=device-width, initial-scale=1" />
 <link rel="index" title="Index" href="genindex.html" /><link rel="search" title="Search" href="search.html" /><link rel="prev" title="Quick Start" href="quickstart.html" />
 
-    <!-- Generated with Sphinx 8.2.3 and Furo 2024.08.06 -->
+    <!-- Generated with Sphinx 8.2.3 and Furo 2025.07.19 -->
         <title>API Reference - scisbi v0.0.1</title>
-      <link rel="stylesheet" type="text/css" href="_static/pygments.css?v=8f2a1f02" />
-    <link rel="stylesheet" type="text/css" href="_static/styles/furo.css?v=354aac6f" />
-    <link rel="stylesheet" type="text/css" href="_static/styles/furo-extensions.css?v=302659d7" />
-
-
+      <link rel="stylesheet" type="text/css" href="_static/pygments.css?v=d111a655" />
+    <link rel="stylesheet" type="text/css" href="_static/styles/furo.css?v=25af2a20" />
+    <link rel="stylesheet" type="text/css" href="_static/styles/furo-extensions.css?v=8dab3a3b" />
+    
+    
 
 
 <style>
   body {
-    --color-code-background: #f8f8f8;
-  --color-code-foreground: black;
-
+    --color-code-background: #f2f2f2;
+  --color-code-foreground: #1e1e1e;
+  
   }
   @media not print {
     body[data-theme="dark"] {
-      --color-code-background: #202020;
-  --color-code-foreground: #d0d0d0;
-
+      --color-code-background: #2b2b2b;
+  --color-code-foreground: #f8f8f2;
+  
     }
     @media (prefers-color-scheme: dark) {
       body:not([data-theme="light"]) {
-        --color-code-background: #202020;
-  --color-code-foreground: #d0d0d0;
-
+        --color-code-background: #2b2b2b;
+  --color-code-foreground: #f8f8f2;
+  
       }
     }
   }
 </style></head>
   <body>
-
+    
     <script>
       document.body.dataset.theme = localStorage.getItem("theme") || "auto";
     </script>
-
+    
 
 <svg xmlns="http://www.w3.org/2000/svg" style="display: none;">
   <symbol id="svg-toc" viewBox="0 0 24 24">
@@ -186,12 +186,11 @@
   </header>
   <aside class="sidebar-drawer">
     <div class="sidebar-container">
-
+      
       <div class="sidebar-sticky"><a class="sidebar-brand" href="index.html">
-
-
+  
   <span class="sidebar-brand-text">scisbi v0.0.1</span>
-
+  
 </a><form class="sidebar-search-container" method="get" action="search.html" role="search">
   <input class="sidebar-search" placeholder="Search" name="q" aria-label="Search">
   <input type="hidden" name="check_keywords" value="yes">
@@ -209,7 +208,7 @@
 </div>
 
       </div>
-
+      
     </div>
   </aside>
   <div class="main">
@@ -1050,6 +1049,244 @@ to learn amortized posterior approximations.</p>
 </section>
 <section id="module-scisbi.simulator">
 <span id="simulators"></span><h2>Simulators<a class="headerlink" href="#module-scisbi.simulator" title="Link to this heading">¶</a></h2>
+<dl class="py class">
+<dt class="sig sig-object py" id="scisbi.simulator.GaussianMixtureSimulator">
+<em class="property"><span class="k"><span class="pre">class</span></span><span class="w"> </span></em><span class="sig-prename descclassname"><span class="pre">scisbi.simulator.</span></span><span class="sig-name descname"><span class="pre">GaussianMixtureSimulator</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">n_components</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">2</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">dimensions</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">1</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">use_covariance</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">False</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">seed</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">None</span></span></em>, <em class="sig-param"><span class="o"><span class="pre">**</span></span><span class="n"><span class="pre">kwargs</span></span></em><span class="sig-paren">)</span><a class="reference internal" href="_modules/scisbi/simulator/GaussianMixtureSimulator.html#GaussianMixtureSimulator"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#scisbi.simulator.GaussianMixtureSimulator" title="Link to this definition">¶</a></dt>
+<dd><p>Bases: <a class="reference internal" href="#scisbi.base.BaseSimulator" title="scisbi.base.simulator.BaseSimulator"><code class="xref py py-class docutils literal notranslate"><span class="pre">BaseSimulator</span></code></a></p>
+<p>Simulator for data from a Gaussian Mixture distribution.</p>
+<p>This simulator generates observations from a mixture of Gaussian (normal) distributions
+with configurable means, standard deviations/covariances, and mixture weights.</p>
+<dl class="py method">
+<dt class="sig sig-object py" id="scisbi.simulator.GaussianMixtureSimulator.simulate">
+<span class="sig-name descname"><span class="pre">simulate</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">parameters</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">num_simulations</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">1</span></span></em><span class="sig-paren">)</span><a class="reference internal" href="_modules/scisbi/simulator/GaussianMixtureSimulator.html#GaussianMixtureSimulator.simulate"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#scisbi.simulator.GaussianMixtureSimulator.simulate" title="Link to this definition">¶</a></dt>
+<dd><p>Generate samples from a Gaussian Mixture distribution with given parameters.</p>
+<dl class="field-list simple">
+<dt class="field-odd">Parameters<span class="colon">:</span></dt>
+<dd class="field-odd"><ul class="simple">
+<li><p><strong>parameters</strong> (<em>dict</em><em> or </em><em>array-like</em>) – <p>Parameters for the Gaussian Mixture distribution.
+If dict: Should contain ‘weights’, ‘means’, and ‘stds’ or ‘covs’ keys.</p>
+<blockquote>
+<div><ul>
+<li><p>’weights’: Array of shape (n_components,) containing mixture weights.</p></li>
+<li><p>’means’: Array of shape (n_components, dimensions) containing component means.</p></li>
+<li><p>’stds’ or ‘covs’: Component standard deviations or covariance matrices.</p></li>
+</ul>
+</div></blockquote>
+<dl class="simple">
+<dt>If array-like: Format depends on configuration:</dt><dd><ul>
+<li><p>With use_covariance=False: [weights, means, stds] flattened</p></li>
+<li><p>With use_covariance=True: [weights, means, covs] flattened</p></li>
+</ul>
+</dd>
+</dl>
+</p></li>
+<li><p><strong>num_simulations</strong> (<em>int</em>) – Number of samples to generate.</p></li>
+</ul>
+</dd>
+<dt class="field-even">Returns<span class="colon">:</span></dt>
+<dd class="field-even"><p><dl class="simple">
+<dt>Array of shape (num_simulations, dimensions) containing</dt><dd><p>the simulated observations.</p>
+</dd>
+</dl>
+</p>
+</dd>
+<dt class="field-odd">Return type<span class="colon">:</span></dt>
+<dd class="field-odd"><p>np.ndarray</p>
+</dd>
+</dl>
+</dd></dl>
+
+</dd></dl>
+
+<dl class="py class">
+<dt class="sig sig-object py" id="scisbi.simulator.GaussianSimulator">
+<em class="property"><span class="k"><span class="pre">class</span></span><span class="w"> </span></em><span class="sig-prename descclassname"><span class="pre">scisbi.simulator.</span></span><span class="sig-name descname"><span class="pre">GaussianSimulator</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">dimensions</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">1</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">use_covariance</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">False</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">seed</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">None</span></span></em>, <em class="sig-param"><span class="o"><span class="pre">**</span></span><span class="n"><span class="pre">kwargs</span></span></em><span class="sig-paren">)</span><a class="reference internal" href="_modules/scisbi/simulator/GaussianSimulator.html#GaussianSimulator"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#scisbi.simulator.GaussianSimulator" title="Link to this definition">¶</a></dt>
+<dd><p>Bases: <a class="reference internal" href="#scisbi.base.BaseSimulator" title="scisbi.base.simulator.BaseSimulator"><code class="xref py py-class docutils literal notranslate"><span class="pre">BaseSimulator</span></code></a></p>
+<p>Simulator for data from a Gaussian distribution.</p>
+<p>This simulator generates observations from a Gaussian (normal) distribution
+with configurable mean and standard deviation parameters.</p>
+<dl class="py method">
+<dt class="sig sig-object py" id="scisbi.simulator.GaussianSimulator.simulate">
+<span class="sig-name descname"><span class="pre">simulate</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">parameters</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">num_simulations</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">1</span></span></em><span class="sig-paren">)</span><a class="reference internal" href="_modules/scisbi/simulator/GaussianSimulator.html#GaussianSimulator.simulate"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#scisbi.simulator.GaussianSimulator.simulate" title="Link to this definition">¶</a></dt>
+<dd><p>Generate samples from a Gaussian distribution with given parameters.</p>
+<dl class="field-list simple">
+<dt class="field-odd">Parameters<span class="colon">:</span></dt>
+<dd class="field-odd"><ul class="simple">
+<li><p><strong>parameters</strong> (<em>dict</em><em> or </em><em>array-like</em>) – Parameters for the Gaussian distribution.
+If dict: Should contain ‘mean’ and ‘std’ or ‘cov’ keys.
+If array-like: First half represents mean, second half represents std or
+flattened covariance (if use_covariance=True).</p></li>
+<li><p><strong>num_simulations</strong> (<em>int</em>) – Number of samples to generate.</p></li>
+</ul>
+</dd>
+<dt class="field-even">Returns<span class="colon">:</span></dt>
+<dd class="field-even"><p><dl class="simple">
+<dt>Array of shape (num_simulations, dimensions) containing</dt><dd><p>the simulated observations.</p>
+</dd>
+</dl>
+</p>
+</dd>
+<dt class="field-odd">Return type<span class="colon">:</span></dt>
+<dd class="field-odd"><p>np.ndarray</p>
+</dd>
+</dl>
+</dd></dl>
+
+</dd></dl>
+
+<dl class="py class">
+<dt class="sig sig-object py" id="scisbi.simulator.GeneRegulatoryNetworkSimulator">
+<em class="property"><span class="k"><span class="pre">class</span></span><span class="w"> </span></em><span class="sig-prename descclassname"><span class="pre">scisbi.simulator.</span></span><span class="sig-name descname"><span class="pre">GeneRegulatoryNetworkSimulator</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">model_type</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><span class="pre">str</span></span><span class="w"> </span><span class="o"><span class="pre">=</span></span><span class="w"> </span><span class="default_value"><span class="pre">'toggle'</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">simulation_time</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><span class="pre">float</span></span><span class="w"> </span><span class="o"><span class="pre">=</span></span><span class="w"> </span><span class="default_value"><span class="pre">1000</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">time_points</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><span class="pre">int</span></span><span class="w"> </span><span class="o"><span class="pre">=</span></span><span class="w"> </span><span class="default_value"><span class="pre">201</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">seed</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><span class="pre">int</span><span class="w"> </span><span class="p"><span class="pre">|</span></span><span class="w"> </span><span class="pre">None</span></span><span class="w"> </span><span class="o"><span class="pre">=</span></span><span class="w"> </span><span class="default_value"><span class="pre">None</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">return_separate_arrays</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><span class="pre">bool</span></span><span class="w"> </span><span class="o"><span class="pre">=</span></span><span class="w"> </span><span class="default_value"><span class="pre">False</span></span></em>, <em class="sig-param"><span class="o"><span class="pre">**</span></span><span class="n"><span class="pre">kwargs</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><span class="pre">Any</span></span></em><span class="sig-paren">)</span><a class="reference internal" href="_modules/scisbi/simulator/GRNSimulator.html#GeneRegulatoryNetworkSimulator"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#scisbi.simulator.GeneRegulatoryNetworkSimulator" title="Link to this definition">¶</a></dt>
+<dd><p>Bases: <a class="reference internal" href="#scisbi.base.BaseSimulator" title="scisbi.base.simulator.BaseSimulator"><code class="xref py py-class docutils literal notranslate"><span class="pre">BaseSimulator</span></code></a></p>
+<p>Simulates stochastic gene regulatory networks using GillesPy2.</p>
+<p>Implements two default models:
+1.  ‘toggle’: A classic two-gene toggle switch.
+2.  ‘complex’: A three-gene repressilator with added autoregulation.</p>
+<p>Parameters are based on literature values. The simulator can return
+time-series data in a flattened 1D array format (default) suitable for
+machine learning, or as separate arrays for each species.</p>
+<dl class="py method">
+<dt class="sig sig-object py" id="scisbi.simulator.GeneRegulatoryNetworkSimulator.get_species_names">
+<span class="sig-name descname"><span class="pre">get_species_names</span></span><span class="sig-paren">(</span><span class="sig-paren">)</span> <span class="sig-return"><span class="sig-return-icon">&#x2192;</span> <span class="sig-return-typehint"><span class="pre">List</span><span class="p"><span class="pre">[</span></span><span class="pre">str</span><span class="p"><span class="pre">]</span></span></span></span><a class="reference internal" href="_modules/scisbi/simulator/GRNSimulator.html#GeneRegulatoryNetworkSimulator.get_species_names"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#scisbi.simulator.GeneRegulatoryNetworkSimulator.get_species_names" title="Link to this definition">¶</a></dt>
+<dd><p>Returns the ordered list of species names.</p>
+</dd></dl>
+
+<dl class="py method">
+<dt class="sig sig-object py" id="scisbi.simulator.GeneRegulatoryNetworkSimulator.get_time_points">
+<span class="sig-name descname"><span class="pre">get_time_points</span></span><span class="sig-paren">(</span><span class="sig-paren">)</span> <span class="sig-return"><span class="sig-return-icon">&#x2192;</span> <span class="sig-return-typehint"><span class="pre">ndarray</span></span></span><a class="reference internal" href="_modules/scisbi/simulator/GRNSimulator.html#GeneRegulatoryNetworkSimulator.get_time_points"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#scisbi.simulator.GeneRegulatoryNetworkSimulator.get_time_points" title="Link to this definition">¶</a></dt>
+<dd><p>Returns the simulation time points.</p>
+</dd></dl>
+
+<dl class="py method">
+<dt class="sig sig-object py" id="scisbi.simulator.GeneRegulatoryNetworkSimulator.simulate">
+<span class="sig-name descname"><span class="pre">simulate</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">parameters</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><span class="pre">ndarray</span><span class="w"> </span><span class="p"><span class="pre">|</span></span><span class="w"> </span><span class="pre">List</span><span class="p"><span class="pre">[</span></span><span class="pre">float</span><span class="p"><span class="pre">]</span></span><span class="w"> </span><span class="p"><span class="pre">|</span></span><span class="w"> </span><span class="pre">None</span></span><span class="w"> </span><span class="o"><span class="pre">=</span></span><span class="w"> </span><span class="default_value"><span class="pre">None</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">num_simulations</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><span class="pre">int</span></span><span class="w"> </span><span class="o"><span class="pre">=</span></span><span class="w"> </span><span class="default_value"><span class="pre">1</span></span></em><span class="sig-paren">)</span> <span class="sig-return"><span class="sig-return-icon">&#x2192;</span> <span class="sig-return-typehint"><span class="pre">ndarray</span><span class="w"> </span><span class="p"><span class="pre">|</span></span><span class="w"> </span><span class="pre">Dict</span><span class="p"><span class="pre">[</span></span><span class="pre">str</span><span class="p"><span class="pre">,</span></span><span class="w"> </span><span class="pre">ndarray</span><span class="p"><span class="pre">]</span></span></span></span><a class="reference internal" href="_modules/scisbi/simulator/GRNSimulator.html#GeneRegulatoryNetworkSimulator.simulate"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#scisbi.simulator.GeneRegulatoryNetworkSimulator.simulate" title="Link to this definition">¶</a></dt>
+<dd><p>Runs the simulation.</p>
+</dd></dl>
+
+</dd></dl>
+
+<dl class="py class">
+<dt class="sig sig-object py" id="scisbi.simulator.LotkaVolterraSimulator">
+<em class="property"><span class="k"><span class="pre">class</span></span><span class="w"> </span></em><span class="sig-prename descclassname"><span class="pre">scisbi.simulator.</span></span><span class="sig-name descname"><span class="pre">LotkaVolterraSimulator</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">t_span</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">(0,</span> <span class="pre">30)</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">n_points</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">100</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">noise_level</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">0.05</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">summary_stats</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">False</span></span></em>, <em class="sig-param"><span class="o"><span class="pre">**</span></span><span class="n"><span class="pre">kwargs</span></span></em><span class="sig-paren">)</span><a class="reference internal" href="_modules/scisbi/simulator/LotkaVolterraSimulator.html#LotkaVolterraSimulator"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#scisbi.simulator.LotkaVolterraSimulator" title="Link to this definition">¶</a></dt>
+<dd><p>Bases: <a class="reference internal" href="#scisbi.base.BaseSimulator" title="scisbi.base.simulator.BaseSimulator"><code class="xref py py-class docutils literal notranslate"><span class="pre">BaseSimulator</span></code></a></p>
+<p>Lotka-Volterra simulator optimized for simulation-based inference.</p>
+<p>The model parameters are:
+- alpha: prey natural growth rate
+- beta: prey death rate due to predation
+- gamma: predator natural death rate
+- delta: predator growth rate from consuming prey
+- x0: initial prey population
+- y0: initial predator population</p>
+<p>For SBI tasks, the parameters are represented as a flat array/tensor:
+[alpha, beta, gamma, delta, x0, y0]</p>
+<p>By default, returns flattened trajectories as a single vector per simulation.</p>
+<dl class="py method">
+<dt class="sig sig-object py" id="scisbi.simulator.LotkaVolterraSimulator.get_original_shape">
+<span class="sig-name descname"><span class="pre">get_original_shape</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">flattened_data</span></span></em><span class="sig-paren">)</span><a class="reference internal" href="_modules/scisbi/simulator/LotkaVolterraSimulator.html#LotkaVolterraSimulator.get_original_shape"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#scisbi.simulator.LotkaVolterraSimulator.get_original_shape" title="Link to this definition">¶</a></dt>
+<dd><p>Reshape flattened data back to trajectories format.</p>
+<dl class="field-list simple">
+<dt class="field-odd">Parameters<span class="colon">:</span></dt>
+<dd class="field-odd"><p><strong>flattened_data</strong> – Array of shape (num_simulations, 2*n_points)</p>
+</dd>
+<dt class="field-even">Returns<span class="colon">:</span></dt>
+<dd class="field-even"><p>Array of shape (num_simulations, 2, n_points)</p>
+</dd>
+</dl>
+</dd></dl>
+
+<dl class="py method">
+<dt class="sig sig-object py" id="scisbi.simulator.LotkaVolterraSimulator.plot_simulation">
+<span class="sig-name descname"><span class="pre">plot_simulation</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">result</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">params</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">None</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">title</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">None</span></span></em><span class="sig-paren">)</span><a class="reference internal" href="_modules/scisbi/simulator/LotkaVolterraSimulator.html#LotkaVolterraSimulator.plot_simulation"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#scisbi.simulator.LotkaVolterraSimulator.plot_simulation" title="Link to this definition">¶</a></dt>
+<dd><p>Plot the simulation results.</p>
+<dl class="field-list simple">
+<dt class="field-odd">Parameters<span class="colon">:</span></dt>
+<dd class="field-odd"><ul class="simple">
+<li><p><strong>result</strong> – Either flattened trajectories of shape (num_simulations, 2*n_points)
+or summary statistics</p></li>
+<li><p><strong>params</strong> – Optional parameters to display</p></li>
+<li><p><strong>title</strong> – Optional plot title</p></li>
+</ul>
+</dd>
+<dt class="field-even">Returns<span class="colon">:</span></dt>
+<dd class="field-even"><p>matplotlib figure</p>
+</dd>
+</dl>
+</dd></dl>
+
+<dl class="py method">
+<dt class="sig sig-object py" id="scisbi.simulator.LotkaVolterraSimulator.simulate">
+<span class="sig-name descname"><span class="pre">simulate</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">parameters</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">num_simulations</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">1</span></span></em><span class="sig-paren">)</span><a class="reference internal" href="_modules/scisbi/simulator/LotkaVolterraSimulator.html#LotkaVolterraSimulator.simulate"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#scisbi.simulator.LotkaVolterraSimulator.simulate" title="Link to this definition">¶</a></dt>
+<dd><p>Run the Lotka-Volterra simulation for SBI.</p>
+<dl class="field-list simple">
+<dt class="field-odd">Parameters<span class="colon">:</span></dt>
+<dd class="field-odd"><ul class="simple">
+<li><p><strong>parameters</strong> – <p>Parameters can be in two formats:
+1) A numpy array/tensor of shape (num_parameters,) with:</p>
+<blockquote>
+<div><p>[alpha, beta, gamma, delta, x0, y0]</p>
+</div></blockquote>
+<ol class="arabic simple" start="2">
+<li><p>A numpy array/tensor of shape (num_simulations, num_parameters)
+with each row containing the parameters for a different simulation</p></li>
+</ol>
+</p></li>
+<li><p><strong>num_simulations</strong> – Number of simulations to run (ignored if parameters has
+batch dimension)</p></li>
+</ul>
+</dd>
+<dt class="field-even">Returns<span class="colon">:</span></dt>
+<dd class="field-even"><p><dl class="simple">
+<dt>numpy array of shape (num_simulations, 2*n_points) containing</dt><dd><p>flattened prey and predator trajectories for each simulation</p>
+</dd>
+</dl>
+<p>If summary_stats=True: numpy array of shape (num_simulations, num_summary_stats)</p>
+</p>
+</dd>
+<dt class="field-odd">Return type<span class="colon">:</span></dt>
+<dd class="field-odd"><p>By default</p>
+</dd>
+</dl>
+</dd></dl>
+
+</dd></dl>
+
+<dl class="py class">
+<dt class="sig sig-object py" id="scisbi.simulator.TwoMoonsSimulator">
+<em class="property"><span class="k"><span class="pre">class</span></span><span class="w"> </span></em><span class="sig-prename descclassname"><span class="pre">scisbi.simulator.</span></span><span class="sig-name descname"><span class="pre">TwoMoonsSimulator</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">noise</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">0.1</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">moon_radius</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">1.0</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">moon_width</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">0.8</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">moon_distance</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">-0.25</span></span></em>, <em class="sig-param"><span class="o"><span class="pre">**</span></span><span class="n"><span class="pre">kwargs</span></span></em><span class="sig-paren">)</span><a class="reference internal" href="_modules/scisbi/simulator/TwoMoonSimulator.html#TwoMoonsSimulator"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#scisbi.simulator.TwoMoonsSimulator" title="Link to this definition">¶</a></dt>
+<dd><p>Bases: <a class="reference internal" href="#scisbi.base.BaseSimulator" title="scisbi.base.simulator.BaseSimulator"><code class="xref py py-class docutils literal notranslate"><span class="pre">BaseSimulator</span></code></a></p>
+<p>Simulator for generating two moons dataset.</p>
+<dl class="field-list simple">
+<dt class="field-odd">Parameters<span class="colon">:</span></dt>
+<dd class="field-odd"><ul class="simple">
+<li><p><strong>noise</strong> – Standard deviation of Gaussian noise to add to the data (default: 0.1)</p></li>
+<li><p><strong>moon_radius</strong> – Radius of the moons (default: 1.0)</p></li>
+<li><p><strong>moon_width</strong> – Width of the moons (default: 0.8)</p></li>
+<li><p><strong>moon_distance</strong> – Vertical distance between moons (default: 0.5)</p></li>
+</ul>
+</dd>
+</dl>
+<dl class="py method">
+<dt class="sig sig-object py" id="scisbi.simulator.TwoMoonsSimulator.simulate">
+<span class="sig-name descname"><span class="pre">simulate</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">parameters</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">num_simulations</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">1</span></span></em><span class="sig-paren">)</span><a class="reference internal" href="_modules/scisbi/simulator/TwoMoonSimulator.html#TwoMoonsSimulator.simulate"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#scisbi.simulator.TwoMoonsSimulator.simulate" title="Link to this definition">¶</a></dt>
+<dd><p>Generate samples from the two moons distribution.</p>
+<dl class="field-list simple">
+<dt class="field-odd">Parameters<span class="colon">:</span></dt>
+<dd class="field-odd"><ul class="simple">
+<li><p><strong>parameters</strong> – Numpy array of shape [n_params] containing:
+[noise, moon_radius, moon_width, moon_distance]
+If None, uses the default values from initialization.</p></li>
+<li><p><strong>num_simulations</strong> – Number of samples to generate per moon.
+Total samples will be 2*num_simulations.</p></li>
+</ul>
+</dd>
+<dt class="field-even">Returns<span class="colon">:</span></dt>
+<dd class="field-even"><p>Numpy array of shape [2*num_simulations, 2] containing the flattened data points.</p>
+</dd>
+</dl>
+</dd></dl>
+
+</dd></dl>
+
 </section>
 <section id="module-scisbi.summary_statistic">
 <span id="summary-statistics"></span><h2>Summary Statistics<a class="headerlink" href="#module-scisbi.summary_statistic" title="Link to this heading">¶</a></h2>
@@ -1059,18 +1296,18 @@ to learn amortized posterior approximations.</p>
         </article>
       </div>
       <footer>
-
+        
         <div class="related-pages">
-
+          
           <a class="prev-page" href="quickstart.html">
               <svg class="furo-related-icon"><use href="#svg-arrow-right"></use></svg>
               <div class="page-info">
                 <div class="context">
                   <span>Previous</span>
                 </div>
-
+                
                 <div class="title">Quick Start</div>
-
+                
               </div>
             </a>
         </div>
@@ -1080,20 +1317,20 @@ to learn amortized posterior approximations.</p>
                 Copyright &#169; 2025, Csongor Horváth
             </div>
             Made with <a href="https://www.sphinx-doc.org/">Sphinx</a> and <a class="muted-link" href="https://pradyunsg.me">@pradyunsg</a>'s
-
+            
             <a href="https://github.com/pradyunsg/furo">Furo</a>
-
+            
           </div>
           <div class="right-details">
-
+            
           </div>
         </div>
-
+        
       </footer>
     </div>
     <aside class="toc-drawer">
-
-
+      
+      
       <div class="toc-sticky toc-scroll">
         <div class="toc-title-container">
           <span class="toc-title">
@@ -1199,7 +1436,33 @@ to learn amortized posterior approximations.</p>
 </li>
 </ul>
 </li>
-<li><a class="reference internal" href="#module-scisbi.simulator">Simulators</a></li>
+<li><a class="reference internal" href="#module-scisbi.simulator">Simulators</a><ul>
+<li><a class="reference internal" href="#scisbi.simulator.GaussianMixtureSimulator"><code class="docutils literal notranslate"><span class="pre">GaussianMixtureSimulator</span></code></a><ul>
+<li><a class="reference internal" href="#scisbi.simulator.GaussianMixtureSimulator.simulate"><code class="docutils literal notranslate"><span class="pre">GaussianMixtureSimulator.simulate()</span></code></a></li>
+</ul>
+</li>
+<li><a class="reference internal" href="#scisbi.simulator.GaussianSimulator"><code class="docutils literal notranslate"><span class="pre">GaussianSimulator</span></code></a><ul>
+<li><a class="reference internal" href="#scisbi.simulator.GaussianSimulator.simulate"><code class="docutils literal notranslate"><span class="pre">GaussianSimulator.simulate()</span></code></a></li>
+</ul>
+</li>
+<li><a class="reference internal" href="#scisbi.simulator.GeneRegulatoryNetworkSimulator"><code class="docutils literal notranslate"><span class="pre">GeneRegulatoryNetworkSimulator</span></code></a><ul>
+<li><a class="reference internal" href="#scisbi.simulator.GeneRegulatoryNetworkSimulator.get_species_names"><code class="docutils literal notranslate"><span class="pre">GeneRegulatoryNetworkSimulator.get_species_names()</span></code></a></li>
+<li><a class="reference internal" href="#scisbi.simulator.GeneRegulatoryNetworkSimulator.get_time_points"><code class="docutils literal notranslate"><span class="pre">GeneRegulatoryNetworkSimulator.get_time_points()</span></code></a></li>
+<li><a class="reference internal" href="#scisbi.simulator.GeneRegulatoryNetworkSimulator.simulate"><code class="docutils literal notranslate"><span class="pre">GeneRegulatoryNetworkSimulator.simulate()</span></code></a></li>
+</ul>
+</li>
+<li><a class="reference internal" href="#scisbi.simulator.LotkaVolterraSimulator"><code class="docutils literal notranslate"><span class="pre">LotkaVolterraSimulator</span></code></a><ul>
+<li><a class="reference internal" href="#scisbi.simulator.LotkaVolterraSimulator.get_original_shape"><code class="docutils literal notranslate"><span class="pre">LotkaVolterraSimulator.get_original_shape()</span></code></a></li>
+<li><a class="reference internal" href="#scisbi.simulator.LotkaVolterraSimulator.plot_simulation"><code class="docutils literal notranslate"><span class="pre">LotkaVolterraSimulator.plot_simulation()</span></code></a></li>
+<li><a class="reference internal" href="#scisbi.simulator.LotkaVolterraSimulator.simulate"><code class="docutils literal notranslate"><span class="pre">LotkaVolterraSimulator.simulate()</span></code></a></li>
+</ul>
+</li>
+<li><a class="reference internal" href="#scisbi.simulator.TwoMoonsSimulator"><code class="docutils literal notranslate"><span class="pre">TwoMoonsSimulator</span></code></a><ul>
+<li><a class="reference internal" href="#scisbi.simulator.TwoMoonsSimulator.simulate"><code class="docutils literal notranslate"><span class="pre">TwoMoonsSimulator.simulate()</span></code></a></li>
+</ul>
+</li>
+</ul>
+</li>
 <li><a class="reference internal" href="#module-scisbi.summary_statistic">Summary Statistics</a></li>
 </ul>
 </li>
@@ -1208,13 +1471,13 @@ to learn amortized posterior approximations.</p>
           </div>
         </div>
       </div>
-
-
+      
+      
     </aside>
   </div>
 </div><script src="_static/documentation_options.js?v=d45e8c67"></script>
     <script src="_static/doctools.js?v=9bcbadda"></script>
     <script src="_static/sphinx_highlight.js?v=dc90522c"></script>
-    <script src="_static/scripts/furo.js?v=5fa4622c"></script>
+    <script src="_static/scripts/furo.js?v=46bd48cc"></script>
     </body>
 </html>
