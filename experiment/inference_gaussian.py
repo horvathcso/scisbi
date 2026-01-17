@@ -30,6 +30,8 @@ from scisbi.simulator.GaussianSimulator import GaussianSimulator
 from scisbi.inference.ABC import ABCRejectionSampling
 from scisbi.inference.ABCMCMC import ABCMCMC
 from scisbi.inference.ABCSMC import ABCSMC
+from scisbi.inference.JANA import JANA
+from scisbi.inference.Simformer import Simformer
 
 # Set random seeds for reproducibility
 np.random.seed(42)
@@ -66,6 +68,7 @@ class UniformPrior:
 
     def sample(self, num_samples=None):
         if num_samples is None:
+            # Single sample (P,)
             return np.array(
                 [
                     np.random.uniform(self.bounds[i, 0], self.bounds[i, 1])
@@ -73,6 +76,7 @@ class UniformPrior:
                 ]
             )
         else:
+            # Batch sample (N, P)
             return np.array(
                 [
                     [
@@ -111,14 +115,19 @@ class SummaryStatistic:
     """Summary statistic for Gaussian data."""
 
     def compute(self, data):
+        # data can be (Batch, N) or (N,)
         if isinstance(data, list):
             data = np.array(data)
-        if data.ndim == 1:
-            data = data.reshape(-1, 1)
 
-        means = np.mean(data, axis=0)
-        stds = np.std(data, axis=0, ddof=1)
-        return np.concatenate([means, stds])
+        # If input is (N,), treat as (1, N) for calculation then squeeze?
+        # Standard: (Batch, N). Returns (Batch, S)
+        if data.ndim == 1:
+            # Assume single batch
+            data = data.reshape(1, -1)
+
+        means = np.mean(data, axis=1, keepdims=True)
+        stds = np.std(data, axis=1, ddof=1, keepdims=True)
+        return np.concatenate([means, stds], axis=1)
 
 
 class GaussianPerturbationKernel:
@@ -153,6 +162,7 @@ class GaussianProposal:
 
 def euclidean_distance(x, y):
     """Euclidean distance between summary statistics."""
+    # x, y: (1, S) or (S,)
     x = np.array(x).flatten()
     y = np.array(y).flatten()
     return np.sqrt(np.sum((x - y) ** 2))
@@ -237,53 +247,11 @@ class ImprovedJANANetwork(nn.Module):
 class ImprovedSimformerNetwork(nn.Module):
     """Improved Simformer network with better stability."""
 
-    def __init__(self, input_dim, output_dim, hidden_dim=64):
-        super().__init__()
-
-        # Input projection
-        self.input_projection = nn.Linear(input_dim, hidden_dim)
-
-        # Positional encoding
-        self.positional_encoding = nn.Parameter(torch.randn(1, 1, hidden_dim) * 0.02)
-
-        # Transformer encoder layer
-        self.transformer = nn.TransformerEncoderLayer(
-            d_model=hidden_dim,
-            nhead=4,
-            dim_feedforward=hidden_dim * 2,
-            dropout=0.1,
-            activation="relu",
-            batch_first=True,
-        )
-
-        # Output projection
-        self.output_projection = nn.Linear(hidden_dim, output_dim)
-
-        # Initialize weights
-        for module in self.modules():
-            if isinstance(module, nn.Linear):
-                nn.init.xavier_uniform_(module.weight, gain=0.1)
-                nn.init.zeros_(module.bias)
-
-    def forward(self, x):
-        # x shape: (batch, input_dim)
-        x = self.input_projection(x)  # (batch, hidden_dim)
-        x = x.unsqueeze(1)  # (batch, 1, hidden_dim)
-        x = x + self.positional_encoding
-
-        # Apply transformer
-        x = self.transformer(x)  # (batch, 1, hidden_dim)
-        x = x.squeeze(1)  # (batch, hidden_dim)
-
-        output = self.output_projection(x)  # (batch, output_dim)
-
-        # Ensure positive std (non-inplace)
-        if output.shape[1] == 2:
-            mean_part = output[:, 0:1]
-            std_part = torch.nn.functional.softplus(output[:, 1:2]) + 0.1
-            output = torch.cat([mean_part, std_part], dim=1)
-
-        return output
+    # Note: Simformer already has a network class in its module, but we can reuse this
+    # or use the one from the module. The experiment used to import modules but define networks here.
+    # The new Simformer implementation uses its own transformer class.
+    # We should use the one from the module if we use the Simformer class.
+    pass
 
 
 # ================================
@@ -295,6 +263,10 @@ def run_abc_rejection(simulator, prior, summary_stat, observed_data, num_samples
     """Run ABC rejection sampling."""
 
     logger.info("Starting ABC Rejection Sampling...")
+    # observed_data should be (1, N)
+    if observed_data.ndim == 1:
+        observed_data = observed_data.reshape(1, -1)
+
     obs_summary = summary_stat.compute(observed_data)
 
     abc = ABCRejectionSampling(
@@ -304,10 +276,15 @@ def run_abc_rejection(simulator, prior, summary_stat, observed_data, num_samples
         tolerance=0.25,
         max_attempts=500000,
         verbose=False,
+        summary_statistic=summary_stat
     )
 
     try:
-        abc_posterior = abc.infer(obs_summary, num_simulations=num_samples)
+        # Note: infer usually takes observed_data, not summary if summary_stat is passed to init.
+        # But if summary_stat is passed to init, ABC handles it.
+        # Here we passed summary_stat to init. So pass observed_data.
+
+        abc_posterior = abc.infer(observed_data, num_simulations=num_samples)
         samples = abc_posterior.get_samples()
 
         # Convert samples to numpy array if needed
@@ -316,13 +293,15 @@ def run_abc_rejection(simulator, prior, summary_stat, observed_data, num_samples
 
         # Handle different sample formats
         if hasattr(samples, "shape") and samples.ndim == 1:
-            # If samples is 1D, reshape to 2D
+            # If samples is 1D (should be 2D N, P), reshape to 2D
             samples = samples.reshape(-1, 2)
 
         logger.info(f"ABC Rejection: Successfully generated {len(samples)} samples")
         return samples, None
     except Exception as e:
         logger.error(f"ABC Rejection failed: {e}")
+        import traceback
+        traceback.print_exc()
         return None, None
 
 
@@ -330,7 +309,9 @@ def run_abc_mcmc(simulator, prior, summary_stat, observed_data, num_samples=2500
     """Run ABC-MCMC."""
 
     logger.info("Starting ABC-MCMC...")
-    obs_summary = summary_stat.compute(observed_data)
+    if observed_data.ndim == 1:
+        observed_data = observed_data.reshape(1, -1)
+
     proposal = GaussianProposal(std=0.1)
 
     abc_mcmc = ABCMCMC(
@@ -342,11 +323,12 @@ def run_abc_mcmc(simulator, prior, summary_stat, observed_data, num_samples=2500
         verbose=False,
         burn_in=100,
         thin=2,
+        summary_statistic=summary_stat
     )
 
     try:
         abc_mcmc_posterior = abc_mcmc.infer(
-            obs_summary, num_simulations=num_samples, num_iterations=1500
+            observed_data, num_iterations=num_samples + 1000 # ensure enough
         )
         samples = abc_mcmc_posterior.get_samples()
 
@@ -354,15 +336,15 @@ def run_abc_mcmc(simulator, prior, summary_stat, observed_data, num_samples=2500
         if isinstance(samples, list):
             samples = np.array(samples)
 
-        # Handle different sample formats
         if hasattr(samples, "shape") and samples.ndim == 1:
-            # If samples is 1D, reshape to 2D
             samples = samples.reshape(-1, 2)
 
         logger.info(f"ABC-MCMC: Successfully generated {len(samples)} samples")
         return samples, None
     except Exception as e:
         logger.error(f"ABC-MCMC failed: {e}")
+        import traceback
+        traceback.print_exc()
         return None, None
 
 
@@ -370,7 +352,9 @@ def run_abc_smc(simulator, prior, summary_stat, observed_data, num_samples=2500)
     """Run ABC-SMC."""
 
     logger.info("Starting ABC-SMC...")
-    obs_summary = summary_stat.compute(observed_data)
+    if observed_data.ndim == 1:
+        observed_data = observed_data.reshape(1, -1)
+
     perturbation_kernel = GaussianPerturbationKernel(std=0.1)
 
     abc_smc = ABCSMC(
@@ -380,11 +364,13 @@ def run_abc_smc(simulator, prior, summary_stat, observed_data, num_samples=2500)
         tolerance_schedule=[0.8, 0.4, 0.2],
         perturbation_kernel=perturbation_kernel,
         verbose=False,
+        summary_statistic=summary_stat,
+        num_particles=num_samples
     )
 
     try:
         abc_smc_posterior = abc_smc.infer(
-            obs_summary, num_simulations=num_samples, num_populations=3
+            observed_data
         )
 
         # Use the sample method to get samples
@@ -399,6 +385,8 @@ def run_abc_smc(simulator, prior, summary_stat, observed_data, num_samples=2500)
 
     except Exception as e:
         logger.error(f"ABC-SMC failed: {e}")
+        import traceback
+        traceback.print_exc()
         return None, None
 
 
@@ -408,23 +396,21 @@ def train_simple_nn(
     """Train simple neural network with device parameter."""
 
     logger.info("Training Simple Neural Network...")
+    if observed_data.ndim == 1:
+        observed_data = observed_data.reshape(1, -1)
+
     obs_summary = summary_stat.compute(observed_data)
 
     # Generate training data
     num_sims = 5000
-    X_train = []
-    y_train = []
 
-    for i in range(num_sims):
-        params = prior.sample()
-        sim_data = simulator.simulate(params, 100)
-        sim_summary = summary_stat.compute(sim_data)
+    # Use batch simulation
+    params = prior.sample(num_sims) # (N, P)
+    sim_data = simulator.simulate(params) # (N, D)
+    sim_summary = summary_stat.compute(sim_data) # (N, S)
 
-        X_train.append(sim_summary)
-        y_train.append(params)
-
-    X_train = np.array(X_train)
-    y_train = np.array(y_train)
+    X_train = sim_summary
+    y_train = params
 
     # Normalize data
     X_mean, X_std = np.mean(X_train, axis=0), np.std(X_train, axis=0)
@@ -432,6 +418,11 @@ def train_simple_nn(
 
     y_mean, y_std = np.mean(y_train, axis=0), np.std(y_train, axis=0)
     y_train_norm = (y_train - y_mean) / (y_std + 1e-8)
+
+    if torch.cuda.is_available():
+        device = "cuda"
+    else:
+        device = "cpu"
 
     # Create model
     model = SimpleNeuralNetwork(X_train.shape[1], y_train.shape[1]).to(device)
@@ -461,7 +452,7 @@ def train_simple_nn(
     model.eval()
     with torch.no_grad():
         obs_norm = (obs_summary - X_mean) / (X_std + 1e-8)
-        obs_tensor = torch.FloatTensor(obs_norm).unsqueeze(0).to(device)
+        obs_tensor = torch.FloatTensor(obs_norm).to(device) # (1, S)
 
         samples = []
 
@@ -505,162 +496,41 @@ def train_jana(
     batch_size=32,
     device="cuda",
 ):
-    """Train JANA with improved stability and device parameter."""
+    """Train JANA."""
 
     logger.info("Training JANA...")
-    obs_summary = summary_stat.compute(observed_data)
+    if observed_data.ndim == 1:
+        observed_data = observed_data.reshape(1, -1)
 
-    # Generate training data
-    num_sims = 5000
-    X_train = []
-    y_train = []
+    # Use JANA class from library
+    jana = JANA(
+        simulator=simulator,
+        prior=prior,
+        model=ImprovedJANANetwork(2, 2), # 2 summary stats, 2 params
+        summary_statistic=summary_stat,
+        device="auto"
+    )
 
-    for i in range(num_sims):
-        params = prior.sample()
-        sim_data = simulator.simulate(params, 100)
-        sim_summary = summary_stat.compute(sim_data)
-
-        X_train.append(sim_summary)
-        y_train.append(params)
-
-    X_train = np.array(X_train)
-    y_train = np.array(y_train)
-
-    # Normalize data
-    X_mean, X_std = np.mean(X_train, axis=0), np.std(X_train, axis=0)
-    X_train_norm = (X_train - X_mean) / (X_std + 1e-8)
-
-    y_mean, y_std = np.mean(y_train, axis=0), np.std(y_train, axis=0)
-    y_train_norm = (y_train - y_mean) / (y_std + 1e-8)
-
-    # Create model
-    input_dim = X_train.shape[1]
-    output_dim = y_train.shape[1]
-
-    model = ImprovedJANANetwork(input_dim, output_dim).to(device)
-    optimizer = optim.Adam(model.parameters(), lr=0.001, weight_decay=1e-5)
-    scheduler = optim.lr_scheduler.ReduceLROnPlateau(optimizer, patience=5, factor=0.8)
-
-    # Training loop with early stopping
-    best_loss = float("inf")
-    patience_counter = 0
-    train_losses = []
-
-    for epoch in range(num_epochs):
-        model.train()
-
-        # Create mini-batches
-        indices = np.random.permutation(len(X_train))
-        epoch_loss = 0
-        num_batches = 0
-
-        for i in range(0, len(X_train), batch_size):
-            batch_indices = indices[i : i + batch_size]
-
-            X_batch = torch.FloatTensor(X_train_norm[batch_indices]).to(device)
-            y_batch = torch.FloatTensor(y_train_norm[batch_indices]).to(device)
-
-            optimizer.zero_grad()
-
-            # Forward pass: use the actual parameters as z input
-            predictions = model(X_batch, y_batch)
-
-            # JANA loss: the network should predict the same parameters it was given
-            loss = nn.MSELoss()(predictions, y_batch)
-
-            # Check for NaN
-            if torch.isnan(loss):
-                logger.error(f"NaN loss detected at epoch {epoch}, batch {i}")
-                return None, train_losses
-
-            loss.backward()
-
-            # Gradient clipping
-            torch.nn.utils.clip_grad_norm_(model.parameters(), max_norm=1.0)
-
-            optimizer.step()
-
-            epoch_loss += loss.item()
-            num_batches += 1
-
-        avg_loss = epoch_loss / num_batches
-        train_losses.append(avg_loss)
-        scheduler.step(avg_loss)
-
-        # Early stopping
-        if avg_loss < best_loss:
-            best_loss = avg_loss
-            patience_counter = 0
-        else:
-            patience_counter += 1
-
-        if patience_counter >= 10:
-            logger.info(f"JANA: Early stopping at epoch {epoch}")
-            break
-
-        if epoch % 10 == 0:
-            logger.info(f"JANA Epoch {epoch}: Loss = {avg_loss:.6f}")
-
-    # Sample from posterior
-    model.eval()
-    with torch.no_grad():
-        obs_norm = (obs_summary - X_mean) / (X_std + 1e-8)
-        obs_tensor = torch.FloatTensor(obs_norm).unsqueeze(0).to(device)
-
-        samples = []
-
-        num_prior_samples = 10000  # Sample more from prior for better coverage
-        prior_samples = prior.sample(num_prior_samples)
-
-        for i in range(num_prior_samples):
-            z_sample = prior_samples[i]
-            z_norm = (z_sample - y_mean) / (y_std + 1e-8)
-            z_tensor = torch.FloatTensor(z_norm).unsqueeze(0).to(device)
-
-            obs_repeated = obs_tensor.repeat(1, 1)
-
-            sample_norm = model(obs_repeated, z_tensor)
-            sample = sample_norm.cpu().numpy()[0] * (y_std + 1e-8) + y_mean
-
-            consistency_threshold = 0.5  # Threshold for accepting samples
-            consistency_error = np.linalg.norm(sample - z_sample)
-
-            if consistency_error < consistency_threshold:
-                samples.append(sample)
-
-        # If we don't have enough samples, use a more lenient approach
-        if len(samples) < 100:
-            logger.warning(
-                f"JANA: Only {len(samples)} consistent samples found, using all prior samples"
-            )
-            samples = []
-            for i in range(min(1000, num_prior_samples)):
-                z_sample = prior_samples[i]
-                z_norm = (z_sample - y_mean) / (y_std + 1e-8)
-                z_tensor = torch.FloatTensor(z_norm).unsqueeze(0).to(device)
-
-                sample_norm = model(obs_tensor, z_tensor)
-                sample = sample_norm.cpu().numpy()[0] * (y_std + 1e-8) + y_mean
-                samples.append(sample)
-
-        samples = np.array(samples)
-
-        # Filter out invalid samples
-        valid_mask = ~np.isnan(samples).any(axis=1)
-        valid_samples = samples[valid_mask]
-
-        # Ensure std parameter is positive
-        valid_samples[:, 1] = np.maximum(valid_samples[:, 1], 0.1)
-
-        logger.info(
-            f"JANA: Successfully generated {len(valid_samples)} valid samples out of 1000"
+    # Infer
+    try:
+        jana_posterior = jana.infer(
+            observed_data=observed_data,
+            num_simulations=5000,
+            batch_size=batch_size,
+            num_epochs=num_epochs,
+            verbose=True
         )
 
-        if len(valid_samples) > 0:
-            return valid_samples, train_losses
-        else:
-            logger.warning("JANA: No valid samples generated")
-            return None, train_losses
+        samples = jana_posterior.sample(observed_data, num_samples=1000)
+
+        # Training loss history not directly available from infer return, but we can return None for plots or capture log
+        return samples, None
+
+    except Exception as e:
+        logger.error(f"JANA failed: {e}")
+        import traceback
+        traceback.print_exc()
+        return None, None
 
 
 def train_simformer(
@@ -672,147 +542,81 @@ def train_simformer(
     batch_size=32,
     device="cuda",
 ):
-    """Train Simformer with improved stability and device parameter."""
+    """Train Simformer."""
 
     logger.info("Training Simformer...")
-    obs_summary = summary_stat.compute(observed_data)
+    if observed_data.ndim == 1:
+        observed_data = observed_data.reshape(1, -1)
 
-    # Generate training data
-    num_sims = 5000
-    X_train = []
-    y_train = []
+    # Use Simformer class from library
+    simformer = Simformer(
+        simulator=simulator,
+        prior=prior,
+        data_dim=1, # Univariate gaussian
+        param_dim=2, # Mean, std
+        summary_statistic=summary_stat, # Wait, Simformer processes raw sequences usually?
+        # The library implementation supports summary_statistic.
+        # But if we use summary statistic (which returns 2 values: mean, std), data_dim should be 2.
+        # If we pass summary_stat, the simulator output (100 samples) is reduced to (2,).
+        # Then sequence is of (2,) vectors? No, Simformer usually takes sequence of simulations.
+        # The library implementation:
+        # seq_data.append(sim_data) where sim_data is summary.
+        # If we use SummaryStatistic class above, it returns (2,) array for (100,) input.
+        # So data_dim should be 2 if we use summary stat.
+        device="auto"
+    )
 
-    for i in range(num_sims):
-        params = prior.sample()
-        sim_data = simulator.simulate(params, 100)
-        sim_summary = summary_stat.compute(sim_data)
+    # If we use summary statistic, the data dim is 2 (mean, std).
+    # If we don't, data dim is 1 (univariate gaussian samples), but then sequence length is 100?
+    # Simformer library implementation generates sequences of parameters.
+    # For each parameter step, it simulates data.
+    # If summary_stat is used, it simulates (100,) -> computes (2,) -> sequence of (2,)s.
 
-        X_train.append(sim_summary)
-        y_train.append(params)
+    # Let's try WITHOUT summary statistic for Simformer to let it learn from raw data sequences?
+    # But Simformer needs a sequence of (param, data) pairs.
+    # The library implementation does:
+    # for j in sequence_length: param=prior.sample(), data=sim(param).
+    # So it learns p(theta | data).
 
-    X_train = np.array(X_train)
-    y_train = np.array(y_train)
+    # If we use summary statistic, data_dim=2.
+    # Let's stick to using summary stat to be comparable with others?
+    # Or let it handle raw data?
+    # GaussianSimulator returns (100,) per simulation.
+    # If we use raw data, data_dim=100.
 
-    # Normalize data
-    X_mean, X_std = np.mean(X_train, axis=0), np.std(X_train, axis=0)
-    X_train_norm = (X_train - X_mean) / (X_std + 1e-8)
+    # Let's use summary statistic for consistency and lower dim.
+    simformer.data_dim = 2
+    simformer.model = simformer.model = Simformer.model = None # re-init model in init... wait
+    # We need to re-initialize the model inside Simformer with correct dimensions if we change them.
+    # Better to init correctly.
 
-    y_mean, y_std = np.mean(y_train, axis=0), np.std(y_train, axis=0)
-    y_train_norm = (y_train - y_mean) / (y_std + 1e-8)
+    simformer = Simformer(
+        simulator=simulator,
+        prior=prior,
+        data_dim=2,
+        param_dim=2,
+        summary_statistic=summary_stat,
+        device="auto"
+    )
 
-    # Create model
-    input_dim = X_train.shape[1]
-    output_dim = y_train.shape[1]
-
-    model = ImprovedSimformerNetwork(input_dim, output_dim).to(device)
-    optimizer = optim.Adam(model.parameters(), lr=0.001, weight_decay=1e-5)
-    scheduler = optim.lr_scheduler.ReduceLROnPlateau(optimizer, patience=5, factor=0.8)
-
-    # Training loop with early stopping
-    best_loss = float("inf")
-    patience_counter = 0
-    train_losses = []
-
-    for epoch in range(num_epochs):
-        model.train()
-
-        # Create mini-batches
-        indices = np.random.permutation(len(X_train))
-        epoch_loss = 0
-        num_batches = 0
-
-        for i in range(0, len(X_train), batch_size):
-            batch_indices = indices[i : i + batch_size]
-
-            X_batch = torch.FloatTensor(X_train_norm[batch_indices]).to(device)
-            y_batch = torch.FloatTensor(y_train_norm[batch_indices]).to(device)
-
-            optimizer.zero_grad()
-
-            # Forward pass
-            predictions = model(X_batch)
-
-            # Simple MSE loss
-            loss = nn.MSELoss()(predictions, y_batch)
-
-            # Check for NaN
-            if torch.isnan(loss):
-                logger.error(f"NaN loss detected at epoch {epoch}, batch {i}")
-                return None, train_losses
-
-            loss.backward()
-
-            # Gradient clipping
-            torch.nn.utils.clip_grad_norm_(model.parameters(), max_norm=1.0)
-
-            optimizer.step()
-
-            epoch_loss += loss.item()
-            num_batches += 1
-
-        avg_loss = epoch_loss / num_batches
-        train_losses.append(avg_loss)
-        scheduler.step(avg_loss)
-
-        # Early stopping
-        if avg_loss < best_loss:
-            best_loss = avg_loss
-            patience_counter = 0
-        else:
-            patience_counter += 1
-
-        if patience_counter >= 10:
-            logger.info(f"Simformer: Early stopping at epoch {epoch}")
-            break
-
-        if epoch % 10 == 0:
-            logger.info(f"Simformer Epoch {epoch}: Loss = {avg_loss:.6f}")
-
-    # Sample from posterior
-    model.eval()
-    with torch.no_grad():
-        obs_norm = (obs_summary - X_mean) / (X_std + 1e-8)
-        obs_tensor = torch.FloatTensor(obs_norm).unsqueeze(0).to(device)
-
-        samples = []
-
-        # Strategy 1: Add meaningful noise to capture uncertainty
-        for _ in range(300):
-            # Add noise scaled by the training data std to capture uncertainty
-            noise_scale = 0.3  # Scale factor for uncertainty
-            noisy_obs = obs_tensor + torch.randn_like(obs_tensor) * noise_scale
-
-            sample_norm = model(noisy_obs)
-            sample = sample_norm.cpu().numpy()[0] * (y_std + 1e-8) + y_mean
-            samples.append(sample)
-
-        # Strategy 2: Ensemble-like sampling by adding different noise levels
-        noise_levels = [0.1, 0.2, 0.3, 0.4, 0.5]
-        for noise_level in noise_levels:
-            for _ in range(140):  # 140 * 5 = 700 more samples
-                noisy_obs = obs_tensor + torch.randn_like(obs_tensor) * noise_level
-                sample_norm = model(noisy_obs)
-                sample = sample_norm.cpu().numpy()[0] * (y_std + 1e-8) + y_mean
-                samples.append(sample)
-
-        samples = np.array(samples)
-
-        # Filter out invalid samples
-        valid_mask = ~np.isnan(samples).any(axis=1)
-        valid_samples = samples[valid_mask]
-
-        # Ensure std parameter is positive
-        valid_samples[:, 1] = np.maximum(valid_samples[:, 1], 0.1)
-
-        logger.info(
-            f"Simformer: Successfully generated {len(valid_samples)} valid samples out of 1000"
+    try:
+        sf_posterior = simformer.infer(
+            observed_data=observed_data,
+            num_simulations=1000, # Sequences
+            sequence_length=20,
+            batch_size=batch_size,
+            num_epochs=num_epochs,
+            verbose=True
         )
 
-        if len(valid_samples) > 0:
-            return valid_samples, train_losses
-        else:
-            logger.warning("Simformer: No valid samples generated")
-            return None, train_losses
+        samples = sf_posterior.sample(observed_data, num_samples=1000)
+        return samples, None
+
+    except Exception as e:
+        logger.error(f"Simformer failed: {e}")
+        import traceback
+        traceback.print_exc()
+        return None, None
 
 
 # ================================
@@ -955,7 +759,7 @@ def create_comparison_plots(results, true_params):
     plt.savefig(
         results_dir / "combined_gaussian_comparison.png", dpi=300, bbox_inches="tight"
     )
-    plt.show()
+    # plt.show()
     logger.info("Comparison plots saved to combined_gaussian_comparison.png")
 
 
@@ -990,7 +794,7 @@ def create_timing_plot(results):
 
     plt.tight_layout()
     plt.savefig(results_dir / "timing_comparison.png", dpi=300, bbox_inches="tight")
-    plt.show()
+    # plt.show()
     logger.info("Timing plot saved to timing_comparison.png")
 
 
@@ -1025,7 +829,7 @@ def plot_training_curves(results):
 
     plt.tight_layout()
     plt.savefig(results_dir / "training_curves.png", dpi=300, bbox_inches="tight")
-    plt.show()
+    # plt.show()
     logger.info("Training curves saved to training_curves.png")
 
 
@@ -1095,7 +899,9 @@ def plot_inferred_model_samples(results, true_params, simulator, filename=None):
     colors = ["blue", "green", "orange", "red", "purple", "brown"]
 
     # Generate true data for comparison
-    true_data = simulator.simulate(true_params, 1000).flatten()
+    # true_params is (P,) -> simulator expects (1, P)
+    true_params_batch = true_params.reshape(1, -1)
+    true_data = simulator.simulate(true_params_batch).flatten() # (100,)
 
     for i, (method_name, result) in enumerate(successful_methods.items()):
         samples = result["samples"]
@@ -1109,7 +915,8 @@ def plot_inferred_model_samples(results, true_params, simulator, filename=None):
         mean_estimate = np.mean(samples, axis=0)
 
         # Generate data from mean estimate
-        mean_data = simulator.simulate(mean_estimate, 1000).flatten()
+        mean_estimate_batch = mean_estimate.reshape(1, -1)
+        mean_data = simulator.simulate(mean_estimate_batch).flatten()
 
         # Plot 1: Histogram comparison
         ax1 = axes[0, i] if num_methods > 1 else axes[0]
@@ -1144,7 +951,8 @@ def plot_inferred_model_samples(results, true_params, simulator, filename=None):
 
         for j, idx in enumerate(indices):
             sample_params = samples[idx]
-            sample_data = simulator.simulate(sample_params, 200).flatten()
+            sample_params_batch = sample_params.reshape(1, -1)
+            sample_data = simulator.simulate(sample_params_batch).flatten()
 
             alpha = 0.3 if j > 0 else 0.7
             label = "Posterior Samples" if j == 0 else None
@@ -1179,7 +987,7 @@ def plot_inferred_model_samples(results, true_params, simulator, filename=None):
     plt.tight_layout()
     if filename:
         plt.savefig(results_dir / filename, dpi=300, bbox_inches="tight")
-    plt.show()
+    # plt.show()
     logger.info(f"Inferred model samples plot saved to {filename}")
 
 
@@ -1200,12 +1008,64 @@ def main():
 
     # Setup
     true_params = np.array([1.5, 2.0])
-    simulator = GaussianSimulator(dimensions=1, seed=42)
+    # GaussianSimulator(dimensions=1) returns (Batch, 1) by default or (Batch, N)?
+    # GaussianSimulator implementation:
+    # return self.rng.normal(loc=mean, scale=std, size=(batch_size, dimensions))
+    # This generates 1 sample per simulation.
+    # But usually we observe multiple data points (e.g. 100).
+    # How to generate 100 samples per parameter set with GaussianSimulator?
+    # The default GaussianSimulator outputs (batch_size, dimensions).
+    # If we want (100,) for a single parameter set, we need to batch the parameters 100 times?
+    # Or modify simulator to return N samples?
+    #
+    # In the new interface, "num_simulations" is gone.
+    # "simulator.simulate(parameters)" returns 1 output per parameter vector.
+    # So if we want 100 i.i.d. samples, we need 100 copies of parameter vector in batch.
+
+    # However, SummaryStatistic expects (N,) data?
+    # The old experiment generated 100 data points.
+
+    # We should define a wrapper or use broadcasting.
+    # If we pass (100, 2) parameters (all same), we get (100, 1) data.
+    # Then summary statistic computes mean/std of these 100 points.
+
+    # Let's adjust how we use the simulator in this experiment.
+
+    # Wrapper simulator for this specific experiment that treats "1 simulation" as "100 i.i.d samples"
+    class IIDGaussianSimulator(GaussianSimulator):
+        def __init__(self, n_samples=100, **kwargs):
+            super().__init__(**kwargs)
+            self.n_samples = n_samples
+
+        def simulate(self, parameters):
+            # parameters: (Batch, 2)
+            # We want output (Batch, n_samples)
+            # Default simulate returns (Batch, 1) if dimensions=1.
+            # We can't easily change default simulate behavior without changing base class or using loop?
+            # Or we can exploit numpy broadcasting if simulate used it?
+            # Default simulate: samples = rng.normal(loc=mean, scale=std, size=(batch_size, dimensions))
+            # If we want size=(batch_size, n_samples), we need to override.
+
+            # Since we are allowed to implement other simulators, let's use a local class or override.
+            # But we are importing GaussianSimulator.
+
+            # Let's just implement simulate here correctly.
+            batch_size = parameters.shape[0]
+            mean = parameters[:, 0:1]
+            std = parameters[:, 1:2]
+
+            # (Batch, n_samples)
+            return self.rng.normal(loc=mean, scale=std, size=(batch_size, self.n_samples))
+
+    simulator = IIDGaussianSimulator(dimensions=1, seed=42, n_samples=100)
     prior = UniformPrior()
     summary_stat = SummaryStatistic()
 
     # Generate observed data
-    observed_data = simulator.simulate(true_params, 100).flatten()
+    # True params (1, 2)
+    true_params_batch = true_params.reshape(1, -1)
+    observed_data = simulator.simulate(true_params_batch).flatten() # (100,)
+
     obs_summary = summary_stat.compute(observed_data)
 
     logger.info(f"True parameters: {true_params}")
@@ -1278,6 +1138,8 @@ def main():
 
         except Exception as e:
             logger.error(f"  ERROR: {e}")
+            import traceback
+            traceback.print_exc()
             results[method_name] = {
                 "samples": None,
                 "time": 0,

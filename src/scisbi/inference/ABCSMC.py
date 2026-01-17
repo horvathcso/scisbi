@@ -9,45 +9,6 @@ from ..base.summary_statistic import BaseSummaryStatistic
 class ABCSMC(BaseInferenceAlgorithm):
     """
     Approximate Bayesian Computation using Sequential Monte Carlo (ABC-SMC).
-
-    ABC-SMC is a likelihood-free inference method that improves upon ABC rejection
-    sampling and ABC-MCMC by using a population of particles that are propagated
-    through a sequence of intermediate distributions with decreasing tolerance
-    thresholds. This approach can avoid getting stuck in areas of low probability
-    and provides better exploration of the parameter space.
-
-    The algorithm implements the following procedure:
-
-    1. Initialize tolerance sequence ε₁ > ε₂ > ... > εₜ ≥ 0.
-    2. For t = 0: Sample N particles {θⁱ₀} from prior π(θ).
-    3. For t > 0:
-       a) Sample θ* from previous population with weights wₜ₋₁.
-       b) Perturb: θ** ~ Kₜ(θ|θ*) using perturbation kernel.
-       c) Check prior: if π(θ**) = 0, reject and resample.
-       d) Simulate: x* ~ f(x|θ**).
-       e) Accept if ρ(x*, x_obs) ≤ εₜ.
-    4. Calculate importance weights for accepted particles.
-    5. Repeat until final tolerance εₜ is reached.
-
-    The key advantages over other ABC methods:
-
-    - Population-based approach avoids local optima.
-    - Sequential refinement allows efficient exploration.
-    - Adaptive tolerance schedule improves convergence.
-    - Importance weighting maintains proper particle distribution.
-
-    References:
-
-    - Sisson, S. A., Fan, Y., & Tanaka, M. M. (2007). Sequential Monte Carlo
-      without likelihoods. Proceedings of the National Academy of Sciences,
-      104(6), 1760-1765.
-    - Del Moral, P., Doucet, A., & Jasra, A. (2006). Sequential Monte Carlo
-      samplers. Journal of the Royal Statistical Society, 68(3), 411-436.
-    - Toni, T., Welch, D., Strelkowa, N., Ipsen, A., & Stumpf, M. P. (2009).
-      Approximate Bayesian computation scheme for parameter inference and model
-      selection in dynamical systems. Journal of the Royal Statistical Society,
-      71(3), 463-482.
-
     """
 
     def __init__(
@@ -63,42 +24,6 @@ class ABCSMC(BaseInferenceAlgorithm):
     ):
         """
         Initialize the ABC-SMC algorithm.
-
-        Args:
-            simulator (BaseSimulator): Simulator object with a 'simulate' method
-                that generates synthetic data given parameters.
-
-            prior (Any): Prior distribution object with 'sample' and 'log_prob' methods.
-                Should support sampling parameter vectors θ ~ π(θ) and
-                computing log-probabilities log π(θ).
-
-            distance_function (Callable[[Any, Any], float]): Function ρ(x_sim, x_obs)
-                that computes the distance between simulated and observed
-                data. Should return a non-negative float value.
-
-            tolerance_schedule (List[float]): Decreasing sequence of tolerance thresholds
-                [ε₁, ε₂, ..., εₜ] where ε₁ > ε₂ > ... > εₜ ≥ 0.
-
-            perturbation_kernel (Callable[[Any], Any]): Kernel Kₜ(θ|θ*) for perturbing
-                particles between iterations. Takes a particle and returns a
-                perturbed version.
-
-            num_particles (int): Number of particles N in the population (default: 1000).
-
-            summary_statistic (Optional[BaseSummaryStatistic]): Optional summary statistic
-                function to reduce data dimensionality before distance computation.
-
-            **kwargs (Optional): Additional configuration parameters such as:
-
-                - max_attempts_per_particle (int): Maximum attempts to accept
-                  each particle (default: 1000).
-                - verbose (bool): Whether to print progress information.
-                - adaptive_tolerance (bool): Whether to adaptively set tolerances
-                  based on population distances (default: False).
-                - effective_sample_size_threshold (float): Threshold for resampling
-                  when effective sample size drops too low (default: 0.5).
-
-
         """
         super().__init__(simulator, prior, summary_statistic, **kwargs)
 
@@ -131,34 +56,6 @@ class ABCSMC(BaseInferenceAlgorithm):
     ) -> "ABCSMCPosterior":
         """
         Perform ABC-SMC sampling to approximate the posterior distribution.
-
-        This method implements the core ABC-SMC algorithm as described in the
-        class docstring. It sequentially refines a population of particles
-        through decreasing tolerance thresholds until convergence.
-
-        Args:
-            observed_data (Any): The observed dataset x_obs to perform inference on.
-                               If summary_statistic was provided during initialization,
-                               this will be processed through the summary statistic.
-            **kwargs: Runtime parameters that override initialization settings:
-                     - tolerance_schedule (List[float]): Override tolerance sequence
-                     - num_particles (int): Override number of particles
-                     - max_attempts_per_particle (int): Override max attempts per particle
-                     - verbose (bool): Override verbosity setting
-                     - adaptive_tolerance (bool): Override adaptive tolerance setting
-
-        Returns:
-            ABCSMCPosterior: Object containing the final particle population and
-                           providing methods to query the approximate posterior.
-
-        Raises:
-            ValueError: If tolerance_schedule is invalid
-            RuntimeError: If algorithm fails to converge or max attempts exceeded
-
-        Note:
-            The choice of tolerance schedule is crucial for performance. Too aggressive
-            schedules may cause particle degeneracy, while too conservative schedules
-            are computationally inefficient. Consider using adaptive tolerance selection.
         """
         # Override settings with runtime parameters
         tolerance_schedule = kwargs.get("tolerance_schedule", self.tolerance_schedule)
@@ -170,6 +67,10 @@ class ABCSMC(BaseInferenceAlgorithm):
         adaptive_tolerance = kwargs.get("adaptive_tolerance", self.adaptive_tolerance)
 
         # Process observed data through summary statistic if provided
+        observed_data = np.asarray(observed_data)
+        if observed_data.ndim == 1:
+             observed_data = observed_data[np.newaxis, :]
+
         if self.summary_statistic is not None:
             observed_summary = self.summary_statistic.compute(observed_data)
         else:
@@ -303,9 +204,11 @@ class ABCSMC(BaseInferenceAlgorithm):
 
             try:
                 # Simulate data
-                simulated_data = self.simulator.simulate(
-                    theta, num_simulations=len(observed_summary)
-                )
+                theta_batch = np.asarray(theta)
+                if theta_batch.ndim == 1:
+                    theta_batch = theta_batch[np.newaxis, :]
+
+                simulated_data = self.simulator.simulate(theta_batch)
 
                 # Apply summary statistic if provided
                 if self.summary_statistic is not None:
@@ -315,6 +218,8 @@ class ABCSMC(BaseInferenceAlgorithm):
 
                 # Compute distance
                 distance = self.distance_function(simulated_summary, observed_summary)
+                if np.ndim(distance) > 0:
+                    distance = distance.item()
 
                 # Accept if within tolerance
                 if distance <= tolerance:
@@ -378,9 +283,11 @@ class ABCSMC(BaseInferenceAlgorithm):
 
             try:
                 # Simulate data
-                simulated_data = self.simulator.simulate(
-                    theta_candidate, num_simulations=len(observed_summary)
-                )
+                theta_batch = np.asarray(theta_candidate)
+                if theta_batch.ndim == 1:
+                    theta_batch = theta_batch[np.newaxis, :]
+
+                simulated_data = self.simulator.simulate(theta_batch)
 
                 # Apply summary statistic if provided
                 if self.summary_statistic is not None:
@@ -390,6 +297,8 @@ class ABCSMC(BaseInferenceAlgorithm):
 
                 # Compute distance
                 distance = self.distance_function(simulated_summary, observed_summary)
+                if np.ndim(distance) > 0:
+                    distance = distance.item()
 
                 # Accept if within tolerance
                 if distance <= tolerance:
@@ -430,9 +339,6 @@ class ABCSMC(BaseInferenceAlgorithm):
     def _kernel_probability(self, theta_from: Any, theta_to: Any) -> float:
         """
         Compute probability density of perturbation kernel K(θ_to | θ_from).
-
-        This is a simplified implementation assuming a symmetric kernel.
-        For more complex kernels, this method should be overridden.
         """
         # For symmetric kernels, return 1.0
         # In practice, this should compute the actual kernel probability
@@ -450,8 +356,6 @@ class ABCSMC(BaseInferenceAlgorithm):
     ) -> float:
         """
         Adaptively update tolerance based on current distance distribution.
-
-        Uses the median or a percentile of current distances as the next tolerance.
         """
         if len(distances) == 0:
             return scheduled_tolerance
@@ -464,10 +368,6 @@ class ABCSMC(BaseInferenceAlgorithm):
 class ABCSMCPosterior:
     """
     Container for ABC-SMC sampling results representing the approximate posterior.
-
-    This class stores the final particle population from ABC-SMC and provides methods
-    to query and analyze the approximate posterior distribution. It also contains
-    the complete evolution history of the particle population through all tolerance levels.
     """
 
     def __init__(
@@ -482,20 +382,6 @@ class ABCSMCPosterior:
         iteration_info: List[dict],
         num_particles: int,
     ):
-        """
-        Initialize the ABC-SMC posterior object.
-
-        Args:
-            particles (List[Any]): Final particle population
-            weights (np.ndarray): Final particle weights
-            distances (List[float]): Final particle distances
-            tolerance_schedule (List[float]): Tolerance sequence used
-            all_populations (List[List[Any]]): Particle populations for each iteration
-            all_weights (List[np.ndarray]): Particle weights for each iteration
-            all_distances (List[List[float]]): Particle distances for each iteration
-            iteration_info (List[dict]): Diagnostic information for each iteration
-            num_particles (int): Target number of particles
-        """
         self.particles = particles
         self.weights = weights / np.sum(weights) if np.sum(weights) > 0 else weights
         self.distances = distances
@@ -508,15 +394,6 @@ class ABCSMCPosterior:
         self.final_tolerance = tolerance_schedule[-1] if tolerance_schedule else 0.0
 
     def sample(self, num_samples: int = 1) -> Union[Any, List[Any]]:
-        """
-        Draw samples from the ABC-SMC posterior using importance sampling.
-
-        Args:
-            num_samples (int): Number of samples to draw
-
-        Returns:
-            Single sample if num_samples=1, otherwise list of samples
-        """
         if len(self.particles) == 0:
             raise ValueError("No particles available for sampling")
 
@@ -531,34 +408,23 @@ class ABCSMCPosterior:
             return [self.particles[i] for i in indices]
 
     def get_particles(self) -> List[Any]:
-        """Return all particles."""
         return self.particles.copy()
 
     def get_weights(self) -> np.ndarray:
-        """Return all particle weights."""
         return self.weights.copy()
 
     def get_distances(self) -> List[float]:
-        """Return all particle distances."""
         return self.distances.copy()
 
     def get_iteration_info(self) -> List[dict]:
-        """Return diagnostic information for each iteration."""
         return self.iteration_info.copy()
 
     def effective_sample_size(self) -> float:
-        """Compute effective sample size of final population."""
         if len(self.weights) == 0:
             return 0.0
         return 1.0 / np.sum(self.weights**2)
 
     def summary_statistics(self) -> dict:
-        """
-        Compute summary statistics of the ABC-SMC posterior.
-
-        Returns:
-            Dictionary with posterior and algorithm summary information
-        """
         final_info = self.iteration_info[-1] if self.iteration_info else {}
 
         return {
@@ -576,28 +442,20 @@ class ABCSMCPosterior:
         }
 
     def plot(self, parameter_index: Optional[int] = None, bins: int = 30) -> None:
-        """
-        Plot a histogram of the posterior samples for a specific parameter or 1D samples.
-
-        Args:
-            parameter_index (Optional[int]): Index of the parameter to plot. If None,
-                                             assumes samples are 1D (default: None).
-            bins (int): Number of bins for the histogram (default: 30).
-        """
         if not self.particles:
             raise ValueError("No particles available to plot.")
 
         # Handle 1D samples or extract the specified parameter
+        particles_arr = np.array(self.particles)
+
         if parameter_index is None:
-            if isinstance(self.particles[0], (list, tuple)):
+            if particles_arr.ndim > 1 and particles_arr.shape[1] > 1:
                 raise ValueError(
                     "Samples are multi-dimensional. Specify parameter_index."
                 )
-            parameter_values = self.particles
+            parameter_values = particles_arr.flatten()
         else:
-            parameter_values = [
-                particle[parameter_index] for particle in self.particles
-            ]
+            parameter_values = particles_arr[:, parameter_index]
 
         plt.hist(
             parameter_values,
@@ -620,13 +478,6 @@ class ABCSMCPosterior:
         plt.show()
 
     def plot_evolution(self, parameter_index: Optional[int] = None) -> None:
-        """
-        Plot the evolution of particle distributions across tolerance levels.
-
-        Args:
-            parameter_index (Optional[int]): Index of the parameter to plot. If None,
-                                             assumes samples are 1D.
-        """
         if not self.all_populations:
             raise ValueError("No population history available to plot.")
 
@@ -653,14 +504,15 @@ class ABCSMCPosterior:
             tolerance = self.tolerance_schedule[iter_idx]
 
             # Extract parameter values
+            particles_arr = np.array(particles)
             if parameter_index is None:
-                if isinstance(particles[0], (list, tuple)):
+                if particles_arr.ndim > 1 and particles_arr.shape[1] > 1:
                     raise ValueError(
                         "Samples are multi-dimensional. Specify parameter_index."
                     )
-                parameter_values = particles
+                parameter_values = particles_arr.flatten()
             else:
-                parameter_values = [particle[parameter_index] for particle in particles]
+                parameter_values = particles_arr[:, parameter_index]
 
             if i < len(axes):
                 axes[i].hist(
@@ -687,7 +539,6 @@ class ABCSMCPosterior:
         plt.show()
 
     def plot_diagnostics(self) -> None:
-        """Plot diagnostic information across iterations."""
         if not self.iteration_info:
             raise ValueError("No iteration information available.")
 
@@ -750,7 +601,6 @@ class ABCSMCPosterior:
         plt.show()
 
     def __len__(self) -> int:
-        """Return number of particles."""
         return len(self.particles)
 
     def __repr__(self) -> str:

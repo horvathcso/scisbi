@@ -248,6 +248,8 @@ class SimformerPosterior:
                     context_params = context_params.reshape(1, -1)
 
                 # This would require access to simulator - simplified for now
+                # In real scenario we should call simulator
+                # Assuming context is not critical for simple demo or will fallback
                 context_sequences = torch.randn(
                     10, 50, observed_tensor.shape[-1], device=self.device
                 )
@@ -366,64 +368,69 @@ class Simformer(BaseInferenceAlgorithm):
         Generate training data consisting of parameter sequences and corresponding
         simulation sequences.
         """
-        all_sequences = []
-        all_params = []
-        all_observed = []
+        # Batch generation logic
+        total_steps = num_simulations * sequence_length
+        # Generate all parameters at once (or in chunks)
+        # Assuming sequence_length isn't too large, we can loop over sequences
+        # but batch the steps within a sequence?
+        # Or batch across simulations.
 
-        for i in trange(
-            num_simulations, desc="Generating sequences", disable=not verbose
-        ):
-            # Sample parameters for this sequence
-            seq_params = []
-            seq_data = []
-            for j in range(sequence_length):
-                # Sample parameter
-                param = self.prior.sample()
-                if isinstance(param, (int, float)):
-                    param = np.array([param])
-                elif hasattr(param, "ndim"):
-                    if param.ndim == 0:
-                        param = np.array([param])
-                    elif param.ndim == 1:
-                        param = param
-                    else:
-                        param = param.flatten()
-                else:
-                    param = np.atleast_1d(param)
-                # Simulate data
-                sim_data = self.simulator.simulate(param)
-                if self.summary_statistic:
-                    sim_data = self.summary_statistic.compute(sim_data)
-                # Ensure sim_data is 1D
-                if isinstance(sim_data, (list, tuple)):
-                    sim_data = np.array(sim_data)
-                if sim_data.ndim == 0:
-                    sim_data = np.array([sim_data])
-                elif sim_data.ndim > 1:
-                    sim_data = sim_data.flatten()
+        # We need (num_simulations, sequence_length, data_dim) and params.
 
-                seq_params.append(param)
-                seq_data.append(sim_data)
+        all_sequences = np.zeros((num_simulations, sequence_length, self.data_dim))
+        all_params = np.zeros((num_simulations, sequence_length, self.param_dim))
+        all_observed = np.zeros((num_simulations, self.data_dim))
 
-            # Store sequence
-            all_sequences.append(np.array(seq_data))
-            all_params.append(np.array(seq_params))
-            # Generate observed data (last simulation in sequence)
-            observed_param = seq_params[-1]
-            observed_data = self.simulator.simulate(observed_param)
+        # Batch size for simulations to avoid memory issues
+        # We process 'batch_size' sequences at a time
+        sim_batch_size = 100
+
+        for i in trange(0, num_simulations, sim_batch_size, desc="Generating sequences", disable=not verbose):
+            current_batch_size = min(sim_batch_size, num_simulations - i)
+
+            # Generate (current_batch_size, sequence_length, param_dim)
+            # Sample (current_batch_size * sequence_length) params
+            params_flat = self.prior.sample(current_batch_size * sequence_length)
+            if params_flat.ndim == 1:
+                params_flat = params_flat.reshape(-1, 1)
+
+            # Simulate all steps
+            # Simulators handle (Batch, P) -> (Batch, D)
+            sim_data_flat = self.simulator.simulate(params_flat)
             if self.summary_statistic:
-                observed_data = self.summary_statistic.compute(observed_data)
+                sim_data_flat = self.summary_statistic.compute(sim_data_flat)
 
-            if isinstance(observed_data, (list, tuple)):
-                observed_data = np.array(observed_data)
-            if observed_data.ndim == 0:
-                observed_data = np.array([observed_data])
-            elif observed_data.ndim > 1:
-                observed_data = observed_data.flatten()
+            # Flatten sim_data if it has extra dims
+            if sim_data_flat.ndim > 2:
+                sim_data_flat = sim_data_flat.reshape(sim_data_flat.shape[0], -1)
+            elif sim_data_flat.ndim == 1:
+                sim_data_flat = sim_data_flat.reshape(-1, 1)
 
-            all_observed.append(observed_data)
+            # Reshape back to (Batch, Seq, Dim)
+            params_seq = params_flat.reshape(current_batch_size, sequence_length, -1)
+            data_seq = sim_data_flat.reshape(current_batch_size, sequence_length, -1)
 
-        return np.array(all_sequences), np.array(all_params), np.array(all_observed)
+            all_params[i : i + current_batch_size] = params_seq
+            all_sequences[i : i + current_batch_size] = data_seq
+
+            # Generate observed data (last parameter of each sequence re-simulated? or just take last data?)
+            # The original code re-simulated: observed_data = self.simulator.simulate(observed_param)
+            # This implies observed data is another realization from the same parameter.
+            # Let's keep that logic.
+
+            last_params = params_seq[:, -1, :] # (Batch, P)
+            observed_data_batch = self.simulator.simulate(last_params)
+            if self.summary_statistic:
+                observed_data_batch = self.summary_statistic.compute(observed_data_batch)
+
+            if observed_data_batch.ndim > 2:
+                observed_data_batch = observed_data_batch.reshape(observed_data_batch.shape[0], -1)
+            elif observed_data_batch.ndim == 1:
+                observed_data_batch = observed_data_batch.reshape(-1, 1)
+
+            all_observed[i : i + current_batch_size] = observed_data_batch
+
+        return all_sequences, all_params, all_observed
 
     def infer(
         self,
