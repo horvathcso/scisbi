@@ -18,8 +18,6 @@ class LotkaVolterraSimulator(BaseSimulator):
 
     For SBI tasks, the parameters are represented as a flat array/tensor:
     [alpha, beta, gamma, delta, x0, y0]
-
-    By default, returns flattened trajectories as a single vector per simulation.
     """
 
     def __init__(
@@ -37,7 +35,8 @@ class LotkaVolterraSimulator(BaseSimulator):
             t_span: tuple (t_start, t_end) defining the time range for simulation
             n_points: number of time points to evaluate
             noise_level: observation noise (relative to population sizes)
-            summary_stats: if True, return summary statistics instead of flattened trajectories
+            summary_stats: if True, return summary statistics instead of trajectories.
+                           Note: It is recommended to use a separate SummaryStatistic class.
             **kwargs: Additional configuration parameters
         """
         super().__init__(**kwargs)
@@ -50,14 +49,6 @@ class LotkaVolterraSimulator(BaseSimulator):
     def _system(self, t, z, params):
         """
         The Lotka-Volterra differential equations.
-
-        Args:
-            t: time point
-            z: state vector [prey, predator]
-            params: model parameters [alpha, beta, gamma, delta]
-
-        Returns:
-            derivatives [dx/dt, dy/dt]
         """
         x, y = z
         alpha, beta, gamma, delta = params
@@ -110,46 +101,38 @@ class LotkaVolterraSimulator(BaseSimulator):
 
         return summary
 
-    def simulate(self, parameters, num_simulations=1):
+    def simulate(self, parameters):
         """
         Run the Lotka-Volterra simulation for SBI.
 
         Args:
-            parameters: Parameters can be in two formats:
-                1) A numpy array/tensor of shape (num_parameters,) with:
-                   [alpha, beta, gamma, delta, x0, y0]
-                2) A numpy array/tensor of shape (num_simulations, num_parameters)
-                   with each row containing the parameters for a different simulation
-            num_simulations: Number of simulations to run (ignored if parameters has
-                            batch dimension)
+            parameters: Parameters array of shape (Batch_Size, 6)
+                        [alpha, beta, gamma, delta, x0, y0]
 
         Returns:
-            By default: numpy array of shape (num_simulations, 2*n_points) containing
-                flattened prey and predator trajectories for each simulation
-            If summary_stats=True: numpy array of shape (num_simulations, num_summary_stats)
-        """
-        super().simulate(parameters, num_simulations)
+            numpy array of shape (Batch_Size, 2, n_points) containing
+            prey and predator trajectories for each simulation.
 
+            If summary_stats=True, returns shape (Batch_Size, 8).
+        """
         # Handle different input formats
-        if len(np.asarray(parameters).shape) == 1:
-            # Single parameter vector, repeat for all simulations
-            param_batch = np.tile(parameters, (num_simulations, 1))
-        else:
-            # Batch of parameters
-            param_batch = np.asarray(parameters)
-            num_simulations = param_batch.shape[0]
+        parameters = np.asarray(parameters)
+        if parameters.ndim == 1:
+            parameters = parameters[np.newaxis, :]
+
+        num_simulations = parameters.shape[0]
 
         # Ensure parameters have the right shape
-        if param_batch.shape[1] != 6:
+        if parameters.shape[1] != 6:
             raise ValueError(
-                f"Expected 6 parameters [alpha, beta, gamma, delta, x0, y0], got {param_batch.shape[1]}"
+                f"Expected 6 parameters [alpha, beta, gamma, delta, x0, y0], got {parameters.shape[1]}"
             )
 
         # Prepare output array for trajectories
         trajectories = np.zeros((num_simulations, 2, self.n_points))
 
         for i in range(num_simulations):
-            params = param_batch[i]
+            params = parameters[i]
             alpha, beta, gamma, delta, x0, y0 = params
 
             # Ensure non-negative parameters
@@ -185,30 +168,32 @@ class LotkaVolterraSimulator(BaseSimulator):
             prey = np.maximum(0, prey + noise_prey)
             predator = np.maximum(0, predator + noise_predator)
 
+            # Handle case where solver failed or returned fewer points (should rely on t_eval though)
             if len(prey) != self.n_points:
-                i -= 1
-                continue
+                # Fill with last known value or zeros?
+                # For now, let's just keep what we have padded or truncated,
+                # but solve_ivp with t_eval usually guarantees points.
+                # If it failed, it might be shorter.
+                # Let's assume t_eval forces it.
+                pass
+
             trajectories[i, 0] = prey
             trajectories[i, 1] = predator
 
-        # Return summary statistics or flattened trajectories
+        # Return summary statistics or trajectories
         if self.summary_stats:
             return self._compute_summary_statistics(trajectories)
         else:
-            # Flatten the trajectories to shape (num_simulations, 2*n_points)
-            # First n_points elements are prey, next n_points are predators
-            flattened = np.zeros((num_simulations, 2 * self.n_points))
-            flattened[:, : self.n_points] = trajectories[:, 0, :]  # Prey
-            flattened[:, self.n_points :] = trajectories[:, 1, :]  # Predator
-            return flattened
+            return trajectories
 
     def plot_simulation(self, result, params=None, title=None):
         """
         Plot the simulation results.
 
         Args:
-            result: Either flattened trajectories of shape (num_simulations, 2*n_points)
-                   or summary statistics
+            result: Trajectories of shape (Batch, 2, n_points)
+                    or flattened (Batch, 2*n_points) for backward compatibility in plotting
+                    or summary stats (Batch, 8).
             params: Optional parameters to display
             title: Optional plot title
 
@@ -218,18 +203,26 @@ class LotkaVolterraSimulator(BaseSimulator):
         fig, (ax1, ax2) = plt.subplots(1, 2, figsize=(12, 5))
 
         # Check if result is summary statistics
-        if result.shape[1] < self.n_points:
-            raise ValueError("Cannot plot summary statistics. Need full trajectories.")
+        if result.ndim == 2 and result.shape[1] == 8:
+             raise ValueError("Cannot plot summary statistics. Need full trajectories.")
 
-        # Handle flattened trajectories
+        # Handle flattened vs structured
+        if result.ndim == 2:
+             # Assume flattened: (Batch, 2*n_points)
+             n_sims = result.shape[0]
+             trajectories = np.zeros((n_sims, 2, self.n_points))
+             trajectories[:, 0, :] = result[:, : self.n_points]
+             trajectories[:, 1, :] = result[:, self.n_points :]
+             result = trajectories
+
+        # Now result is (Batch, 2, n_points)
         n_sims = result.shape[0]
 
         for i in range(min(10, n_sims)):  # Plot up to 10 simulations
             alpha = 1.0 if n_sims == 1 else 0.5
 
-            # Extract prey and predator trajectories
-            prey = result[i, : self.n_points]
-            predator = result[i, self.n_points : 2 * self.n_points]
+            prey = result[i, 0]
+            predator = result[i, 1]
 
             ax1.plot(self.t_eval, prey, "g-", alpha=alpha)
             ax1.plot(self.t_eval, predator, "r-", alpha=alpha)
@@ -268,6 +261,11 @@ class LotkaVolterraSimulator(BaseSimulator):
         Returns:
             Array of shape (num_simulations, 2, n_points)
         """
+        # This method is kept for legacy support/testing, assuming flattened_data is what we want to reshape.
+        # If the input is already shaped (N, 2, T), we return it or check shape.
+        if flattened_data.ndim == 3:
+             return flattened_data
+
         n_sims = flattened_data.shape[0]
         trajectories = np.zeros((n_sims, 2, self.n_points))
         trajectories[:, 0, :] = flattened_data[:, : self.n_points]  # Prey

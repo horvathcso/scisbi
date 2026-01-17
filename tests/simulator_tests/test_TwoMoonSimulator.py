@@ -19,47 +19,49 @@ class TestTwoMoonsSimulator(unittest.TestCase):
 
         # Test custom initialization
         sim_custom = TwoMoonsSimulator(
-            noise=0.2, moon_radius=2.0, moon_width=1.0, moon_distance=1.0
+            noise=0.2, moon_radius=2.0, moon_width=1.0, moon_distance=1.0, n_points=200
         )
         self.assertEqual(sim_custom.noise, 0.2)
         self.assertEqual(sim_custom.moon_radius, 2.0)
         self.assertEqual(sim_custom.moon_width, 1.0)
         self.assertEqual(sim_custom.moon_distance, 1.0)
+        self.assertEqual(sim_custom.n_points, 200)
 
     def test_simulate_output_shape(self):
         """Test if the simulator outputs the correct shape."""
-        sim = TwoMoonsSimulator()
+        n_points = 200
+        sim = TwoMoonsSimulator(n_points=n_points)
 
-        # Test with default parameters
-        num_samples = 100
-        data = sim.simulate(None, num_samples)
-        self.assertEqual(data.shape, (2 * num_samples, 2))
+        # Test with default parameters (single batch)
+        data = sim.simulate(None)
+        # Expected shape: (1, n_points, 2)
+        self.assertEqual(data.shape, (1, n_points, 2))
 
-        # Test with custom parameters
-        params = np.array([0.2, 2.0, 1.0, 1.0])
-        data = sim.simulate(params, num_samples)
-        self.assertEqual(data.shape, (2 * num_samples, 2))
+        # Test with custom parameters (batch of 1)
+        params = np.array([[0.2, 2.0, 1.0, 1.0]])
+        data = sim.simulate(params)
+        self.assertEqual(data.shape, (1, n_points, 2))
 
-    def test_parameter_assignment(self):
-        """Test if the parameters are correctly assigned during simulation."""
-        sim = TwoMoonsSimulator()
-        params = np.array([0.2, 2.0, 1.0, 1.0])
-        sim.simulate(params, 100)
-
-        # Check if parameters are saved correctly
-        np.testing.assert_array_equal(sim.parameter, params)
-        self.assertEqual(sim.num_simulations, 100)
+        # Test with batch of 3
+        params_batch = np.array([
+            [0.2, 2.0, 1.0, 1.0],
+            [0.1, 1.0, 0.8, -0.25],
+            [0.3, 1.5, 0.9, 0.0]
+        ])
+        data = sim.simulate(params_batch)
+        self.assertEqual(data.shape, (3, n_points, 2))
 
     def test_noise_impact(self):
         """Test if noise parameter impacts the data variance."""
+        n_points = 1000
         # Generate data with different noise levels
-        sim_low_noise = TwoMoonsSimulator(noise=0.01)
-        sim_high_noise = TwoMoonsSimulator(noise=0.5)
+        sim_low_noise = TwoMoonsSimulator(noise=0.01, n_points=n_points)
+        sim_high_noise = TwoMoonsSimulator(noise=0.5, n_points=n_points)
 
-        data_low_noise = sim_low_noise.simulate(None, 500)
-        data_high_noise = sim_high_noise.simulate(None, 500)
+        data_low_noise = sim_low_noise.simulate(None) # (1, 1000, 2)
+        data_high_noise = sim_high_noise.simulate(None) # (1, 1000, 2)
 
-        # Calculate variance of each dataset
+        # Calculate variance of each dataset (flattened or just per coord)
         var_low = np.var(data_low_noise)
         var_high = np.var(data_high_noise)
 
@@ -68,21 +70,23 @@ class TestTwoMoonsSimulator(unittest.TestCase):
 
     def test_moon_separation(self):
         """Test if the moons are properly separated based on the moon_distance parameter."""
+        n_points = 1000
         # Compare two simulations with different moon_distance values
         sim_close = TwoMoonsSimulator(
-            moon_distance=0.1, noise=0.01
+            moon_distance=0.1, noise=0.01, n_points=n_points
         )  # Very small noise to focus on separation
-        sim_far = TwoMoonsSimulator(moon_distance=1.0, noise=0.01)
+        sim_far = TwoMoonsSimulator(moon_distance=1.0, noise=0.01, n_points=n_points)
 
         # Generate data
-        data_close = sim_close.simulate(None, 500)
-        data_far = sim_far.simulate(None, 500)
+        data_close = sim_close.simulate(None)[0] # Get first batch item: (1000, 2)
+        data_far = sim_far.simulate(None)[0]
 
         # Split data into two moons
-        close_moon1 = data_close[:500]
-        close_moon2 = data_close[500:]
-        far_moon1 = data_far[:500]
-        far_moon2 = data_far[500:]
+        split_idx = n_points // 2
+        close_moon1 = data_close[:split_idx]
+        close_moon2 = data_close[split_idx:]
+        far_moon1 = data_far[:split_idx]
+        far_moon2 = data_far[split_idx:]
 
         # Calculate vertical separation (y-axis) between moons by finding the mean y-coordinate of each moon
         close_separation = np.abs(
@@ -102,19 +106,21 @@ class TestTwoMoonsSimulator(unittest.TestCase):
 
     def test_moon_width(self):
         """Test if the moon_width parameter correctly affects the horizontal offset between moons."""
+        n_points = 1000
         # Compare two simulations with different moon_width values
-        sim_narrow = TwoMoonsSimulator(moon_width=0.5, noise=0.01)
-        sim_wide = TwoMoonsSimulator(moon_width=1.5, noise=0.01)
+        sim_narrow = TwoMoonsSimulator(moon_width=0.5, noise=0.01, n_points=n_points)
+        sim_wide = TwoMoonsSimulator(moon_width=1.5, noise=0.01, n_points=n_points)
 
         # Generate data
-        data_narrow = sim_narrow.simulate(None, 500)
-        data_wide = sim_wide.simulate(None, 500)
+        data_narrow = sim_narrow.simulate(None)[0]
+        data_wide = sim_wide.simulate(None)[0]
 
         # Split data into two moons
-        narrow_moon1 = data_narrow[:500]
-        narrow_moon2 = data_narrow[500:]
-        wide_moon1 = data_wide[:500]
-        wide_moon2 = data_wide[500:]
+        split_idx = n_points // 2
+        narrow_moon1 = data_narrow[:split_idx]
+        narrow_moon2 = data_narrow[split_idx:]
+        wide_moon1 = data_wide[:split_idx]
+        wide_moon2 = data_wide[split_idx:]
 
         # Calculate horizontal center difference between moons
         narrow_x_diff = np.mean(narrow_moon2[:, 0]) - np.mean(narrow_moon1[:, 0])
@@ -140,7 +146,16 @@ def visualize_two_moons(
     simulator, params=None, num_samples=500, title="Two Moons Dataset"
 ):
     """Helper function to visualize the two moons dataset."""
-    data = simulator.simulate(params, num_samples)
+    # Temporarily set n_points or create new simulator?
+    # Better to assume simulator is configured correctly or create new one.
+    # Since we can't change n_points easily without accessing internal, let's create a new one.
+    # Or just use the simulator's n_points.
+
+    # If params is provided, use it.
+    if params is not None and params.ndim == 1:
+        params = params[np.newaxis, :]
+
+    data = simulator.simulate(params)[0] # Get first batch
 
     plt.figure(figsize=(10, 6))
     plt.scatter(data[:, 0], data[:, 1], s=10, alpha=0.8)
@@ -155,34 +170,3 @@ def visualize_two_moons(
 if __name__ == "__main__":
     # Run the tests
     unittest.main(exit=False)
-
-    # Create and visualize different two moons configurations
-    print("\nVisualizing Two Moons datasets...")
-
-    # Default parameters
-    default_sim = TwoMoonsSimulator()
-    visualize_two_moons(default_sim, title="Two Moons (Default Parameters)")
-
-    # Different noise levels
-    low_noise_sim = TwoMoonsSimulator(noise=0.05)
-    high_noise_sim = TwoMoonsSimulator(noise=0.3)
-    visualize_two_moons(low_noise_sim, title="Two Moons (Low Noise: 0.05)")
-    visualize_two_moons(high_noise_sim, title="Two Moons (High Noise: 0.3)")
-
-    # Different shapes
-    wide_moons_sim = TwoMoonsSimulator(moon_width=1.5, moon_distance=-0.25)
-    small_moons_sim = TwoMoonsSimulator(
-        moon_radius=0.5, moon_width=0.8, moon_distance=-0.1
-    )
-
-    visualize_two_moons(wide_moons_sim, title="Wide Moons")
-    visualize_two_moons(small_moons_sim, title="Small Moons")
-
-    # Using parameter array
-    custom_params = np.array([0.1, 1.5, 1.2, 0.8])  # [noise, radius, width, distance]
-    custom_sim = TwoMoonsSimulator()
-    visualize_two_moons(
-        custom_sim, params=custom_params, title="Custom Parameters via Array"
-    )
-
-    plt.show()

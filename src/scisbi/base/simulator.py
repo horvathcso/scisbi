@@ -1,6 +1,7 @@
 # scisbi/base/simulator.py
 
 import abc
+import numpy as np
 
 
 class BaseSimulator(abc.ABC):
@@ -20,24 +21,18 @@ class BaseSimulator(abc.ABC):
         self.config = kwargs
 
     @abc.abstractmethod
-    def simulate(self, parameters, num_simulations=1):
+    def simulate(self, parameters):
         """
-        Runs the simulator for a given set of parameters multiple times.
+        Runs the simulator for a given set of parameters.
 
         Args:
             parameters: The parameters for the simulation(s).
-                        Format depends on the simulator's input requirements
-                        (e.g., a NumPy array, a dictionary, a backend tensor).
-                        Assumes these parameters are applied to each simulation run
-                        or define the distribution from which parameters for each run are drawn.
-            num_simulations: The number of simulations to run for the given parameters. Defaults to 1.
+                        Expected shape: (Batch_Size, Parameter_Dim) or (Batch_Size,).
+                        The simulator should iterate over the batch or use vectorized operations
+                        to generate one observation per parameter set.
 
         Returns:
-            The simulated data/observations. The output should be structured to
-            accommodate multiple simulation results (e.g., a list, a batch tensor
-            with an added dimension for the simulation index).
-            Format depends on the simulator output.
+            The simulated data/observations.
+            Expected shape: (Batch_Size, *Data_Dims).
         """
-        self.parameter = parameters
-        self.num_simulations = num_simulations
         pass

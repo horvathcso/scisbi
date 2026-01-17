@@ -11,67 +11,85 @@ class TwoMoonsSimulator(BaseSimulator):
         moon_radius: Radius of the moons (default: 1.0)
         moon_width: Width of the moons (default: 0.8)
         moon_distance: Vertical distance between moons (default: 0.5)
+        n_points: Number of points in the generated dataset (default: 100)
     """
 
     def __init__(
-        self, noise=0.1, moon_radius=1.0, moon_width=0.8, moon_distance=-0.25, **kwargs
+        self,
+        noise=0.1,
+        moon_radius=1.0,
+        moon_width=0.8,
+        moon_distance=-0.25,
+        n_points=100,
+        **kwargs,
     ):
         super().__init__(**kwargs)
         self.noise = noise
         self.moon_radius = moon_radius
         self.moon_width = moon_width
         self.moon_distance = moon_distance
+        self.n_points = n_points
 
-    def simulate(self, parameters, num_simulations=1):
+    def simulate(self, parameters):
         """
         Generate samples from the two moons distribution.
 
         Args:
-            parameters: Numpy array of shape [n_params] containing:
+            parameters: Numpy array of shape (Batch_Size, 4) containing:
                         [noise, moon_radius, moon_width, moon_distance]
-                        If None, uses the default values from initialization.
-            num_simulations: Number of samples to generate per moon.
-                             Total samples will be 2*num_simulations.
+                        If parameters is None or empty, uses defaults for 1 simulation.
 
         Returns:
-            Numpy array of shape [2*num_simulations, 2] containing the flattened data points.
+            Numpy array of shape (Batch_Size, n_points, 2) containing the dataset.
         """
-        if parameters is not None and len(parameters) >= 4:
-            noise = abs(parameters[0])  # Ensure noise is always positive
-            moon_radius = parameters[1]
-            moon_width = parameters[2]
-            moon_distance = parameters[3]
+        if parameters is None:
+             # Default single simulation
+             parameters = np.array([[self.noise, self.moon_radius, self.moon_width, self.moon_distance]])
         else:
-            noise = self.noise
-            moon_radius = self.moon_radius
-            moon_width = self.moon_width
-            moon_distance = self.moon_distance
-            parameters = np.zeros(4)
-            parameters[0] = noise
-            parameters[1] = moon_radius
-            parameters[2] = moon_width
-            parameters[3] = moon_distance
+             parameters = np.asarray(parameters)
+             if parameters.ndim == 1:
+                 parameters = parameters[np.newaxis, :]
 
-        super().simulate(parameters, num_simulations)
+        batch_size = parameters.shape[0]
+        output = np.zeros((batch_size, self.n_points, 2))
 
-        # Generate first moon
-        t = np.linspace(0, np.pi, num_simulations)
-        x1 = moon_radius * np.cos(t)
-        y1 = moon_radius * np.sin(t)
+        # Loop over batch (could be vectorized but logic varies per param)
+        for i in range(batch_size):
+            p = parameters[i]
+            if len(p) >= 4:
+                noise = abs(p[0])
+                moon_radius = p[1]
+                moon_width = p[2]
+                moon_distance = p[3]
+            else:
+                # Fallback if params provided are incomplete (should not happen if shape enforced)
+                noise = self.noise
+                moon_radius = self.moon_radius
+                moon_width = self.moon_width
+                moon_distance = self.moon_distance
 
-        # Generate second moon
-        x2 = moon_radius * np.cos(t + np.pi) + moon_width
-        y2 = moon_radius * np.sin(t + np.pi) - moon_distance
+            # Generate first moon (half points)
+            n_moon1 = self.n_points // 2
+            n_moon2 = self.n_points - n_moon1
 
-        # Combine moons
-        x = np.concatenate([x1, x2])
-        y = np.concatenate([y1, y2])
+            t1 = np.linspace(0, np.pi, n_moon1)
+            x1 = moon_radius * np.cos(t1)
+            y1 = moon_radius * np.sin(t1)
 
-        # Add noise
-        x += np.random.normal(0, noise, size=len(x))
-        y += np.random.normal(0, noise, size=len(y))
+            # Generate second moon (half points)
+            t2 = np.linspace(0, np.pi, n_moon2)
+            x2 = moon_radius * np.cos(t2 + np.pi) + moon_width
+            y2 = moon_radius * np.sin(t2 + np.pi) - moon_distance
 
-        # Combine into one array and flatten
-        points = np.column_stack((x, y))
+            # Combine moons
+            x = np.concatenate([x1, x2])
+            y = np.concatenate([y1, y2])
 
-        return points
+            # Add noise
+            x += np.random.normal(0, noise, size=len(x))
+            y += np.random.normal(0, noise, size=len(y))
+
+            # Combine into one array
+            output[i] = np.column_stack((x, y))
+
+        return output
