@@ -269,96 +269,99 @@ class JANA(BaseInferenceAlgorithm):
         temp_model_path = temp_file.name
         temp_file.close()
 
-        self.model.train()
-        for epoch in trange(num_epochs, desc="Epochs", disable=not verbose):
-            total_train_loss = 0
-            for x_batch, theta_batch in train_loader:
-                x_batch, theta_batch = (
-                    x_batch.to(self.device),
-                    theta_batch.to(self.device),
-                )
-
-                optimizer.zero_grad()
-
-                # Sample z from prior
-                # prior.sample(batch_size)
-                z_samples = self.prior.sample(x_batch.shape[0])
-                if z_samples.ndim == 1:
-                    z_samples = z_samples.reshape(x_batch.shape[0], -1)
-
-                z_batch = torch.from_numpy(z_samples).float().to(self.device)
-
-                theta_pred = self.model(x_batch, z_batch)
-
-                loss = nn.MSELoss()(theta_pred, theta_batch)
-                loss.backward()
-                optimizer.step()
-
-                total_train_loss += loss.item()
-
-            avg_train_loss = total_train_loss / len(train_loader)
-
-            # Validation
-            self.model.eval()
-            total_val_loss = 0
-            with torch.no_grad():
-                for x_batch, theta_batch in val_loader:
+        try:
+            self.model.train()
+            for epoch in trange(num_epochs, desc="Epochs", disable=not verbose):
+                total_train_loss = 0
+                for x_batch, theta_batch in train_loader:
                     x_batch, theta_batch = (
                         x_batch.to(self.device),
                         theta_batch.to(self.device),
                     )
+
+                    optimizer.zero_grad()
+
+                    # Sample z from prior
+                    # prior.sample(batch_size)
                     z_samples = self.prior.sample(x_batch.shape[0])
                     if z_samples.ndim == 1:
                         z_samples = z_samples.reshape(x_batch.shape[0], -1)
 
                     z_batch = torch.from_numpy(z_samples).float().to(self.device)
+
                     theta_pred = self.model(x_batch, z_batch)
+
                     loss = nn.MSELoss()(theta_pred, theta_batch)
-                    total_val_loss += loss.item()
+                    loss.backward()
+                    optimizer.step()
 
-            avg_val_loss = total_val_loss / len(val_loader)
-            scheduler.step(avg_val_loss)
+                    total_train_loss += loss.item()
 
-            if verbose:
-                print(
-                    f"Epoch {epoch + 1}/{num_epochs}, Train Loss: {avg_train_loss:.4f}, Val Loss: {avg_val_loss:.4f}"
-                )
+                avg_train_loss = total_train_loss / len(train_loader)
 
-            if avg_val_loss < best_val_loss:
-                best_val_loss = avg_val_loss
-                epochs_no_improve = 0
-                torch.save(self.model.state_dict(), temp_model_path)
-                best_model_saved = True
-            else:
-                epochs_no_improve += 1
+                # Validation
+                self.model.eval()
+                total_val_loss = 0
+                with torch.no_grad():
+                    for x_batch, theta_batch in val_loader:
+                        x_batch, theta_batch = (
+                            x_batch.to(self.device),
+                            theta_batch.to(self.device),
+                        )
+                        z_samples = self.prior.sample(x_batch.shape[0])
+                        if z_samples.ndim == 1:
+                            z_samples = z_samples.reshape(x_batch.shape[0], -1)
 
-            if epochs_no_improve >= stop_after_epochs:
-                if verbose:
-                    print(f"Early stopping triggered after {epoch + 1} epochs.")
-                break
+                        z_batch = torch.from_numpy(z_samples).float().to(self.device)
+                        theta_pred = self.model(x_batch, z_batch)
+                        loss = nn.MSELoss()(theta_pred, theta_batch)
+                        total_val_loss += loss.item()
 
-            self.model.train()
+                avg_val_loss = total_val_loss / len(val_loader)
+                scheduler.step(avg_val_loss)
 
-        if verbose:
-            print("Training finished.")
-
-        # Load best model if saved, otherwise keep current state
-        if best_model_saved:
-            try:
-                self.model.load_state_dict(torch.load(temp_model_path))
-                if verbose:
-                    print("Loaded best model from training.")
-            except FileNotFoundError:
                 if verbose:
                     print(
-                        "Warning: Best model file not found, keeping current model state."
+                        f"Epoch {epoch + 1}/{num_epochs}, Train Loss: {avg_train_loss:.4f}, Val Loss: {avg_val_loss:.4f}"
                     )
 
-        # Cleanup temporary file
-        try:
-            os.unlink(temp_model_path)
-        except OSError:
-            pass  # File may not exist or already deleted
+                if avg_val_loss < best_val_loss:
+                    best_val_loss = avg_val_loss
+                    epochs_no_improve = 0
+                    torch.save(self.model.state_dict(), temp_model_path)
+                    best_model_saved = True
+                else:
+                    epochs_no_improve += 1
+
+                if epochs_no_improve >= stop_after_epochs:
+                    if verbose:
+                        print(f"Early stopping triggered after {epoch + 1} epochs.")
+                    break
+
+                self.model.train()
+
+            if verbose:
+                print("Training finished.")
+
+            # Load best model if saved, otherwise keep current state
+            if best_model_saved:
+                try:
+                    self.model.load_state_dict(torch.load(temp_model_path))
+                    if verbose:
+                        print("Loaded best model from training.")
+                except FileNotFoundError:
+                    if verbose:
+                        print(
+                            "Warning: Best model file not found, keeping current model state."
+                        )
+
+        finally:
+            # Cleanup temporary file
+            try:
+                if os.path.exists(temp_model_path):
+                    os.unlink(temp_model_path)
+            except OSError:
+                pass  # File may not exist or already deleted
 
         self.model.eval()
 

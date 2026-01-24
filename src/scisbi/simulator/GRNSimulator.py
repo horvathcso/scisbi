@@ -344,7 +344,9 @@ class GeneRegulatoryNetworkSimulator(BaseSimulator):
                 self._update_model_parameters(parameters[i])
 
             # Run 1 trajectory for this parameter set
-            results = self.model.run(number_of_trajectories=1, seed=self.seed)
+            # Ensure different seed for each simulation in the batch if a seed is provided
+            current_seed = self.seed + i if self.seed is not None else None
+            results = self.model.run(number_of_trajectories=1, seed=current_seed)
             processed = self._process_results(results)
 
             # processed is (1, Flattened) or {name: (1, T)}?

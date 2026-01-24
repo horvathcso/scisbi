@@ -5,7 +5,7 @@ import sys
 
 # Adjust the path to import from the src directory
 sys.path.insert(
-    0, os.path.abspath(os.path.join(os.path.dirname(__file__), "..", "src"))
+    0, os.path.abspath(os.path.join(os.path.dirname(__file__), "..", "..", "src"))
 )
 
 from scisbi.simulator.GRNSimulator import GeneRegulatoryNetworkSimulator

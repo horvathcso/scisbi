@@ -15,6 +15,8 @@ import torch.optim as optim
 from torch.utils.data import DataLoader, TensorDataset
 from tqdm.auto import trange
 import math
+import tempfile
+import os
 
 from ..base.inference import BaseInferenceAlgorithm
 from ..base.simulator import BaseSimulator
@@ -506,57 +508,31 @@ class Simformer(BaseInferenceAlgorithm):
         epochs_no_improve = 0
         best_model_saved = False
 
-        if verbose:
-            print("2. Training the Simformer model...")
+        # Use tempfile for saving best model, ensuring cleanup
+        temp_file = tempfile.NamedTemporaryFile(delete=False, suffix=".pth")
+        temp_model_path = temp_file.name
+        temp_file.close()
 
-        self.model.train()
-        for epoch in trange(num_epochs, desc="Training epochs", disable=not verbose):
-            total_train_loss = 0
+        try:
+            if verbose:
+                print("2. Training the Simformer model...")
 
-            for data_batch, observed_batch, target_batch in train_loader:
-                data_batch = data_batch.to(self.device)
-                observed_batch = observed_batch.to(self.device)
-                target_batch = target_batch.to(self.device)
+            self.model.train()
+            for epoch in trange(num_epochs, desc="Training epochs", disable=not verbose):
+                total_train_loss = 0
 
-                optimizer.zero_grad()
-
-                # Forward pass
-                pred_mean, pred_log_std = self.model.forward(data_batch, observed_batch)
-                pred_std = torch.exp(pred_log_std)
-
-                # Compute negative log-likelihood loss
-                mse_loss = torch.mean((pred_mean - target_batch) ** 2)
-                nll_loss = torch.mean(
-                    0.5 * ((pred_mean - target_batch) / pred_std) ** 2
-                    + pred_log_std
-                    + 0.5 * np.log(2 * np.pi)
-                )
-
-                # Combine losses
-                loss = nll_loss + 0.1 * mse_loss
-
-                loss.backward()
-                torch.nn.utils.clip_grad_norm_(self.model.parameters(), max_norm=1.0)
-                optimizer.step()
-
-                total_train_loss += loss.item()
-
-            avg_train_loss = total_train_loss / len(train_loader)
-
-            # Validation
-            self.model.eval()
-            total_val_loss = 0
-            with torch.no_grad():
-                for data_batch, observed_batch, target_batch in val_loader:
+                for data_batch, observed_batch, target_batch in train_loader:
                     data_batch = data_batch.to(self.device)
                     observed_batch = observed_batch.to(self.device)
                     target_batch = target_batch.to(self.device)
 
-                    pred_mean, pred_log_std = self.model.forward(
-                        data_batch, observed_batch
-                    )
+                    optimizer.zero_grad()
+
+                    # Forward pass
+                    pred_mean, pred_log_std = self.model.forward(data_batch, observed_batch)
                     pred_std = torch.exp(pred_log_std)
 
+                    # Compute negative log-likelihood loss
                     mse_loss = torch.mean((pred_mean - target_batch) ** 2)
                     nll_loss = torch.mean(
                         0.5 * ((pred_mean - target_batch) / pred_std) ** 2
@@ -564,42 +540,82 @@ class Simformer(BaseInferenceAlgorithm):
                         + 0.5 * np.log(2 * np.pi)
                     )
 
+                    # Combine losses
                     loss = nll_loss + 0.1 * mse_loss
-                    total_val_loss += loss.item()
 
-            avg_val_loss = total_val_loss / len(val_loader)
-            scheduler.step(avg_val_loss)
+                    loss.backward()
+                    torch.nn.utils.clip_grad_norm_(self.model.parameters(), max_norm=1.0)
+                    optimizer.step()
+
+                    total_train_loss += loss.item()
+
+                avg_train_loss = total_train_loss / len(train_loader)
+
+                # Validation
+                self.model.eval()
+                total_val_loss = 0
+                with torch.no_grad():
+                    for data_batch, observed_batch, target_batch in val_loader:
+                        data_batch = data_batch.to(self.device)
+                        observed_batch = observed_batch.to(self.device)
+                        target_batch = target_batch.to(self.device)
+
+                        pred_mean, pred_log_std = self.model.forward(
+                            data_batch, observed_batch
+                        )
+                        pred_std = torch.exp(pred_log_std)
+
+                        mse_loss = torch.mean((pred_mean - target_batch) ** 2)
+                        nll_loss = torch.mean(
+                            0.5 * ((pred_mean - target_batch) / pred_std) ** 2
+                            + pred_log_std
+                            + 0.5 * np.log(2 * np.pi)
+                        )
+
+                        loss = nll_loss + 0.1 * mse_loss
+                        total_val_loss += loss.item()
+
+                avg_val_loss = total_val_loss / len(val_loader)
+                scheduler.step(avg_val_loss)
+
+                if verbose:
+                    print(
+                        f"Epoch {epoch + 1}/{num_epochs}, "
+                        f"Train Loss: {avg_train_loss:.4f}, "
+                        f"Val Loss: {avg_val_loss:.4f}"
+                    )
+
+                # Early stopping
+                if avg_val_loss < best_val_loss:
+                    best_val_loss = avg_val_loss
+                    epochs_no_improve = 0
+                    torch.save(self.model.state_dict(), temp_model_path)
+                    best_model_saved = True
+                else:
+                    epochs_no_improve += 1
+
+                if epochs_no_improve >= stop_after_epochs:
+                    if verbose:
+                        print(f"Early stopping triggered after {epoch + 1} epochs.")
+                    break
+
+                self.model.train()
 
             if verbose:
-                print(
-                    f"Epoch {epoch + 1}/{num_epochs}, "
-                    f"Train Loss: {avg_train_loss:.4f}, "
-                    f"Val Loss: {avg_val_loss:.4f}"
-                )
+                print("Training finished.")
 
-            # Early stopping
-            if avg_val_loss < best_val_loss:
-                best_val_loss = avg_val_loss
-                epochs_no_improve = 0
-                torch.save(self.model.state_dict(), "best_simformer_model.pth")
-                best_model_saved = True
-            else:
-                epochs_no_improve += 1
+            # Load best model if saved
+            if best_model_saved:
+                self.model.load_state_dict(torch.load(temp_model_path))
+            self.model.eval()
 
-            if epochs_no_improve >= stop_after_epochs:
-                if verbose:
-                    print(f"Early stopping triggered after {epoch + 1} epochs.")
-                break
-
-            self.model.train()
-
-        if verbose:
-            print("Training finished.")
-
-        # Load best model if saved
-        if best_model_saved:
-            self.model.load_state_dict(torch.load("best_simformer_model.pth"))
-        self.model.eval()
+        finally:
+            # Cleanup temporary file
+            try:
+                if os.path.exists(temp_model_path):
+                    os.unlink(temp_model_path)
+            except OSError:
+                pass  # File may not exist or already deleted
 
         # Store training data for posterior sampling context
         training_data = (data_tensor, param_tensor, observed_tensor)
