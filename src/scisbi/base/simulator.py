@@ -1,7 +1,6 @@
 # scisbi/base/simulator.py
 
 import abc
-import numpy as np
 
 
 class BaseSimulator(abc.ABC):

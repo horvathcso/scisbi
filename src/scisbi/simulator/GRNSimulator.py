@@ -318,13 +318,15 @@ class GeneRegulatoryNetworkSimulator(BaseSimulator):
 
         if parameters is None:
             # Run with default parameters once
-             parameters = np.array([list(self.default_params.values())]) # Incorrect assumption about order, but let's assume user passes params in correct order if not None.
-             # Wait, default_params is a dict, order is not guaranteed in older python but is in newer.
-             # Better to rely on default values already in model if parameters is None?
-             # But we need batch size.
-             # Let's assume 1 simulation with current model params if parameters is None?
-             # But we agreed input should be (Batch, P).
-             pass
+            parameters = np.array(
+                [list(self.default_params.values())]
+            )  # Incorrect assumption about order, but let's assume user passes params in correct order if not None.
+            # Wait, default_params is a dict, order is not guaranteed in older python but is in newer.
+            # Better to rely on default values already in model if parameters is None?
+            # But we need batch size.
+            # Let's assume 1 simulation with current model params if parameters is None?
+            # But we agreed input should be (Batch, P).
+            pass
 
         if parameters is not None:
             parameters = np.asarray(parameters)
@@ -333,7 +335,7 @@ class GeneRegulatoryNetworkSimulator(BaseSimulator):
             batch_size = parameters.shape[0]
         else:
             batch_size = 1
-            parameters = [None] # Placeholder
+            parameters = [None]  # Placeholder
 
         all_results = []
 
@@ -360,8 +362,8 @@ class GeneRegulatoryNetworkSimulator(BaseSimulator):
                 # So if we return dict, it should be {name: (Batch, T)}.
                 pass
             else:
-                 # processed is (1, Flattened)
-                 pass
+                # processed is (1, Flattened)
+                pass
 
             all_results.append(processed)
 
@@ -378,7 +380,6 @@ class GeneRegulatoryNetworkSimulator(BaseSimulator):
             # Merge list of arrays
             # all_results[i] is (1, Flattened)
             return np.concatenate(all_results, axis=0)
-
 
     def _process_results(self, results) -> Union[np.ndarray, Dict[str, np.ndarray]]:
         """Formats the raw simulation results."""
@@ -433,9 +434,7 @@ if __name__ == "__main__":
     ]  # k_trans, k_trans, k_mrna, k_prot, Kd, n
 
     # Pass as batch (1, 6)
-    toggle_custom_flat = toggle_sim.simulate(
-        parameters=custom_params
-    )
+    toggle_custom_flat = toggle_sim.simulate(parameters=custom_params)
     print(f"Toggle results (flattened) shape: {toggle_custom_flat.shape}")
 
     # --- Example 2: Complex Network ---

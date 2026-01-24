@@ -54,7 +54,7 @@ class TestGaussianSimulator:
         num_sims = 5000
         params = {
             "mean": np.full((num_sims, 1), 3.0),
-            "std": np.full((num_sims, 1), 1.5)
+            "std": np.full((num_sims, 1), 1.5),
         }
 
         samples = sim.simulate(params)
@@ -103,7 +103,7 @@ class TestGaussianSimulator:
         num_sims = 10000
         params = {
             "mean": np.tile(mean, (num_sims, 1)),
-            "cov": np.tile(cov, (num_sims, 1, 1))
+            "cov": np.tile(cov, (num_sims, 1, 1)),
         }
 
         samples = sim.simulate(params)

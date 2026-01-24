@@ -1,6 +1,5 @@
 import pytest
 import numpy as np
-import matplotlib.pyplot as plt
 from unittest.mock import patch
 from scisbi.inference.ABC import ABCRejectionSampling, ABCPosterior
 import io
@@ -11,9 +10,9 @@ import sys
 class MockSimulator:
     def __init__(self, return_value=None):
         if return_value is not None:
-             self.return_value = return_value
+            self.return_value = return_value
         else:
-             self.return_value = np.array([[1.0, 2.0]])
+            self.return_value = np.array([[1.0, 2.0]])
 
     def simulate(self, parameters):
         return self.return_value
@@ -112,7 +111,7 @@ def test_abc_infer_basic():
     tolerance = 0.1
 
     abc = ABCRejectionSampling(simulator, prior, distance_fn, tolerance)
-    observed_data = np.array([1.1, 1.9]) # (2,) -> (1, 2)
+    observed_data = np.array([1.1, 1.9])  # (2,) -> (1, 2)
 
     result = abc.infer(observed_data, num_simulations=3)
 
@@ -301,7 +300,7 @@ class GaussianSimulator:
         # parameters: (1, P)
         parameters = np.asarray(parameters)
         if parameters.ndim == 2:
-             parameters = parameters[0]
+            parameters = parameters[0]
 
         if len(parameters) == 2:  # mean, std
             mean, std = parameters
@@ -327,11 +326,13 @@ class GaussianPrior:
         if self.dim == 2:
             return np.array([np.random.uniform(-5, 5), np.random.uniform(0.1, 3)])
         elif self.dim == 3:
-            return np.array([
-                np.random.uniform(-5, 5),
-                np.random.uniform(-5, 5),
-                np.random.uniform(0.1, 3),
-            ])
+            return np.array(
+                [
+                    np.random.uniform(-5, 5),
+                    np.random.uniform(-5, 5),
+                    np.random.uniform(0.1, 3),
+                ]
+            )
 
     def log_prob(self, x):
         return 0.0  # Uniform prior

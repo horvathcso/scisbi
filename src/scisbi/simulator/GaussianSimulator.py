@@ -76,7 +76,7 @@ class GaussianSimulator(BaseSimulator):
                     std = parameters[:, self.dimensions :]
                 else:
                     raise ValueError(
-                        f"Parameters shape {parameters.shape} does not match expected format (Batch, {2*self.dimensions})"
+                        f"Parameters shape {parameters.shape} does not match expected format (Batch, {2 * self.dimensions})"
                     )
             else:
                 expected_dim = self.dimensions + self.dimensions**2
@@ -112,9 +112,7 @@ class GaussianSimulator(BaseSimulator):
 
                 samples = np.empty((batch_size, self.dimensions))
                 for i in range(batch_size):
-                    samples[i] = self.rng.multivariate_normal(
-                        mean=mean[i], cov=cov[i]
-                    )
+                    samples[i] = self.rng.multivariate_normal(mean=mean[i], cov=cov[i])
             else:
                 # Independent multivariate sampling using diagonal covariance
                 # mean shape: (Batch, D), std shape: (Batch, D)

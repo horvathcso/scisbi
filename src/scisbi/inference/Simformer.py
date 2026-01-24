@@ -385,7 +385,13 @@ class Simformer(BaseInferenceAlgorithm):
         # We process 'batch_size' sequences at a time
         sim_batch_size = 100
 
-        for i in trange(0, num_simulations, sim_batch_size, desc="Generating sequences", disable=not verbose):
+        for i in trange(
+            0,
+            num_simulations,
+            sim_batch_size,
+            desc="Generating sequences",
+            disable=not verbose,
+        ):
             current_batch_size = min(sim_batch_size, num_simulations - i)
 
             # Generate (current_batch_size, sequence_length, param_dim)
@@ -418,13 +424,17 @@ class Simformer(BaseInferenceAlgorithm):
             # This implies observed data is another realization from the same parameter.
             # Let's keep that logic.
 
-            last_params = params_seq[:, -1, :] # (Batch, P)
+            last_params = params_seq[:, -1, :]  # (Batch, P)
             observed_data_batch = self.simulator.simulate(last_params)
             if self.summary_statistic:
-                observed_data_batch = self.summary_statistic.compute(observed_data_batch)
+                observed_data_batch = self.summary_statistic.compute(
+                    observed_data_batch
+                )
 
             if observed_data_batch.ndim > 2:
-                observed_data_batch = observed_data_batch.reshape(observed_data_batch.shape[0], -1)
+                observed_data_batch = observed_data_batch.reshape(
+                    observed_data_batch.shape[0], -1
+                )
             elif observed_data_batch.ndim == 1:
                 observed_data_batch = observed_data_batch.reshape(-1, 1)
 

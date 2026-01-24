@@ -43,11 +43,9 @@ class TestTwoMoonsSimulator(unittest.TestCase):
         self.assertEqual(data.shape, (1, n_points, 2))
 
         # Test with batch of 3
-        params_batch = np.array([
-            [0.2, 2.0, 1.0, 1.0],
-            [0.1, 1.0, 0.8, -0.25],
-            [0.3, 1.5, 0.9, 0.0]
-        ])
+        params_batch = np.array(
+            [[0.2, 2.0, 1.0, 1.0], [0.1, 1.0, 0.8, -0.25], [0.3, 1.5, 0.9, 0.0]]
+        )
         data = sim.simulate(params_batch)
         self.assertEqual(data.shape, (3, n_points, 2))
 
@@ -58,8 +56,8 @@ class TestTwoMoonsSimulator(unittest.TestCase):
         sim_low_noise = TwoMoonsSimulator(noise=0.01, n_points=n_points)
         sim_high_noise = TwoMoonsSimulator(noise=0.5, n_points=n_points)
 
-        data_low_noise = sim_low_noise.simulate(None) # (1, 1000, 2)
-        data_high_noise = sim_high_noise.simulate(None) # (1, 1000, 2)
+        data_low_noise = sim_low_noise.simulate(None)  # (1, 1000, 2)
+        data_high_noise = sim_high_noise.simulate(None)  # (1, 1000, 2)
 
         # Calculate variance of each dataset (flattened or just per coord)
         var_low = np.var(data_low_noise)
@@ -78,7 +76,7 @@ class TestTwoMoonsSimulator(unittest.TestCase):
         sim_far = TwoMoonsSimulator(moon_distance=1.0, noise=0.01, n_points=n_points)
 
         # Generate data
-        data_close = sim_close.simulate(None)[0] # Get first batch item: (1000, 2)
+        data_close = sim_close.simulate(None)[0]  # Get first batch item: (1000, 2)
         data_far = sim_far.simulate(None)[0]
 
         # Split data into two moons
@@ -155,7 +153,7 @@ def visualize_two_moons(
     if params is not None and params.ndim == 1:
         params = params[np.newaxis, :]
 
-    data = simulator.simulate(params)[0] # Get first batch
+    data = simulator.simulate(params)[0]  # Get first batch
 
     plt.figure(figsize=(10, 6))
     plt.scatter(data[:, 0], data[:, 1], s=10, alpha=0.8)

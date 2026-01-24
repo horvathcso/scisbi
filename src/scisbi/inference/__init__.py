@@ -7,8 +7,8 @@ from .ABCSMC import ABCSMC, ABCSMCPosterior
 
 # Try to import neural network based methods (require torch)
 try:
-    from .JANA import JANA, JANAPosterior
-    from .Simformer import Simformer, SimformerPosterior, SimformerTransformer
+    from .JANA import JANA, JANAPosterior  # noqa: F401
+    from .Simformer import Simformer, SimformerPosterior, SimformerTransformer  # noqa: F401
 
     NEURAL_METHODS_AVAILABLE = True
 except ImportError:

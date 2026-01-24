@@ -20,6 +20,16 @@ class MockSimulator(BaseSimulator):
         )
 
     def simulate(self, parameters, **kwargs):
+        # parameters: (Batch, P)
+        batch_size = parameters.shape[0] if hasattr(parameters, "shape") else 1
+
+        # If return_value is 1D (D,), tile it to (Batch, D)
+        if self.return_value.ndim == 1:
+            return np.tile(self.return_value, (batch_size, 1))
+        # If return_value is already 2D (1, D), tile it
+        if self.return_value.ndim == 2 and self.return_value.shape[0] == 1:
+             return np.tile(self.return_value, (batch_size, 1))
+
         return self.return_value
 
 
@@ -42,6 +52,7 @@ class MockPrior:
 
 class MockSummaryStatistic(BaseSummaryStatistic):
     def compute(self, data):
+        # data: (Batch, D)
         return np.mean(data, axis=-1, keepdims=True)
 
     def _normalize(self, stats):
@@ -139,18 +150,28 @@ def test_jana_posterior_log_prob_raises_error():
 
 # Integration tests with Gaussian distributions
 class GaussianSimulator(BaseSimulator):
-    def simulate(self, parameters, num_simulations=200):
+    def simulate(self, parameters):
+        # parameters: (Batch, P)
+        parameters = np.asarray(parameters)
+        if parameters.ndim == 1:
+            parameters = parameters[np.newaxis, :]
+
+        batch_size, param_dim = parameters.shape
+
         if isinstance(parameters, dict):
+            # Dict input not supported in JANA loop currently (transforms to array)
+            # but for completeness
             mean = parameters["mean"]
             std = parameters["std"]
         else:
-            try:
-                mean, std = parameters
-            except Exception:
-                raise ValueError(
-                    "Parameters must be a dict with keys 'mean' and 'std' or an iterable with two elements."
-                )
-        return np.random.normal(mean, np.abs(std) + 1e-6, num_simulations)
+            if param_dim == 2:
+                mean = parameters[:, 0:1]
+                std = parameters[:, 1:2]
+            else:
+                raise ValueError("Expected 2 parameters (mean, std)")
+
+        # Return batched samples (Batch, 200)
+        return np.random.normal(mean, np.abs(std) + 1e-6, (batch_size, 200))
 
 
 class GaussianPrior:
@@ -163,7 +184,7 @@ class GaussianPrior:
         samples = np.random.normal(
             loc=self.prior_mean, scale=self.prior_std, size=(n, self.dim)
         )
-        return samples if n > 1 else samples.squeeze(axis=0)
+        return samples # (N, dim)
 
     def log_prob(self, parameters):
         """Dummy implementation for testing purposes."""
@@ -172,9 +193,10 @@ class GaussianPrior:
 
 class SummaryStats(BaseSummaryStatistic):
     def compute(self, data):
-        mean = np.mean(data, axis=-1)
-        std = np.std(data, axis=-1)
-        return np.stack([mean, std], axis=-1)
+        # data (Batch, N)
+        mean = np.mean(data, axis=-1, keepdims=True)
+        std = np.std(data, axis=-1, keepdims=True)
+        return np.concatenate([mean, std], axis=-1)
 
     def _normalize(self, stats):
         """Dummy implementation for testing purposes."""
@@ -198,7 +220,8 @@ def test_jana_inference_2d_gaussian():
     summary_stat = SummaryStats()
 
     # Generate observed data
-    observed_data = simulator.simulate(true_params)
+    # simulate expects batch
+    observed_data = simulator.simulate(np.array([true_params])) # (1, 200)
 
     model = SimpleJanaNet(x_dim=2, theta_dim=2)
 
@@ -251,110 +274,5 @@ def test_jana_inference_verbose_mode():
     assert "Training finished." in output
 
 
-# Main execution with plotting
-def main():
-    """
-    Main function to demonstrate JANA functionality with plots.
-    This runs a complete example and generates visualizations.
-    """
-    print("=" * 60)
-    print("JANA Demonstration and Testing")
-    print("=" * 60)
-
-    # Set random seed for reproducibility
-    np.random.seed(42)
-    torch.manual_seed(42)
-
-    # Define true parameters for a 2D Gaussian
-    true_params = np.array([2.0, 1.5])  # True mean and std
-    print(f"True parameters: mean={true_params[0]}, std={true_params[1]}")
-
-    # Generate observed data
-    simulator = GaussianSimulator()
-    observed_data = simulator.simulate(true_params, num_simulations=1000)
-
-    summary_stat = SummaryStats()
-    observed_summary = summary_stat.compute(observed_data)
-    print(
-        f"Observed data summary: mean={observed_summary[0]:.3f}, std={observed_summary[1]:.3f}"
-    )
-
-    # Set up JANA components
-    prior = GaussianPrior(
-        dim=2, prior_mean=np.array([0.0, 2.0]), prior_std=np.array([3.0, 2.0])
-    )
-    model = SimpleJanaNet(x_dim=2, theta_dim=2)
-
-    jana = JANA(
-        simulator=simulator,
-        prior=prior,
-        model=model,
-        summary_statistic=summary_stat,
-        device="auto",
-    )
-
-    print("\nRunning JANA inference...")
-    # Run inference
-    posterior = jana.infer(
-        num_simulations=10000,
-        num_epochs=100,
-        learning_rate=1e-3,
-        batch_size=128,
-        stop_after_epochs=10,
-        verbose=True,
-    )
-
-    # Generate posterior samples
-    print("\nGenerating posterior samples...")
-    num_samples = 5000
-    samples = posterior.sample(observed_data, num_samples=num_samples)
-
-    # Print results
-    print("\nJANA Posterior Summary:")
-    posterior_mean = np.mean(samples, axis=0)
-    posterior_std = np.std(samples, axis=0)
-    print(f"Posterior mean: {posterior_mean[0]:.3f}, {posterior_mean[1]:.3f}")
-    print(f"Posterior std:  {posterior_std[0]:.3f}, {posterior_std[1]:.3f}")
-
-    # Plotting
-    print("\nPlotting results...")
-    fig, axes = plt.subplots(1, 2, figsize=(12, 5))
-
-    # Plot for parameter 1 (mean)
-    axes[0].hist(
-        samples[:, 0], bins=50, density=True, alpha=0.7, label="JANA Posterior"
-    )
-    axes[0].axvline(true_params[0], color="r", linestyle="--", label="True Mean")
-    axes[0].set_title("Posterior of Mean")
-    axes[0].set_xlabel("Mean value")
-    axes[0].legend()
-
-    # Plot for parameter 2 (std)
-    axes[1].hist(
-        samples[:, 1], bins=50, density=True, alpha=0.7, label="JANA Posterior"
-    )
-    axes[1].axvline(true_params[1], color="r", linestyle="--", label="True Std")
-    axes[1].set_title("Posterior of Std")
-    axes[1].set_xlabel("Std value")
-    axes[1].legend()
-
-    plt.tight_layout()
-    plt.show()
-
-    # 2D scatter plot
-    plt.figure(figsize=(6, 6))
-    plt.scatter(samples[:, 0], samples[:, 1], alpha=0.1)
-    plt.axvline(true_params[0], color="r", linestyle="--")
-    plt.axhline(true_params[1], color="r", linestyle="--")
-    plt.xlabel("Mean")
-    plt.ylabel("Std")
-    plt.title("Posterior Samples")
-    plt.show()
-
-    print("\n" + "=" * 60)
-    print("JANA demonstration completed!")
-    print("=" * 60)
-
-
 if __name__ == "__main__":
-    main()
+    pass

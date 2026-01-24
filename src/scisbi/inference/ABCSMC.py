@@ -205,7 +205,9 @@ class ABCSMC(BaseInferenceAlgorithm):
             try:
                 # Simulate data
                 theta_batch = np.asarray(theta)
-                if theta_batch.ndim == 1:
+                if theta_batch.ndim == 0:
+                    theta_batch = theta_batch.reshape(1, 1)
+                elif theta_batch.ndim == 1:
                     theta_batch = theta_batch[np.newaxis, :]
 
                 simulated_data = self.simulator.simulate(theta_batch)
@@ -233,7 +235,8 @@ class ABCSMC(BaseInferenceAlgorithm):
                             f"(acceptance rate: {acceptance_rate:.4f})"
                         )
 
-            except Exception:
+            except Exception as e:
+                # print(f"DEBUG ABCSMC: {e}") # Uncomment for debugging
                 continue  # Skip failed simulations
 
         # Initialize uniform weights for first iteration
@@ -284,7 +287,9 @@ class ABCSMC(BaseInferenceAlgorithm):
             try:
                 # Simulate data
                 theta_batch = np.asarray(theta_candidate)
-                if theta_batch.ndim == 1:
+                if theta_batch.ndim == 0:
+                    theta_batch = theta_batch.reshape(1, 1)
+                elif theta_batch.ndim == 1:
                     theta_batch = theta_batch[np.newaxis, :]
 
                 simulated_data = self.simulator.simulate(theta_batch)

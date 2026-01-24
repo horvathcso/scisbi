@@ -22,14 +22,6 @@ class ABCRejectionSampling(BaseInferenceAlgorithm):
     ):
         """
         Initialize the ABC rejection sampling algorithm.
-
-        Args:
-            simulator (BaseSimulator): Simulator object.
-            prior (Any): Prior distribution object.
-            distance_function (Callable): Function ρ(x_sim, x_obs).
-            tolerance (float): Acceptance threshold ε.
-            summary_statistic (Optional[BaseSummaryStatistic]): Summary statistic function.
-            **kwargs: Additional configuration parameters.
         """
         super().__init__(simulator, prior, summary_statistic, **kwargs)
 
@@ -51,16 +43,6 @@ class ABCRejectionSampling(BaseInferenceAlgorithm):
     ) -> "ABCPosterior":
         """
         Perform ABC rejection sampling.
-
-        Args:
-            observed_data (Any): The observed dataset x_obs.
-                               Expected shape: (1, *Data_Dims) or (Batch_Obs, *Data_Dims).
-                               Currently supports inference for a single observation (Batch_Obs=1).
-            num_simulations (int): Target number N of accepted posterior samples.
-            **kwargs: Runtime parameters.
-
-        Returns:
-            ABCPosterior: Object containing the accepted parameter samples.
         """
         if num_simulations <= 0:
             raise ValueError("num_simulations must be positive")
@@ -73,9 +55,6 @@ class ABCRejectionSampling(BaseInferenceAlgorithm):
         # Handle observed_data shape
         observed_data = np.asarray(observed_data)
         if observed_data.ndim == 1:
-             # Assume it's a single observation flattened or 1D
-             # But if it's (D,), is it (1, D) or (D, 1)?
-             # Standard convention: (1, D)
              observed_data = observed_data[np.newaxis, :]
 
         # Process observed data through summary statistic if provided
@@ -83,14 +62,6 @@ class ABCRejectionSampling(BaseInferenceAlgorithm):
             observed_summary = self.summary_statistic.compute(observed_data)
         else:
             observed_summary = observed_data
-
-        # Check that we only have 1 observation to infer (for now)
-        if observed_summary.shape[0] != 1:
-             # If user passed multiple observations, we might want to do batch inference,
-             # but standard ABC loop here is for one posterior.
-             # If they are i.i.d. samples comprising ONE dataset, they should be shaped (1, N, D).
-             # If they are multiple independent inference tasks, we don't support that in this loop.
-             pass
 
         # Initialize storage for accepted samples
         accepted_samples = []
@@ -111,14 +82,15 @@ class ABCRejectionSampling(BaseInferenceAlgorithm):
                 )
 
             # Step 1: Sample parameters from prior
-            # Expect prior.sample() to return (P,) or (1, P)
             theta_candidate = self.prior.sample()
             theta_candidate = np.asarray(theta_candidate)
-            if theta_candidate.ndim == 1:
+            # Ensure batch dim (1, P)
+            if theta_candidate.ndim == 0:
+                theta_candidate = theta_candidate.reshape(1, 1)
+            elif theta_candidate.ndim == 1:
                 theta_candidate = theta_candidate[np.newaxis, :]
 
             # Step 2: Simulate data with candidate parameters
-            # Input: (1, P). Output: (1, *Data_Dims)
             simulated_data = self.simulator.simulate(theta_candidate)
 
             # Step 3: Apply summary statistic if provided
@@ -127,18 +99,14 @@ class ABCRejectionSampling(BaseInferenceAlgorithm):
             else:
                 simulated_summary = simulated_data
 
-            # Step 4: Compute distance between simulated and observed data
-            # Both should be (1, ...) or compatible for distance function
-            # If distance function expects arrays, we pass them.
-            # Assuming distance function returns a scalar or (1,) array
+            # Step 4: Compute distance
             distance = self.distance_function(simulated_summary, observed_summary)
             if np.ndim(distance) > 0:
                 distance = distance.item()
 
             # Step 5: Accept or reject based on tolerance threshold
             if distance <= tolerance:
-                # Store sample (flattened if needed, or keep as (1, P))
-                # Let's store as (P,) for convenience in posterior object
+                # Store sample
                 accepted_samples.append(theta_candidate.flatten())
                 accepted_distances.append(distance)
 
@@ -225,13 +193,11 @@ class ABCPosterior:
 
         # Handle 1D samples or extract the specified parameter
         if parameter_index is None:
-            if samples_arr.shape[1] > 1:
-                 # Default to first parameter if not specified? Or raise error?
-                 # Old code raised error.
+            if samples_arr.ndim > 1 and samples_arr.shape[1] > 1:
                  raise ValueError(
                     "Samples are multi-dimensional. Specify parameter_index."
                 )
-            parameter_values = samples_arr[:, 0]
+            parameter_values = samples_arr.flatten()
         else:
             parameter_values = samples_arr[:, parameter_index]
 

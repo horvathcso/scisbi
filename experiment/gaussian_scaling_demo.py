@@ -141,7 +141,8 @@ def run_abc_rejection_demo(
         # Compute MSE
         true_params = np.array([1.5, 2.0])
         samples = np.array(samples)
-        if samples.ndim == 1: samples = samples.reshape(-1, 2)
+        if samples.ndim == 1:
+            samples = samples.reshape(-1, 2)
         mse = np.mean((np.mean(samples, axis=0) - true_params)**2)
 
         return {
@@ -195,7 +196,8 @@ def run_abc_mcmc_demo(
 
         true_params = np.array([1.5, 2.0])
         samples = np.array(samples)
-        if samples.ndim == 1: samples = samples.reshape(-1, 2)
+        if samples.ndim == 1:
+            samples = samples.reshape(-1, 2)
         mse = np.mean((np.mean(samples, axis=0) - true_params)**2)
 
         return {

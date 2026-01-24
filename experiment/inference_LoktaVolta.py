@@ -7,18 +7,13 @@ This experiment compares multiple inference methods on the Lotka-Volterra proble
 import numpy as np
 import torch
 import torch.nn as nn
-import matplotlib.pyplot as plt
 from pathlib import Path
-import time
-import pandas as pd
 import warnings
 import logging
-from datetime import datetime
 
 # Import scisbi modules
 from scisbi.simulator.LotkaVolterraSimulator import LotkaVolterraSimulator
 from scisbi.inference.ABC import ABCRejectionSampling
-from scisbi.inference.ABCMCMC import ABCMCMC
 from scisbi.inference.ABCSMC import ABCSMC
 from scisbi.inference.JANA import JANA
 from scisbi.inference.Simformer import Simformer
@@ -48,8 +43,10 @@ logger = logging.getLogger(__name__)
 # SETUP CLASSES
 # ================================
 
+
 class UniformPrior:
     """Uniform prior for LV parameters."""
+
     def __init__(self):
         # [alpha, beta, gamma, delta, x0, y0]
         self.lower = np.array([0.1, 0.01, 0.1, 0.01, 1.0, 1.0])
@@ -75,8 +72,10 @@ class UniformPrior:
 
         return np.array(log_probs) if len(log_probs) > 1 else log_probs[0]
 
+
 class SummaryStatistic:
     """Summary statistic for Lotka-Volterra trajectories."""
+
     def __init__(self, simulator):
         self.simulator = simulator
 
@@ -95,19 +94,20 @@ class SummaryStatistic:
             pass
 
         # Ensure 3D
-        if data.ndim == 2: # flattened (Batch, 2*T)
-             # Use simulator to reshape?
-             # Or reimplement reshape logic
-             n_points = data.shape[1] // 2
-             trajectories = np.zeros((data.shape[0], 2, n_points))
-             trajectories[:, 0, :] = data[:, :n_points]
-             trajectories[:, 1, :] = data[:, n_points:]
-             data = trajectories
+        if data.ndim == 2:  # flattened (Batch, 2*T)
+            # Use simulator to reshape?
+            # Or reimplement reshape logic
+            n_points = data.shape[1] // 2
+            trajectories = np.zeros((data.shape[0], 2, n_points))
+            trajectories[:, 0, :] = data[:, :n_points]
+            trajectories[:, 1, :] = data[:, n_points:]
+            data = trajectories
 
         # Compute summary stats: (Batch, 8)
         # Use the simulator's internal method?
         # simulator._compute_summary_statistics takes (Batch, 2, T)
         return self.simulator._compute_summary_statistics(data)
+
 
 def distance_function(x, y):
     # x, y: (1, 8) or (8,)
@@ -116,6 +116,7 @@ def distance_function(x, y):
     # Normalize if needed, but simple euclidean for now
     return np.linalg.norm(x - y)
 
+
 class PerturbationKernel:
     def __init__(self, std=0.1):
         self.std = std
@@ -123,9 +124,11 @@ class PerturbationKernel:
     def __call__(self, theta):
         return theta + np.random.normal(0, self.std, size=theta.shape)
 
+
 # ================================
 # MODELS
 # ================================
+
 
 class JANANetwork(nn.Module):
     def __init__(self, input_dim, output_dim, hidden_dim=64):
@@ -137,15 +140,17 @@ class JANANetwork(nn.Module):
             nn.Linear(hidden_dim, hidden_dim),
             nn.LayerNorm(hidden_dim),
             nn.ReLU(),
-            nn.Linear(hidden_dim, output_dim)
+            nn.Linear(hidden_dim, output_dim),
         )
 
     def forward(self, x, z):
         return self.net(torch.cat([x, z], dim=1))
 
+
 # ================================
 # MAIN
 # ================================
+
 
 def main():
     logger.info("Starting Lotka-Volterra Experiment")
@@ -158,7 +163,7 @@ def main():
 
     # Generate observed data
     true_params_batch = true_params.reshape(1, -1)
-    observed_data = simulator.simulate(true_params_batch) # (1, 2, 50)
+    observed_data = simulator.simulate(true_params_batch)  # (1, 2, 50)
 
     # Methods
     results = {}
@@ -167,8 +172,11 @@ def main():
     logger.info("Running ABC Rejection...")
     try:
         abc = ABCRejectionSampling(
-            simulator, prior, distance_function, tolerance=10.0,
-            summary_statistic=summary_stat
+            simulator,
+            prior,
+            distance_function,
+            tolerance=10.0,
+            summary_statistic=summary_stat,
         )
         posterior = abc.infer(observed_data, num_simulations=1000)
         results["ABC"] = posterior.get_samples()
@@ -176,17 +184,20 @@ def main():
     except Exception as e:
         logger.error(f"ABC failed: {e}")
         import traceback
+
         traceback.print_exc()
 
     # 2. ABC-SMC
     logger.info("Running ABC-SMC...")
     try:
         smc = ABCSMC(
-            simulator, prior, distance_function,
+            simulator,
+            prior,
+            distance_function,
             tolerance_schedule=[50.0, 20.0, 10.0, 5.0],
             perturbation_kernel=PerturbationKernel(0.1),
             summary_statistic=summary_stat,
-            num_particles=500
+            num_particles=500,
         )
         posterior = smc.infer(observed_data)
         results["ABC-SMC"] = posterior.sample(1000)
@@ -194,6 +205,7 @@ def main():
     except Exception as e:
         logger.error(f"ABC-SMC failed: {e}")
         import traceback
+
         traceback.print_exc()
 
     # 3. JANA
@@ -210,6 +222,7 @@ def main():
     except Exception as e:
         logger.error(f"JANA failed: {e}")
         import traceback
+
         traceback.print_exc()
 
     # 4. Simformer
@@ -217,15 +230,22 @@ def main():
     try:
         # Data dim is 8 (summary stats)
         simformer = Simformer(
-            simulator, prior, data_dim=8, param_dim=6,
-            summary_statistic=summary_stat, device="auto"
+            simulator,
+            prior,
+            data_dim=8,
+            param_dim=6,
+            summary_statistic=summary_stat,
+            device="auto",
         )
-        posterior = simformer.infer(observed_data, num_simulations=1000, sequence_length=20, num_epochs=50)
+        posterior = simformer.infer(
+            observed_data, num_simulations=1000, sequence_length=20, num_epochs=50
+        )
         results["Simformer"] = posterior.sample(observed_data, num_samples=1000)
         logger.info("Simformer success")
     except Exception as e:
         logger.error(f"Simformer failed: {e}")
         import traceback
+
         traceback.print_exc()
 
     # Metrics and Plotting
@@ -235,10 +255,11 @@ def main():
     for method, samples in results.items():
         if samples is not None:
             samples = np.array(samples)
-            mse = np.mean((np.mean(samples, axis=0) - true_params)**2)
+            mse = np.mean((np.mean(samples, axis=0) - true_params) ** 2)
             logger.info(f"{method} MSE: {mse}")
 
     logger.info("Experiment Completed")
+
 
 if __name__ == "__main__":
     main()

@@ -89,8 +89,8 @@ class UniformPrior:
         x = np.atleast_2d(x)
         # Check if parameters are within bounds; calculate log-probability
         in_bounds = (x >= self.bounds[:, 0]) & (x <= self.bounds[:, 1])
-        log_probs = np.where(np.all(in_bounds, axis=1), 
-                             -np.log(np.prod(np.diff(self.bounds, axis=1))), 
+        log_probs = np.where(np.all(in_bounds, axis=1),
+                             -np.log(np.prod(np.diff(self.bounds, axis=1))),
                              -np.inf)  # Log-prob is -infinity outside bounds
         return log_probs[0] if x.shape[0] == 1 else log_probs
 

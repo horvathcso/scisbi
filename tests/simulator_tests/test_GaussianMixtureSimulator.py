@@ -36,7 +36,7 @@ class TestGaussianMixtureSimulator:
         params_batch = {
             "weights": np.tile(params["weights"], (num_sims, 1)),
             "means": np.tile(params["means"], (num_sims, 1)),
-            "stds": np.tile(params["stds"], (num_sims, 1))
+            "stds": np.tile(params["stds"], (num_sims, 1)),
         }
 
         samples1 = sim1.simulate(params_batch)
@@ -53,7 +53,7 @@ class TestGaussianMixtureSimulator:
         params_batch = {
             "weights": np.tile(params["weights"], (num_samples, 1)),
             "means": np.tile(params["means"], (num_samples, 1)),
-            "stds": np.tile(params["stds"], (num_samples, 1))
+            "stds": np.tile(params["stds"], (num_samples, 1)),
         }
 
         samples = sim.simulate(params_batch)
@@ -95,7 +95,7 @@ class TestGaussianMixtureSimulator:
         params_batch = {
             "weights": np.tile(params["weights"], (num_samples, 1)),
             "means": np.tile(params["means"], (num_samples, 1, 1)),
-            "stds": np.tile(params["stds"], (num_samples, 1, 1))
+            "stds": np.tile(params["stds"], (num_samples, 1, 1)),
         }
 
         samples = sim.simulate(params_batch)
@@ -147,7 +147,7 @@ class TestGaussianMixtureSimulator:
         params_batch = {
             "weights": np.tile(params["weights"], (num_samples, 1)),
             "means": np.tile(params["means"], (num_samples, 1, 1)),
-            "covs": np.tile(params["covs"], (num_samples, 1, 1, 1))
+            "covs": np.tile(params["covs"], (num_samples, 1, 1, 1)),
         }
 
         samples = sim.simulate(params_batch)
@@ -214,7 +214,7 @@ class TestGaussianMixtureSimulator:
         params_batch = {
             "weights": np.tile(params["weights"], (num_samples, 1)),
             "means": np.tile(params["means"], (num_samples, 1)),
-            "stds": np.tile(params["stds"], (num_samples, 1))
+            "stds": np.tile(params["stds"], (num_samples, 1)),
         }
 
         samples = sim.simulate(params_batch)
@@ -235,8 +235,10 @@ class TestGaussianMixtureSimulator:
 
         # Wrong number of parameters
         # Need to pass batch
-        with pytest.raises(Exception): # May not raise ValueError specifically if numpy broadcast/index fails differently
-            sim.simulate(np.array([[0.5, 0.5, 1, 1]])) # Missing params
+        with pytest.raises(
+            Exception
+        ):  # May not raise ValueError specifically if numpy broadcast/index fails differently
+            sim.simulate(np.array([[0.5, 0.5, 1, 1]]))  # Missing params
 
     def test_component_selection(self):
         """Test that components are selected according to weights."""
@@ -252,7 +254,7 @@ class TestGaussianMixtureSimulator:
         params_batch = {
             "weights": np.tile(params["weights"], (num_samples, 1)),
             "means": np.tile(params["means"], (num_samples, 1)),
-            "stds": np.tile(params["stds"], (num_samples, 1))
+            "stds": np.tile(params["stds"], (num_samples, 1)),
         }
 
         samples = sim.simulate(params_batch).flatten()
@@ -278,7 +280,7 @@ class TestGaussianMixtureSimulator:
         params_batch = {
             "weights": np.tile(params["weights"], (num_samples, 1)),
             "means": np.tile(params["means"], (num_samples, 1, 1)),
-            "stds": np.tile(params["stds"], (num_samples, 1, 1))
+            "stds": np.tile(params["stds"], (num_samples, 1, 1)),
         }
 
         samples = sim.simulate(params_batch)
@@ -298,7 +300,7 @@ class TestGaussianMixtureSimulator:
         params_batch = {
             "weights": np.tile(params["weights"], (num_samples, 1)),
             "means": np.tile(params["means"], (num_samples, 1)),
-            "stds": np.tile(params["stds"], (num_samples, 1))
+            "stds": np.tile(params["stds"], (num_samples, 1)),
         }
 
         samples = sim.simulate(params_batch).flatten()
@@ -325,7 +327,7 @@ class TestGaussianMixtureSimulator:
         params_batch = {
             "weights": np.tile(params["weights"], (num_samples, 1)),
             "means": np.tile(params["means"], (num_samples, 1, 1)),
-            "covs": np.tile(params["covs"], (num_samples, 1, 1, 1))
+            "covs": np.tile(params["covs"], (num_samples, 1, 1, 1)),
         }
 
         # This would raise an error if the simulator doesn't symmetrize the matrix

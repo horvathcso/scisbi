@@ -267,7 +267,7 @@ def run_abc_rejection(simulator, prior, summary_stat, observed_data, num_samples
     if observed_data.ndim == 1:
         observed_data = observed_data.reshape(1, -1)
 
-    obs_summary = summary_stat.compute(observed_data)
+    # obs_summary = summary_stat.compute(observed_data)
 
     abc = ABCRejectionSampling(
         simulator=simulator,

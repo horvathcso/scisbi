@@ -118,7 +118,9 @@ class ABCMCMC(BaseInferenceAlgorithm):
                     # Simulate data with proposed parameters
                     # Ensure batch dimension
                     proposed_state_batch = np.asarray(proposed_state)
-                    if proposed_state_batch.ndim == 1:
+                    if proposed_state_batch.ndim == 0:
+                        proposed_state_batch = proposed_state_batch.reshape(1, 1)
+                    elif proposed_state_batch.ndim == 1:
                         proposed_state_batch = proposed_state_batch[np.newaxis, :]
 
                     simulated_data = self.simulator.simulate(proposed_state_batch)
@@ -229,7 +231,9 @@ class ABCMCMC(BaseInferenceAlgorithm):
         """
         try:
             state_batch = np.asarray(state)
-            if state_batch.ndim == 1:
+            if state_batch.ndim == 0:
+                state_batch = state_batch.reshape(1, 1)
+            elif state_batch.ndim == 1:
                 state_batch = state_batch[np.newaxis, :]
 
             simulated_data = self.simulator.simulate(state_batch)
@@ -245,7 +249,8 @@ class ABCMCMC(BaseInferenceAlgorithm):
 
             return distance <= tolerance
 
-        except Exception:
+        except Exception as e:
+            # print(f"DEBUG ABCMCMC: {e}") # Uncomment for debugging
             return False
 
 

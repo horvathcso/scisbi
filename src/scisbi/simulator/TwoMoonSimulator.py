@@ -43,12 +43,14 @@ class TwoMoonsSimulator(BaseSimulator):
             Numpy array of shape (Batch_Size, n_points, 2) containing the dataset.
         """
         if parameters is None:
-             # Default single simulation
-             parameters = np.array([[self.noise, self.moon_radius, self.moon_width, self.moon_distance]])
+            # Default single simulation
+            parameters = np.array(
+                [[self.noise, self.moon_radius, self.moon_width, self.moon_distance]]
+            )
         else:
-             parameters = np.asarray(parameters)
-             if parameters.ndim == 1:
-                 parameters = parameters[np.newaxis, :]
+            parameters = np.asarray(parameters)
+            if parameters.ndim == 1:
+                parameters = parameters[np.newaxis, :]
 
         batch_size = parameters.shape[0]
         output = np.zeros((batch_size, self.n_points, 2))

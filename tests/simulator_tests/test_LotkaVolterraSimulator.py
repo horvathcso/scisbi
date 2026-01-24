@@ -2,7 +2,6 @@ import pytest
 import numpy as np
 import matplotlib.pyplot as plt
 from matplotlib.figure import Figure
-import os
 
 from scisbi.simulator import LotkaVolterraSimulator
 
@@ -85,10 +84,10 @@ class TestLotkaVolterraSimulator:
     def test_get_original_shape_legacy(self, simulator, test_parameters):
         """Test reshaping flattened data back to original format (legacy support)."""
         # Manually flatten a simulation result to test get_original_shape
-        result = simulator.simulate(test_parameters) # (1, 2, T)
+        result = simulator.simulate(test_parameters)  # (1, 2, T)
         flattened = np.zeros((1, 2 * simulator.n_points))
-        flattened[:, :simulator.n_points] = result[:, 0, :]
-        flattened[:, simulator.n_points:] = result[:, 1, :]
+        flattened[:, : simulator.n_points] = result[:, 0, :]
+        flattened[:, simulator.n_points :] = result[:, 1, :]
 
         reshaped = simulator.get_original_shape(flattened)
 
@@ -159,7 +158,7 @@ class TestLotkaVolterraSimulator:
     def test_simulation_reproduces_expected_dynamics(self, test_parameters):
         """Test that simulations reproduce expected predator-prey dynamics."""
         sim = LotkaVolterraSimulator(t_span=(0, 100), n_points=1000, noise_level=0.0)
-        result = sim.simulate(test_parameters) # (1, 2, 1000)
+        result = sim.simulate(test_parameters)  # (1, 2, 1000)
 
         prey = result[0, 0]
         predator = result[0, 1]
@@ -205,7 +204,7 @@ class TestLotkaVolterraSimulator:
 
         # Simulate 10 times
         params_batch = np.tile(test_parameters, (10, 1))
-        result = sim.simulate(params_batch) # (10, 2, T)
+        result = sim.simulate(params_batch)  # (10, 2, T)
 
         # Calculate variance across simulations
         variance = np.var(result, axis=0)

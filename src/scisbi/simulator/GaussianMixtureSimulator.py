@@ -86,17 +86,19 @@ class GaussianMixtureSimulator(BaseSimulator):
             # Covs should be (Batch, K, D, D)
             if self.use_covariance:
                 if covs.ndim == 3:
-                     # (Batch, K, D*D) or (Batch, K, D, D) ?
-                     # If dimensions=2, D*D=4.
-                     # If user passed (Batch, K, D, D) it is 4D.
-                     pass
+                    # (Batch, K, D*D) or (Batch, K, D, D) ?
+                    # If dimensions=2, D*D=4.
+                    # If user passed (Batch, K, D, D) it is 4D.
+                    pass
 
             batch_size = weights.shape[0]
 
             # Reshape to ensure correctness
             means = means.reshape(batch_size, self.n_components, self.dimensions)
             if self.use_covariance:
-                covs = covs.reshape(batch_size, self.n_components, self.dimensions, self.dimensions)
+                covs = covs.reshape(
+                    batch_size, self.n_components, self.dimensions, self.dimensions
+                )
             else:
                 stds = stds.reshape(batch_size, self.n_components, self.dimensions)
 
@@ -121,11 +123,17 @@ class GaussianMixtureSimulator(BaseSimulator):
             # Extract standard deviations or covariance matrices
             if self.use_covariance:
                 # For full covariance matrices: n_components * dimensions^2 elements
-                covs_flat = parameters[:, idx : idx + self.n_components * self.dimensions**2]
-                covs = covs_flat.reshape(batch_size, self.n_components, self.dimensions, self.dimensions)
+                covs_flat = parameters[
+                    :, idx : idx + self.n_components * self.dimensions**2
+                ]
+                covs = covs_flat.reshape(
+                    batch_size, self.n_components, self.dimensions, self.dimensions
+                )
             else:
                 # For diagonal covariance: n_components * dimensions elements
-                stds_flat = parameters[:, idx : idx + self.n_components * self.dimensions]
+                stds_flat = parameters[
+                    :, idx : idx + self.n_components * self.dimensions
+                ]
                 stds = stds_flat.reshape(batch_size, self.n_components, self.dimensions)
 
         # Normalize weights
@@ -141,17 +149,13 @@ class GaussianMixtureSimulator(BaseSimulator):
             k = self.rng.choice(self.n_components, p=weights[i])
 
             if self.dimensions == 1 or not self.use_covariance:
-                 # means[i, k] is (D,), stds[i, k] is (D,)
-                 # self.rng.normal returns array if loc/scale are arrays
-                 samples[i] = self.rng.normal(
-                     loc=means[i, k], scale=stds[i, k]
-                 )
+                # means[i, k] is (D,), stds[i, k] is (D,)
+                # self.rng.normal returns array if loc/scale are arrays
+                samples[i] = self.rng.normal(loc=means[i, k], scale=stds[i, k])
             else:
-                 # Multivariate with full covariance
-                 cov_k = covs[i, k]
-                 cov_k = (cov_k + cov_k.T) / 2
-                 samples[i] = self.rng.multivariate_normal(
-                     mean=means[i, k], cov=cov_k
-                 )
+                # Multivariate with full covariance
+                cov_k = covs[i, k]
+                cov_k = (cov_k + cov_k.T) / 2
+                samples[i] = self.rng.multivariate_normal(mean=means[i, k], cov=cov_k)
 
         return samples

@@ -204,16 +204,16 @@ class LotkaVolterraSimulator(BaseSimulator):
 
         # Check if result is summary statistics
         if result.ndim == 2 and result.shape[1] == 8:
-             raise ValueError("Cannot plot summary statistics. Need full trajectories.")
+            raise ValueError("Cannot plot summary statistics. Need full trajectories.")
 
         # Handle flattened vs structured
         if result.ndim == 2:
-             # Assume flattened: (Batch, 2*n_points)
-             n_sims = result.shape[0]
-             trajectories = np.zeros((n_sims, 2, self.n_points))
-             trajectories[:, 0, :] = result[:, : self.n_points]
-             trajectories[:, 1, :] = result[:, self.n_points :]
-             result = trajectories
+            # Assume flattened: (Batch, 2*n_points)
+            n_sims = result.shape[0]
+            trajectories = np.zeros((n_sims, 2, self.n_points))
+            trajectories[:, 0, :] = result[:, : self.n_points]
+            trajectories[:, 1, :] = result[:, self.n_points :]
+            result = trajectories
 
         # Now result is (Batch, 2, n_points)
         n_sims = result.shape[0]
@@ -264,7 +264,7 @@ class LotkaVolterraSimulator(BaseSimulator):
         # This method is kept for legacy support/testing, assuming flattened_data is what we want to reshape.
         # If the input is already shaped (N, 2, T), we return it or check shape.
         if flattened_data.ndim == 3:
-             return flattened_data
+            return flattened_data
 
         n_sims = flattened_data.shape[0]
         trajectories = np.zeros((n_sims, 2, self.n_points))

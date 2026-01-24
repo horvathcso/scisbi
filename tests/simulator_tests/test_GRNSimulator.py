@@ -1,6 +1,5 @@
 import unittest
 import numpy as np
-import matplotlib.pyplot as plt
 import os
 import sys
 
@@ -31,8 +30,8 @@ class TestGeneRegulatoryNetworkSimulator(unittest.TestCase):
             if name in sim.default_params:
                 values.append(sim.default_params[name])
             else:
-                 # Fallback? Should not happen in this test suite setup
-                 values.append(0.0)
+                # Fallback? Should not happen in this test suite setup
+                values.append(0.0)
 
         params_single = np.array(values)
         return np.tile(params_single, (batch_size, 1))
@@ -178,7 +177,7 @@ class TestGeneRegulatoryNetworkSimulator(unittest.TestCase):
             "k_mrna_decay": 0.1,
             "k_protein_decay": 1.0,
             "K_d": 10.0,
-            "n_hill": 4.0
+            "n_hill": 4.0,
         }
 
         # Construct list in correct order

@@ -52,9 +52,7 @@ class JANAPosterior:
             observed_summary = observed_data
 
         # observed_summary: (1, S)
-        observed_tensor = (
-            torch.from_numpy(observed_summary).float().to(self.device)
-        )
+        observed_tensor = torch.from_numpy(observed_summary).float().to(self.device)
 
         with torch.no_grad():
             # Tile observed_tensor to match num_samples for batch processing
@@ -62,7 +60,7 @@ class JANAPosterior:
             x = observed_tensor.repeat(num_samples, 1)
 
             # Sample from prior to get z
-            z_samples = self.prior.sample(num_samples) # (num_samples, P)
+            z_samples = self.prior.sample(num_samples)  # (num_samples, P)
             # Ensure 2D
             if z_samples.ndim == 1:
                 z_samples = z_samples[np.newaxis, :]
@@ -204,15 +202,17 @@ class JANA(BaseInferenceAlgorithm):
             # Reshape if prior returns list of scalars or 1D array for single param dim
             thetas = thetas.reshape(num_simulations, -1)
         elif thetas.shape[0] != num_simulations:
-             # Fallback if sample(N) not supported properly
-             pass
+            # Fallback if sample(N) not supported properly
+            pass
 
         simulated_data = []
 
         # Batch simulation size
-        sim_batch_size = min(num_simulations, 1000) # Process simulations in chunks
+        sim_batch_size = min(num_simulations, 1000)  # Process simulations in chunks
 
-        for i in trange(0, num_simulations, sim_batch_size, desc="Simulations", disable=not verbose):
+        for i in trange(
+            0, num_simulations, sim_batch_size, desc="Simulations", disable=not verbose
+        ):
             batch_thetas = thetas[i : i + sim_batch_size]
 
             # Transform parameters to ensure they meet simulator constraints
