@@ -346,7 +346,9 @@ class JANA(BaseInferenceAlgorithm):
             # Load best model if saved, otherwise keep current state
             if best_model_saved:
                 try:
-                    self.model.load_state_dict(torch.load(temp_model_path))
+                    self.model.load_state_dict(
+                        torch.load(temp_model_path, map_location=self.device)
+                    )
                     if verbose:
                         print("Loaded best model from training.")
                 except FileNotFoundError:

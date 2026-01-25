@@ -606,7 +606,9 @@ class Simformer(BaseInferenceAlgorithm):
 
             # Load best model if saved
             if best_model_saved:
-                self.model.load_state_dict(torch.load(temp_model_path))
+                self.model.load_state_dict(
+                    torch.load(temp_model_path, map_location=self.device)
+                )
             self.model.eval()
 
         finally:

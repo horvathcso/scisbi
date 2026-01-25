@@ -1,5 +1,6 @@
 import numpy as np
 import gillespy2
+from gillespy2.solvers.numpy import NumPySSASolver
 from typing import List, Dict, Any, Optional, Union
 from scisbi.base.simulator import BaseSimulator
 
@@ -346,7 +347,14 @@ class GeneRegulatoryNetworkSimulator(BaseSimulator):
             # Run 1 trajectory for this parameter set
             # Ensure different seed for each simulation in the batch if a seed is provided
             current_seed = self.seed + i if self.seed is not None else None
-            results = self.model.run(number_of_trajectories=1, seed=current_seed)
+
+            # Use NumPySSASolver explicitly to ensure cross-platform compatibility
+            # without requiring C++ compilers (which might be missing on Windows CI)
+            results = self.model.run(
+                number_of_trajectories=1,
+                seed=current_seed,
+                solver=NumPySSASolver
+            )
             processed = self._process_results(results)
 
             # processed is (1, Flattened) or {name: (1, T)}?
