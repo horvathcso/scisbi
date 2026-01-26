@@ -158,10 +158,13 @@ def plot_posterior(
         df_combined = df_data
 
     # Plot
-    g = sns.pairplot(df_combined, hue='Type', diag_kind='kde', plot_kws={'alpha': 0.5, 's': 10})
-    g.fig.suptitle(f"{task_name} - {method_name}", y=1.02)
-    plt.savefig(save_path)
-    plt.close()
+    try:
+        g = sns.pairplot(df_combined, hue='Type', diag_kind='kde', plot_kws={'alpha': 0.5, 's': 10})
+        g.fig.suptitle(f"{task_name} - {method_name}", y=1.02)
+        plt.savefig(save_path)
+        plt.close()
+    except Exception as e:
+        logger.error(f"Failed to plot: {e}")
 
 # --- Main Benchmark Runner ---
 
@@ -181,6 +184,13 @@ def run_benchmark(
     # Store metrics
     all_results = []
 
+    # Simulation budgets to iterate over
+    # If dry_run, just run one small budget
+    if dry_run:
+        budgets = [1000]
+    else:
+        budgets = [1000, 10000, 100000]
+
     for task_name in tasks:
         logger.info(f"Starting task: {task_name}")
 
@@ -198,188 +208,166 @@ def run_benchmark(
             ref_samples = task.get_reference_posterior_samples(num_observation=num_observation) # Tensor (N, P)
             ref_samples_np = ref_samples.numpy()
 
-            # Define methods configuration
-            # Budgets are reduced for dry_run
-            budget_factor = 0.01 if dry_run else 1.0
+            for budget in budgets:
+                logger.info(f"  Simulation Budget: {budget}")
 
-            # Standard configs
-            abc_sims = int(10000 * budget_factor) if dry_run else 1000 # Samples to accept? No, total simulations usually.
-            # ABCRejection expects num_simulations as desired samples.
-            # If acceptance rate is low, this might run forever.
-            # I'll use max_attempts.
+                # Dry run adjustments
+                effective_budget = budget if not dry_run else 100
 
-            methods = {
-                "ABC": {
-                    "class": ABCRejectionSampling,
-                    "kwargs": {
-                        "distance_function": euclidean_distance,
-                        "tolerance": 2.0, # Very high tolerance for dry-run to ensure acceptance
-                        "max_attempts": 1000 if dry_run else 100000
+                methods = {
+                    "ABC": {
+                        "class": ABCRejectionSampling,
+                        "kwargs": {
+                            "distance_function": euclidean_distance,
+                            "tolerance": 2.0 if dry_run else 0.5,
+                            "max_attempts": effective_budget
+                        },
+                        "infer_kwargs": {
+                            "num_simulations": 10 if dry_run else 1000
+                        }
                     },
-                    "infer_kwargs": {
-                        "num_simulations": 10 if dry_run else 1000
-                    }
-                },
-                "ABCMCMC": {
-                    "class": ABCMCMC,
-                    "kwargs": {
-                         "distance_function": euclidean_distance,
-                         "tolerance": 2.0,
-                         "proposal_distribution": GaussianKernel(scale=0.5), # Larger steps
-                         "max_attempts_per_step": 100 if dry_run else 100
+                    "ABCMCMC": {
+                        "class": ABCMCMC,
+                        "kwargs": {
+                             "distance_function": euclidean_distance,
+                             "tolerance": 2.0 if dry_run else 0.5,
+                             "proposal_distribution": GaussianKernel(scale=0.1),
+                             "max_attempts_per_step": 100
+                        },
+                        "infer_kwargs": {
+                            "num_iterations": int(effective_budget) # 1 sim per iteration
+                        }
                     },
-                    "infer_kwargs": {
-                        "num_iterations": 20 if dry_run else 5000
-                    }
-                },
-                "ABCSMC": {
-                    "class": ABCSMC,
-                    "kwargs": {
-                        "distance_function": euclidean_distance,
-                        "population_size": 20 if dry_run else 1000, # Minimum 20 for stability
-                        "tolerance_schedule": [5.0, 2.0] if dry_run else [2.0, 1.0, 0.5, 0.2, 0.1, 0.05],
-                        "perturbation_kernel": GaussianKernel(scale=0.1)
+                    "ABCSMC": {
+                        "class": ABCSMC,
+                        "kwargs": {
+                            "distance_function": euclidean_distance,
+                            "population_size": 20 if dry_run else 1000,
+                            "tolerance_schedule": [5.0, 2.0] if dry_run else [2.0, 1.0, 0.5, 0.2, 0.1, 0.05],
+                            "perturbation_kernel": GaussianKernel(scale=0.1)
+                        },
+                        "infer_kwargs": {
+                            "num_iterations": 2 if dry_run else 6
+                        }
                     },
-                    "infer_kwargs": {
-                        "num_iterations": 2 if dry_run else 6
-                    }
-                },
-                "JANA": {
-                    "class": JANA,
-                    "kwargs": {
-                        "model": None
+                    "JANA": {
+                        "class": JANA,
+                        "kwargs": {
+                            "model": None
+                        },
+                        "infer_kwargs": {
+                            "num_simulations": effective_budget,
+                            "num_epochs": 1 if dry_run else 20,
+                            "batch_size": 64
+                        }
                     },
-                    "infer_kwargs": {
-                        "num_simulations": 100 if dry_run else 10000,
-                        "num_epochs": 1 if dry_run else 50,
-                        "batch_size": 16
-                    }
-                },
-                "Simformer": {
-                    "class": Simformer,
-                    "kwargs": {
-                        "data_dim": observation_np.shape[1],
-                        "param_dim": ref_samples_np.shape[1]
-                    },
-                    "infer_kwargs": {
-                        "num_simulations": 10 if dry_run else 2000,
-                        "sequence_length": 5 if dry_run else 50,
-                        "num_epochs": 1 if dry_run else 50
+                    "Simformer": {
+                        "class": Simformer,
+                        "kwargs": {
+                            "data_dim": observation_np.shape[1],
+                            "param_dim": ref_samples_np.shape[1]
+                        },
+                        "infer_kwargs": {
+                            "num_simulations": max(10, int(effective_budget / 10)), # Sequences
+                            "sequence_length": 10,
+                            "num_epochs": 1 if dry_run else 20
+                        }
                     }
                 }
-            }
 
-            for method_name, config in methods.items():
-                logger.info(f"  Running {method_name}...")
-                start_time = time.time()
+                for method_name, config in methods.items():
+                    logger.info(f"    Running {method_name}...")
+                    start_time = time.time()
 
-                try:
-                    # Initialize algorithm
-                    kwargs = config["kwargs"].copy()
+                    try:
+                        # Initialize algorithm
+                        kwargs = config["kwargs"].copy()
 
-                    # Special initialization for JANA model (needs dimensions)
-                    if method_name == "JANA":
-                        input_dim = observation_np.shape[1] # x size
-                        z_dim = ref_samples_np.shape[1] # z size (using prior dimension)
-                        output_dim = ref_samples_np.shape[1] # theta
+                        # Special initialization for JANA model (needs dimensions)
+                        if method_name == "JANA":
+                            input_dim = observation_np.shape[1] # x size
+                            z_dim = ref_samples_np.shape[1] # z size (using prior dimension)
+                            output_dim = ref_samples_np.shape[1] # theta
 
-                        model = JANAModel(input_dim + z_dim, 64, output_dim)
-                        kwargs["model"] = model
+                            model = JANAModel(input_dim + z_dim, 64, output_dim)
+                            kwargs["model"] = model
 
-                    algo = config["class"](
-                        simulator=simulator,
-                        prior=prior,
-                        **kwargs
-                    )
+                        algo = config["class"](
+                            simulator=simulator,
+                            prior=prior,
+                            **kwargs
+                        )
 
-                    # Run inference
-                    infer_kwargs = config["infer_kwargs"].copy()
-                    posterior = algo.infer(
-                        observed_data=observation_np,
-                        **infer_kwargs
-                    )
+                        # Run inference
+                        infer_kwargs = config["infer_kwargs"].copy()
+                        posterior = algo.infer(
+                            observed_data=observation_np,
+                            **infer_kwargs
+                        )
 
-                    # Sample posterior
-                    num_samples = 1000
-                    if method_name in ["JANA", "Simformer"]:
-                        # For neural methods, sample method takes observed_data
-                        samples = posterior.sample(observation_np, num_samples=num_samples)
-                    else:
-                        # For ABC, result object already has samples or provides resampling
-                        if hasattr(posterior, "sample"):
-                            # Check if sample requires arguments?
-                            # ABCPosterior.sample(n)
-                            # SimformerPosterior.sample(obs, n)
-                            # Uniformity issue here in BaseInference?
-                            # BaseInferenceAlgorithm return type isn't strictly defined as a common Posterior class with common sample method
-                            # ABCPosterior.sample(n)
-                            # ABCMCMCPosterior.sample(n)
-                            # ABCSMCPosterior.sample(n)
-                            # JANAPosterior.sample(obs, n)
-
-                            # Inspect signature or try/except
-                            try:
-                                samples = posterior.sample(num_samples)
-                            except TypeError:
-                                samples = posterior.sample(observation_np, num_samples=num_samples)
-                        elif hasattr(posterior, "samples"):
-                            # ABCPosterior has .samples attribute (list of arrays)
-                            # But we want exactly num_samples
-                            # It has .sample(n) method too.
-                            samples = posterior.sample(num_samples)
+                        # Sample posterior
+                        num_samples = 1000
+                        if method_name in ["JANA", "Simformer"]:
+                            # For neural methods, sample method takes observed_data
+                            samples = posterior.sample(observation_np, num_samples=num_samples)
                         else:
-                            raise RuntimeError(f"Unknown posterior type for {method_name}")
+                            # For ABC
+                            if hasattr(posterior, "sample"):
+                                try:
+                                    samples = posterior.sample(num_samples)
+                                except TypeError:
+                                    samples = posterior.sample(observation_np, num_samples=num_samples)
+                            else:
+                                raise RuntimeError(f"Unknown posterior type for {method_name}")
 
-                    # Ensure samples are numpy array (N, P)
-                    if isinstance(samples, list):
-                        samples = np.array(samples)
-                    if samples.ndim == 1:
-                         samples = samples.reshape(-1, 1)
-                    elif samples.ndim == 3 and samples.shape[1] == 1:
-                         # Squeeze middle dimension (N, 1, P) -> (N, P)
-                         samples = samples.squeeze(1)
+                        # Ensure samples are numpy array (N, P)
+                        if isinstance(samples, list):
+                            samples = np.array(samples)
+                        if samples.ndim == 1:
+                             samples = samples.reshape(-1, 1)
+                        elif samples.ndim == 3 and samples.shape[1] == 1:
+                             # Squeeze middle dimension (N, 1, P) -> (N, P)
+                             samples = samples.squeeze(1)
 
-                    # Calculate Metrics
-                    runtime = time.time() - start_time
+                        # Calculate Metrics
+                        runtime = time.time() - start_time
 
-                    # C2ST
-                    samples_tensor = torch.from_numpy(samples).float()
-                    # Resample reference if sizes mismatch too much for C2ST stability?
-                    # sbibm c2st expects (N, P) tensors
+                        # C2ST
+                        samples_tensor = torch.from_numpy(samples).float()
 
-                    # Ensure we have enough samples
-                    if len(samples) < 100:
-                        logger.warning(f"Not enough samples for C2ST ({len(samples)}). Skipping.")
-                        c2st_score = np.nan
-                        mmd_score = np.nan
-                    else:
-                        # Crop to min length to match
-                        n_eval = min(len(samples), len(ref_samples))
-                        n_eval = min(n_eval, 10000) # Cap at 10k
+                        # Ensure we have enough samples
+                        if len(samples) < 100:
+                            logger.warning(f"Not enough samples for C2ST ({len(samples)}). Skipping.")
+                            c2st_score = np.nan
+                            mmd_score = np.nan
+                        else:
+                            # Crop to min length to match
+                            n_eval = min(len(samples), len(ref_samples))
+                            n_eval = min(n_eval, 10000) # Cap at 10k
 
-                        s_eval = samples_tensor[:n_eval]
-                        r_eval = ref_samples[:n_eval]
+                            s_eval = samples_tensor[:n_eval]
+                            r_eval = ref_samples[:n_eval]
 
-                        c2st_score = c2st(r_eval, s_eval).item()
-                        mmd_score = mmd(r_eval, s_eval).item()
+                            c2st_score = c2st(r_eval, s_eval).item()
+                            mmd_score = mmd(r_eval, s_eval).item()
 
-                    logger.info(f"    {method_name} Results: C2ST={c2st_score:.4f}, MMD={mmd_score:.4f}, Time={runtime:.2f}s")
+                        logger.info(f"      {method_name} Results: C2ST={c2st_score:.4f}, MMD={mmd_score:.4f}, Time={runtime:.2f}s")
 
-                    all_results.append({
-                        "task": task_name,
-                        "method": method_name,
-                        "c2st": c2st_score,
-                        "mmd": mmd_score,
-                        "runtime": runtime,
-                        "num_simulations": config["infer_kwargs"].get("num_simulations", np.nan)
-                    })
+                        all_results.append({
+                            "task": task_name,
+                            "method": method_name,
+                            "budget": budget,
+                            "c2st": c2st_score,
+                            "mmd": mmd_score,
+                            "runtime": runtime
+                        })
 
-                    # Plot
-                    plot_path = os.path.join(figures_dir, f"{task_name}_{method_name}.png")
-                    plot_posterior(samples, ref_samples_np, task_name, method_name, plot_path)
+                        # Plot
+                        plot_path = os.path.join(figures_dir, f"{task_name}_{method_name}_{budget}.png")
+                        plot_posterior(samples, ref_samples_np, task_name, method_name, plot_path)
 
-                except Exception as e:
-                    logger.error(f"    Failed {method_name}: {e}", exc_info=True)
+                    except Exception as e:
+                        logger.error(f"      Failed {method_name}: {e}", exc_info=True)
 
         except Exception as e:
             logger.error(f"Failed task {task_name}: {e}", exc_info=True)
@@ -392,15 +380,16 @@ def run_benchmark(
 
 if __name__ == "__main__":
     # Select tasks
-    # Available: 'lotka_volterra', 'gaussian_mixture', 'sir', 'two_moons', 'bernoulli_glm',
-    # 'gaussian_linear_uniform', 'slcp', 'gaussian_linear', 'slcp_distractors', 'bernoulli_glm_raw'
-
     # Run a subset for testing by default, or all if specified
     if len(sys.argv) > 1 and sys.argv[1] == "--all":
-        tasks_to_run = sbibm.get_available_tasks()
+        # All tasks as per paper
+        tasks_to_run = [
+            'lotka_volterra', 'gaussian_mixture', 'sir', 'two_moons', 'bernoulli_glm',
+            'gaussian_linear_uniform', 'slcp', 'gaussian_linear', 'slcp_distractors', 'bernoulli_glm_raw'
+        ]
     else:
         # Default test run
-        tasks_to_run = ["two_moons", "gaussian_linear"]
+        tasks_to_run = ["two_moons"]
 
     logger.info(f"Running benchmark on tasks: {tasks_to_run}")
 
