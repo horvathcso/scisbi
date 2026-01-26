@@ -403,8 +403,14 @@ class ABCSMCPosterior:
             raise ValueError("No particles available for sampling")
 
         # Sample with probability proportional to weights
+        # Ensure weights are 1D for choice
+        weights_1d = np.asarray(self.weights).flatten()
+        # Re-normalize if needed (should be normalized in constructor)
+        if np.abs(np.sum(weights_1d) - 1.0) > 1e-5:
+             weights_1d = weights_1d / np.sum(weights_1d)
+
         indices = np.random.choice(
-            len(self.particles), size=num_samples, replace=True, p=self.weights
+            len(self.particles), size=num_samples, replace=True, p=weights_1d
         )
 
         if num_samples == 1:

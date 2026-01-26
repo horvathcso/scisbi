@@ -213,48 +213,46 @@ def run_benchmark(
                     "class": ABCRejectionSampling,
                     "kwargs": {
                         "distance_function": euclidean_distance,
-                        "tolerance": 1.0, # Increased for robust dry-run
-                        "max_attempts": int(100000 * budget_factor) if not dry_run else 10000
+                        "tolerance": 2.0, # Very high tolerance for dry-run to ensure acceptance
+                        "max_attempts": 1000 if dry_run else 100000
                     },
                     "infer_kwargs": {
-                        "num_simulations": int(100 * budget_factor) if dry_run else 1000
+                        "num_simulations": 10 if dry_run else 1000
                     }
                 },
                 "ABCMCMC": {
                     "class": ABCMCMC,
                     "kwargs": {
                          "distance_function": euclidean_distance,
-                         "tolerance": 1.0, # Increased for robust dry-run
-                         "proposal_distribution": GaussianKernel(scale=0.1),
-                         "max_attempts_per_step": 1000 if dry_run else 100
+                         "tolerance": 2.0,
+                         "proposal_distribution": GaussianKernel(scale=0.5), # Larger steps
+                         "max_attempts_per_step": 100 if dry_run else 100
                     },
                     "infer_kwargs": {
-                        "num_iterations": int(1000 * budget_factor) if dry_run else 5000
-                        # proposal_scale removed as it's in constructor now via GaussianKernel
+                        "num_iterations": 20 if dry_run else 5000
                     }
                 },
                 "ABCSMC": {
                     "class": ABCSMC,
                     "kwargs": {
                         "distance_function": euclidean_distance,
-                        "population_size": int(100 * budget_factor) if dry_run else 1000,
-                        "tolerance_schedule": [2.0, 1.0, 0.5, 0.25, 0.1] if dry_run else [2.0, 1.0, 0.5, 0.2, 0.1, 0.05],
+                        "population_size": 20 if dry_run else 1000, # Minimum 20 for stability
+                        "tolerance_schedule": [5.0, 2.0] if dry_run else [2.0, 1.0, 0.5, 0.2, 0.1, 0.05],
                         "perturbation_kernel": GaussianKernel(scale=0.1)
                     },
                     "infer_kwargs": {
-                        "num_iterations": 5 if dry_run else 6 # Length of schedule usually matters more
-                        # epsilon_decay might be internal or unused if schedule provided
+                        "num_iterations": 2 if dry_run else 6
                     }
                 },
                 "JANA": {
                     "class": JANA,
                     "kwargs": {
-                        "model": None # Will init generic MLP
+                        "model": None
                     },
                     "infer_kwargs": {
-                        "num_simulations": int(1000 * budget_factor) if dry_run else 10000,
-                        "num_epochs": 2 if dry_run else 50,
-                        "batch_size": 64
+                        "num_simulations": 100 if dry_run else 10000,
+                        "num_epochs": 1 if dry_run else 50,
+                        "batch_size": 16
                     }
                 },
                 "Simformer": {
@@ -264,9 +262,9 @@ def run_benchmark(
                         "param_dim": ref_samples_np.shape[1]
                     },
                     "infer_kwargs": {
-                        "num_simulations": int(200 * budget_factor) if dry_run else 2000, # Sequences
-                        "sequence_length": 10 if dry_run else 50,
-                        "num_epochs": 2 if dry_run else 50
+                        "num_simulations": 10 if dry_run else 2000,
+                        "sequence_length": 5 if dry_run else 50,
+                        "num_epochs": 1 if dry_run else 50
                     }
                 }
             }
@@ -337,6 +335,9 @@ def run_benchmark(
                         samples = np.array(samples)
                     if samples.ndim == 1:
                          samples = samples.reshape(-1, 1)
+                    elif samples.ndim == 3 and samples.shape[1] == 1:
+                         # Squeeze middle dimension (N, 1, P) -> (N, P)
+                         samples = samples.squeeze(1)
 
                     # Calculate Metrics
                     runtime = time.time() - start_time

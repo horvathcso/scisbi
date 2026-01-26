@@ -283,12 +283,13 @@ class ABCMCMCPosterior:
         )
 
     def sample(self, num_samples: int = 1) -> Union[Any, List[Any]]:
+        indices = np.random.choice(len(self.samples), size=num_samples, replace=True)
+        sampled = [self.samples[i] for i in indices]
+
         if num_samples == 1:
-            return np.random.choice(self.samples)
+            return sampled[0]
         else:
-            return np.random.choice(
-                self.samples, size=num_samples, replace=True
-            ).tolist()
+            return sampled
 
     def get_samples(self) -> List[Any]:
         return self.samples.copy()
