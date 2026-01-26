@@ -41,23 +41,32 @@ class JANAPosterior:
         """
         Sample from the approximate posterior for the given observed data.
         """
+        # observed_data shape: (1, D) or (D,)
+        observed_data = np.asarray(observed_data)
+        if observed_data.ndim == 1:
+            observed_data = observed_data[np.newaxis, :]
+
         if self.summary_statistic:
             observed_summary = self.summary_statistic.compute(observed_data)
         else:
             observed_summary = observed_data
 
-        print(observed_summary.shape)
-        observed_tensor = (
-            torch.from_numpy(np.atleast_2d(observed_summary)).float().to(self.device)
-        )
+        # observed_summary: (1, S)
+        observed_tensor = torch.from_numpy(observed_summary).float().to(self.device)
+
         with torch.no_grad():
             # Tile observed_tensor to match num_samples for batch processing
-            x = observed_tensor
-            print(x.shape)
+            # x shape: (num_samples, S)
+            x = observed_tensor.repeat(num_samples, 1)
+
             # Sample from prior to get z
-            z_samples = self.prior.sample(num_samples)
+            z_samples = self.prior.sample(num_samples)  # (num_samples, P)
+            # Ensure 2D
             if z_samples.ndim == 1:
-                z_samples = z_samples.reshape(1, -1)
+                z_samples = z_samples[np.newaxis, :]
+                # If prior returns 1 sample when requested N, we might need to repeat or fix prior.
+                # Assuming prior.sample(N) returns (N, P).
+
             z = torch.from_numpy(z_samples).float().to(self.device)
 
             # Ensure z matches the batch size of x
@@ -185,36 +194,59 @@ class JANA(BaseInferenceAlgorithm):
             print(f"Using device: {self.device}")
             print("1. Simulating data...")
 
-        # 1. Simulate data
+        # 1. Simulate data in batches
+        # Generate all parameters first
+        # prior.sample(N) should return (N, P)
         thetas = self.prior.sample(num_simulations)
-        # Ensure thetas is always 2D for consistent indexing
         if thetas.ndim == 1:
-            thetas = thetas.reshape(1, -1)
+            # Reshape if prior returns list of scalars or 1D array for single param dim
+            thetas = thetas.reshape(num_simulations, -1)
+        elif thetas.shape[0] != num_simulations:
+            # Fallback if sample(N) not supported properly
+            pass
 
         simulated_data = []
-        for i in trange(num_simulations, desc="Simulations", disable=not verbose):
+
+        # Batch simulation size
+        sim_batch_size = min(num_simulations, 1000)  # Process simulations in chunks
+
+        for i in trange(
+            0, num_simulations, sim_batch_size, desc="Simulations", disable=not verbose
+        ):
+            batch_thetas = thetas[i : i + sim_batch_size]
+
             # Transform parameters to ensure they meet simulator constraints
-            transformed_params = self._transform_parameters(thetas[i])
-            sim_data = self.simulator.simulate(transformed_params)
+            # _transform_parameters handles batch numpy arrays
+            transformed_params = self._transform_parameters(batch_thetas)
+
+            # Simulate batch
+            sim_batch = self.simulator.simulate(transformed_params)
+
+            # Apply summary stats
             if self.summary_statistic:
-                sim_data = self.summary_statistic.compute(sim_data)
+                sim_batch = self.summary_statistic.compute(sim_batch)
 
-            # Ensure data is flattened for neural network compatibility
-            if hasattr(sim_data, "shape"):
-                sim_data = sim_data.flatten()
-            elif isinstance(sim_data, list):
-                sim_data = np.array(sim_data).flatten()
+            # Ensure data is flattened for neural network compatibility (N, D)
+            if sim_batch.ndim > 2:
+                sim_batch = sim_batch.reshape(sim_batch.shape[0], -1)
+            elif sim_batch.ndim == 1:
+                # Should be (N, 1)
+                sim_batch = sim_batch.reshape(-1, 1)
 
-            simulated_data.append(sim_data)
+            simulated_data.append(sim_batch)
 
-        thetas = torch.from_numpy(np.array(thetas)).float()
-        simulated_data = torch.from_numpy(np.array(simulated_data)).float()
+        # Concatenate results
+        simulated_data = np.concatenate(simulated_data, axis=0)
+
+        # Convert to tensors
+        thetas_tensor = torch.from_numpy(thetas).float()
+        simulated_data_tensor = torch.from_numpy(simulated_data).float()
 
         # 2. Train the model
         if verbose:
             print("2. Training the neural network...")
 
-        dataset = TensorDataset(simulated_data, thetas)
+        dataset = TensorDataset(simulated_data_tensor, thetas_tensor)
 
         num_train = int((1.0 - validation_fraction) * num_simulations)
         num_val = num_simulations - num_train
@@ -237,97 +269,101 @@ class JANA(BaseInferenceAlgorithm):
         temp_model_path = temp_file.name
         temp_file.close()
 
-        self.model.train()
-        for epoch in trange(num_epochs, desc="Epochs", disable=not verbose):
-            total_train_loss = 0
-            for x_batch, theta_batch in train_loader:
-                x_batch, theta_batch = (
-                    x_batch.to(self.device),
-                    theta_batch.to(self.device),
-                )
-
-                optimizer.zero_grad()
-
-                # Sample z from prior
-                z_samples = self.prior.sample(x_batch.shape[0])
-                # Always ensure z_samples is 2D with correct batch size
-                if z_samples.ndim == 1:
-                    z_samples = z_samples.reshape(1, -1)
-                    z_samples = np.repeat(z_samples, x_batch.shape[0], axis=0)
-                z_batch = torch.from_numpy(z_samples).float().to(self.device)
-
-                theta_pred = self.model(x_batch, z_batch)
-
-                loss = nn.MSELoss()(theta_pred, theta_batch)
-                loss.backward()
-                optimizer.step()
-
-                total_train_loss += loss.item()
-
-            avg_train_loss = total_train_loss / len(train_loader)
-
-            # Validation
-            self.model.eval()
-            total_val_loss = 0
-            with torch.no_grad():
-                for x_batch, theta_batch in val_loader:
+        try:
+            self.model.train()
+            for epoch in trange(num_epochs, desc="Epochs", disable=not verbose):
+                total_train_loss = 0
+                for x_batch, theta_batch in train_loader:
                     x_batch, theta_batch = (
                         x_batch.to(self.device),
                         theta_batch.to(self.device),
                     )
+
+                    optimizer.zero_grad()
+
+                    # Sample z from prior
+                    # prior.sample(batch_size)
                     z_samples = self.prior.sample(x_batch.shape[0])
-                    # Always ensure z_samples is 2D with correct batch size
                     if z_samples.ndim == 1:
-                        z_samples = z_samples.reshape(1, -1)
-                        z_samples = np.repeat(z_samples, x_batch.shape[0], axis=0)
+                        z_samples = z_samples.reshape(x_batch.shape[0], -1)
+
                     z_batch = torch.from_numpy(z_samples).float().to(self.device)
+
                     theta_pred = self.model(x_batch, z_batch)
+
                     loss = nn.MSELoss()(theta_pred, theta_batch)
-                    total_val_loss += loss.item()
+                    loss.backward()
+                    optimizer.step()
 
-            avg_val_loss = total_val_loss / len(val_loader)
-            scheduler.step(avg_val_loss)
+                    total_train_loss += loss.item()
 
-            if verbose:
-                print(
-                    f"Epoch {epoch + 1}/{num_epochs}, Train Loss: {avg_train_loss:.4f}, Val Loss: {avg_val_loss:.4f}"
-                )
+                avg_train_loss = total_train_loss / len(train_loader)
 
-            if avg_val_loss < best_val_loss:
-                best_val_loss = avg_val_loss
-                epochs_no_improve = 0
-                torch.save(self.model.state_dict(), temp_model_path)
-                best_model_saved = True
-            else:
-                epochs_no_improve += 1
+                # Validation
+                self.model.eval()
+                total_val_loss = 0
+                with torch.no_grad():
+                    for x_batch, theta_batch in val_loader:
+                        x_batch, theta_batch = (
+                            x_batch.to(self.device),
+                            theta_batch.to(self.device),
+                        )
+                        z_samples = self.prior.sample(x_batch.shape[0])
+                        if z_samples.ndim == 1:
+                            z_samples = z_samples.reshape(x_batch.shape[0], -1)
 
-            if epochs_no_improve >= stop_after_epochs:
-                if verbose:
-                    print(f"Early stopping triggered after {epoch + 1} epochs.")
-                break
+                        z_batch = torch.from_numpy(z_samples).float().to(self.device)
+                        theta_pred = self.model(x_batch, z_batch)
+                        loss = nn.MSELoss()(theta_pred, theta_batch)
+                        total_val_loss += loss.item()
 
-            self.model.train()
+                avg_val_loss = total_val_loss / len(val_loader)
+                scheduler.step(avg_val_loss)
 
-        if verbose:
-            print("Training finished.")
-
-        # Load best model if saved, otherwise keep current state
-        if best_model_saved:
-            try:
-                self.model.load_state_dict(torch.load(temp_model_path))
-                if verbose:
-                    print("Loaded best model from training.")
-            except FileNotFoundError:
                 if verbose:
                     print(
-                        "Warning: Best model file not found, keeping current model state."
+                        f"Epoch {epoch + 1}/{num_epochs}, Train Loss: {avg_train_loss:.4f}, Val Loss: {avg_val_loss:.4f}"
                     )
 
-        # Cleanup temporary file
-        try:
-            os.unlink(temp_model_path)
-        except OSError:
-            pass  # File may not exist or already deleted
+                if avg_val_loss < best_val_loss:
+                    best_val_loss = avg_val_loss
+                    epochs_no_improve = 0
+                    torch.save(self.model.state_dict(), temp_model_path)
+                    best_model_saved = True
+                else:
+                    epochs_no_improve += 1
+
+                if epochs_no_improve >= stop_after_epochs:
+                    if verbose:
+                        print(f"Early stopping triggered after {epoch + 1} epochs.")
+                    break
+
+                self.model.train()
+
+            if verbose:
+                print("Training finished.")
+
+            # Load best model if saved, otherwise keep current state
+            if best_model_saved:
+                try:
+                    self.model.load_state_dict(
+                        torch.load(temp_model_path, map_location=self.device)
+                    )
+                    if verbose:
+                        print("Loaded best model from training.")
+                except FileNotFoundError:
+                    if verbose:
+                        print(
+                            "Warning: Best model file not found, keeping current model state."
+                        )
+
+        finally:
+            # Cleanup temporary file
+            try:
+                if os.path.exists(temp_model_path):
+                    os.unlink(temp_model_path)
+            except OSError:
+                pass  # File may not exist or already deleted
 
         self.model.eval()
 

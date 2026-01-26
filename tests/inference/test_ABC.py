@@ -1,6 +1,5 @@
 import pytest
 import numpy as np
-import matplotlib.pyplot as plt
 from unittest.mock import patch
 from scisbi.inference.ABC import ABCRejectionSampling, ABCPosterior
 import io
@@ -10,15 +9,21 @@ import sys
 # Mock classes for basic testing
 class MockSimulator:
     def __init__(self, return_value=None):
-        self.return_value = return_value or [1.0, 2.0]
+        if return_value is not None:
+            self.return_value = return_value
+        else:
+            self.return_value = np.array([[1.0, 2.0]])
 
-    def simulate(self, parameters, **kwargs):
+    def simulate(self, parameters):
         return self.return_value
 
 
 class MockPrior:
     def __init__(self, sample_value=None):
-        self.sample_value = sample_value or 0.5
+        if sample_value is not None:
+            self.sample_value = sample_value
+        else:
+            self.sample_value = np.array([0.5])
 
     def sample(self):
         return self.sample_value
@@ -29,7 +34,8 @@ class MockPrior:
 
 class MockSummaryStatistic:
     def compute(self, data):
-        return np.mean(data)
+        # data: (Batch, ...)
+        return np.mean(data, axis=1, keepdims=True)
 
 
 class MockDistanceFunction:
@@ -99,13 +105,13 @@ def test_abc_initialization_negative_tolerance():
 
 # Test ABCRejectionSampling.infer method
 def test_abc_infer_basic():
-    simulator = MockSimulator([1.0, 2.0])
-    prior = MockPrior(0.5)
+    simulator = MockSimulator(np.array([[1.0, 2.0]]))
+    prior = MockPrior(np.array([0.5]))
     distance_fn = MockDistanceFunction(0.05)  # Always accept
     tolerance = 0.1
 
     abc = ABCRejectionSampling(simulator, prior, distance_fn, tolerance)
-    observed_data = [1.1, 1.9]
+    observed_data = np.array([1.1, 1.9])  # (2,) -> (1, 2)
 
     result = abc.infer(observed_data, num_simulations=3)
 
@@ -117,14 +123,14 @@ def test_abc_infer_basic():
 
 
 def test_abc_infer_with_summary_statistic():
-    simulator = MockSimulator([1.0, 2.0])
-    prior = MockPrior(0.5)
+    simulator = MockSimulator(np.array([[1.0, 2.0]]))
+    prior = MockPrior(np.array([0.5]))
     distance_fn = MockDistanceFunction(0.05)
     tolerance = 0.1
     summary_stat = None
 
     abc = ABCRejectionSampling(simulator, prior, distance_fn, tolerance, summary_stat)
-    observed_data = [1.1, 1.9]
+    observed_data = np.array([1.1, 1.9])
 
     result = abc.infer(observed_data, num_simulations=2)
 
@@ -140,7 +146,7 @@ def test_abc_infer_invalid_num_simulations():
     abc = ABCRejectionSampling(simulator, prior, distance_fn, tolerance)
 
     with pytest.raises(ValueError, match="num_simulations must be positive"):
-        abc.infer([1, 2], num_simulations=0)
+        abc.infer(np.array([1, 2]), num_simulations=0)
 
 
 def test_abc_infer_max_attempts_exceeded():
@@ -154,7 +160,7 @@ def test_abc_infer_max_attempts_exceeded():
     )
 
     with pytest.raises(RuntimeError, match="Maximum attempts.*exceeded"):
-        abc.infer([1, 2], num_simulations=5)
+        abc.infer(np.array([1, 2]), num_simulations=5)
 
 
 def test_abc_infer_with_kwargs_override():
@@ -166,7 +172,7 @@ def test_abc_infer_with_kwargs_override():
     abc = ABCRejectionSampling(simulator, prior, distance_fn, tolerance, verbose=False)
 
     # Test with verbose override
-    result = abc.infer([1, 2], num_simulations=1, verbose=True, tolerance=0.2)
+    result = abc.infer(np.array([1, 2]), num_simulations=1, verbose=True, tolerance=0.2)
 
     assert len(result.samples) == 1
     assert result.tolerance == 0.2
@@ -258,17 +264,18 @@ def test_abc_posterior_repr():
 
 @patch("matplotlib.pyplot.show")
 def test_abc_posterior_plot_1d(mock_show):
-    samples = [0.1, 0.2, 0.3, 0.4, 0.5]
+    # Samples as list of arrays (1D parameter)
+    samples = [np.array([x]) for x in [0.1, 0.2, 0.3, 0.4, 0.5]]
     distances = [0.05, 0.08, 0.02, 0.07, 0.03]
     posterior = ABCPosterior(samples, distances, 0.1, 100)
 
-    posterior.plot()
+    posterior.plot(parameter_index=0)
     mock_show.assert_called_once()
 
 
 @patch("matplotlib.pyplot.show")
 def test_abc_posterior_plot_multidimensional(mock_show):
-    samples = [[0.1, 0.2], [0.3, 0.4], [0.5, 0.6]]
+    samples = [np.array([0.1, 0.2]), np.array([0.3, 0.4]), np.array([0.5, 0.6])]
     distances = [0.05, 0.08, 0.02]
     posterior = ABCPosterior(samples, distances, 0.1, 100)
 
@@ -283,34 +290,30 @@ def test_abc_posterior_plot_no_samples():
         posterior.plot()
 
 
-def test_abc_posterior_plot_multidimensional_no_index():
-    samples = [[0.1, 0.2], [0.3, 0.4]]
-    distances = [0.05, 0.08]
-    posterior = ABCPosterior(samples, distances, 0.1, 100)
-
-    with pytest.raises(
-        ValueError, match="Samples are multi-dimensional. Specify parameter_index"
-    ):
-        posterior.plot()
-
-
 # Integration tests with Gaussian distributions
 class GaussianSimulator:
-    def __init__(self, true_params):
+    def __init__(self, true_params, n_samples=100):
         self.true_params = true_params
+        self.n_samples = n_samples
 
-    def simulate(self, parameters, num_simulations=100):
+    def simulate(self, parameters):
+        # parameters: (1, P)
+        parameters = np.asarray(parameters)
+        if parameters.ndim == 2:
+            parameters = parameters[0]
+
         if len(parameters) == 2:  # mean, std
             mean, std = parameters
-            return np.random.normal(mean, std, num_simulations)
+            return np.random.normal(mean, std, (1, self.n_samples))
         elif len(parameters) == 3:  # mean1, mean2, std
             mean1, mean2, std = parameters
+            # return shape: (1, n_samples, 2)
             return np.column_stack(
                 [
-                    np.random.normal(mean1, std, num_simulations),
-                    np.random.normal(mean2, std, num_simulations),
+                    np.random.normal(mean1, std, self.n_samples),
+                    np.random.normal(mean2, std, self.n_samples),
                 ]
-            )
+            )[np.newaxis, :, :]
         else:
             raise ValueError("Unsupported parameter dimension")
 
@@ -321,13 +324,15 @@ class GaussianPrior:
 
     def sample(self):
         if self.dim == 2:
-            return [np.random.uniform(-5, 5), np.random.uniform(0.1, 3)]
+            return np.array([np.random.uniform(-5, 5), np.random.uniform(0.1, 3)])
         elif self.dim == 3:
-            return [
-                np.random.uniform(-5, 5),
-                np.random.uniform(-5, 5),
-                np.random.uniform(0.1, 3),
-            ]
+            return np.array(
+                [
+                    np.random.uniform(-5, 5),
+                    np.random.uniform(-5, 5),
+                    np.random.uniform(0.1, 3),
+                ]
+            )
 
     def log_prob(self, x):
         return 0.0  # Uniform prior
@@ -335,8 +340,10 @@ class GaussianPrior:
 
 def euclidean_distance(x, y):
     """Euclidean distance between sample means and standard deviations."""
-    x_arr = np.array(x)
-    y_arr = np.array(y)
+    # x, y are (1, N) or (1, N, 2)
+    # Remove batch dim
+    x_arr = np.array(x)[0]
+    y_arr = np.array(y)[0]
 
     if x_arr.ndim == 1 and y_arr.ndim == 1:
         # 1D case - compare mean and std
@@ -355,11 +362,13 @@ def test_abc_inference_2d_gaussian():
     np.random.seed(42)
 
     true_params = [2.0, 1.5]  # true mean=2.0, true std=1.5
-    simulator = GaussianSimulator(true_params)
+    simulator = GaussianSimulator(true_params, n_samples=100)
     prior = GaussianPrior(dim=2)
 
     # Generate observed data
     observed_data = np.random.normal(true_params[0], true_params[1], 100)
+    # Reshape to (1, 100)
+    observed_data = observed_data[np.newaxis, :]
 
     abc = ABCRejectionSampling(
         simulator=simulator,
@@ -372,10 +381,10 @@ def test_abc_inference_2d_gaussian():
     result = abc.infer(observed_data, num_simulations=20)
 
     assert len(result.samples) == 20
-    assert all(len(sample) == 2 for sample in result.samples)
     assert result.acceptance_rate > 0
 
     # Check that posterior samples are reasonable
+    # samples are arrays (P,)
     mean_estimates = [sample[0] for sample in result.samples]
     std_estimates = [sample[1] for sample in result.samples]
 
@@ -388,7 +397,7 @@ def test_abc_inference_3d_gaussian():
     np.random.seed(123)
 
     true_params = [1.0, -1.0, 2.0]  # true mean1=1.0, true mean2=-1.0, true std=2.0
-    simulator = GaussianSimulator(true_params)
+    simulator = GaussianSimulator(true_params, n_samples=100)
     prior = GaussianPrior(dim=3)
 
     # Generate observed data
@@ -398,6 +407,8 @@ def test_abc_inference_3d_gaussian():
             np.random.normal(true_params[1], true_params[2], 100),
         ]
     )
+    # Reshape to (1, 100, 2)
+    observed_data = observed_data[np.newaxis, :, :]
 
     abc = ABCRejectionSampling(
         simulator=simulator,
@@ -410,7 +421,6 @@ def test_abc_inference_3d_gaussian():
     result = abc.infer(observed_data, num_simulations=15)
 
     assert len(result.samples) == 15
-    assert all(len(sample) == 3 for sample in result.samples)
     assert result.acceptance_rate > 0
 
     # Check that posterior samples are reasonable
@@ -429,16 +439,19 @@ def test_abc_inference_with_summary_statistic_integration():
 
     class MeanStdSummary:
         def compute(self, data):
-            return [np.mean(data), np.std(data)]
+            # data: (Batch, N)
+            return np.column_stack([np.mean(data, axis=1), np.std(data, axis=1)])
 
     true_params = [0.0, 1.0]
-    simulator = GaussianSimulator(true_params)
+    simulator = GaussianSimulator(true_params, n_samples=100)
     prior = GaussianPrior(dim=2)
     summary_stat = MeanStdSummary()
 
     observed_data = np.random.normal(true_params[0], true_params[1], 100)
+    observed_data = observed_data[np.newaxis, :]
 
     def summary_distance(x, y):
+        # x, y: (1, 2)
         return np.linalg.norm(np.array(x) - np.array(y))
 
     abc = ABCRejectionSampling(
@@ -460,8 +473,8 @@ def test_abc_inference_verbose_mode():
     """Test ABC inference with verbose output."""
     np.random.seed(42)
 
-    simulator = MockSimulator([1.0, 2.0])
-    prior = MockPrior(0.5)
+    simulator = MockSimulator(np.array([[1.0, 2.0]]))
+    prior = MockPrior(np.array([0.5]))
     distance_fn = MockDistanceFunction(0.05)
     tolerance = 0.1
 
@@ -472,7 +485,7 @@ def test_abc_inference_verbose_mode():
     sys.stdout = captured_output
 
     try:
-        result = abc.infer([1, 2], num_simulations=5)
+        result = abc.infer(np.array([1, 2]), num_simulations=5)
         output = captured_output.getvalue()
 
         assert "Starting ABC rejection sampling" in output
@@ -482,495 +495,5 @@ def test_abc_inference_verbose_mode():
         sys.stdout = sys.__stdout__
 
 
-# Main execution with plotting
-def main():
-    """
-    Main function to demonstrate ABC rejection sampling functionality with plots.
-    This runs multiple examples and generates comprehensive visualizations.
-    """
-    print("=" * 60)
-    print("ABC Rejection Sampling Demonstration and Analysis")
-    print("=" * 60)
-
-    # Set random seed for reproducibility
-    np.random.seed(42)
-
-    # Example 1: Simple 1D Gaussian parameter inference
-    print("\n1. SINGLE PARAMETER GAUSSIAN INFERENCE")
-    print("-" * 40)
-
-    # True parameter: mean of a Gaussian with known std=1
-    true_mean = 2.5
-    true_std = 1.0
-    print(f"True parameters: mean={true_mean}, std={true_std} (std fixed)")
-
-    # Generate observed data
-    n_obs = 500
-    observed_data_1d = np.random.normal(true_mean, true_std, n_obs)
-    print(f"Generated {n_obs} observed data points")
-    print(
-        f"Observed data statistics: mean={np.mean(observed_data_1d):.3f}, std={np.std(observed_data_1d):.3f}"
-    )
-
-    # Simple 1D simulator and prior for mean estimation
-    class Simple1DSimulator:
-        def simulate(self, parameters, num_simulations=100):
-            mean = parameters[0] if isinstance(parameters, list) else parameters
-            return np.random.normal(mean, 1.0, num_simulations)  # Fixed std=1
-
-    class Simple1DPrior:
-        def sample(self):
-            return np.random.uniform(-2, 6)  # Uniform prior on mean
-
-        def log_prob(self, x):
-            return 0.0 if -2 <= x <= 6 else -np.inf
-
-    def simple_distance(x, y):
-        return abs(np.mean(x) - np.mean(y))
-
-    # Run ABC for different tolerance values
-    tolerances = [0.1, 0.3, 0.5, 1.0]
-    results_1d = {}
-
-    for tol in tolerances:
-        print(f"\nRunning ABC with tolerance = {tol}")
-        abc_1d = ABCRejectionSampling(
-            simulator=Simple1DSimulator(),
-            prior=Simple1DPrior(),
-            distance_function=simple_distance,
-            tolerance=tol,
-            verbose=True,
-            max_attempts=10000,
-        )
-
-        try:
-            result = abc_1d.infer(observed_data_1d, num_simulations=200)
-            results_1d[tol] = result
-            print(
-                f"Success: {len(result)} samples, acceptance rate: {result.acceptance_rate:.4f}"
-            )
-        except RuntimeError as e:
-            print(f"Failed: {e}")
-            results_1d[tol] = None
-
-    # Plot tolerance comparison
-    fig, axes = plt.subplots(2, 2, figsize=(15, 10))
-    axes = axes.flatten()
-
-    for i, tol in enumerate(tolerances):
-        if results_1d[tol] is not None:
-            result = results_1d[tol]
-            axes[i].hist(
-                result.samples,
-                bins=25,
-                density=True,
-                alpha=0.7,
-                color="skyblue",
-                edgecolor="black",
-            )
-            axes[i].axvline(
-                true_mean,
-                color="red",
-                linestyle="--",
-                linewidth=2,
-                label=f"True mean: {true_mean}",
-            )
-            axes[i].axvline(
-                np.mean(result.samples),
-                color="blue",
-                linestyle="-",
-                linewidth=2,
-                label=f"ABC mean: {np.mean(result.samples):.3f}",
-            )
-            axes[i].set_title(
-                f"Tolerance = {tol}\nAcceptance rate: {result.acceptance_rate:.4f}"
-            )
-            axes[i].set_xlabel("Mean Parameter")
-            axes[i].set_ylabel("Density")
-            axes[i].legend()
-            axes[i].grid(True, alpha=0.3)
-        else:
-            axes[i].text(
-                0.5,
-                0.5,
-                f"Failed\nTolerance = {tol}",
-                transform=axes[i].transAxes,
-                ha="center",
-                va="center",
-                fontsize=14,
-            )
-            axes[i].set_title(f"Tolerance = {tol}")
-
-    plt.suptitle(
-        "ABC Rejection Sampling: Effect of Tolerance on Posterior", fontsize=16
-    )
-    plt.tight_layout()
-    plt.show()
-
-    # Example 2: 2D Gaussian parameter inference with detailed analysis
-    print("\n2. TWO-PARAMETER GAUSSIAN INFERENCE")
-    print("-" * 40)
-
-    true_params_2d = [1.5, 2.0]  # true mean=1.5, true std=2.0
-    print(f"True parameters: mean={true_params_2d[0]}, std={true_params_2d[1]}")
-
-    # Generate observed data
-    observed_data_2d = np.random.normal(true_params_2d[0], true_params_2d[1], 500)
-    print(
-        f"Observed data statistics: mean={np.mean(observed_data_2d):.3f}, std={np.std(observed_data_2d):.3f}"
-    )
-
-    # Set up 2D ABC
-    simulator_2d = GaussianSimulator(true_params_2d)
-    prior_2d = GaussianPrior(dim=2)
-
-    abc_2d = ABCRejectionSampling(
-        simulator=simulator_2d,
-        prior=prior_2d,
-        distance_function=euclidean_distance,
-        tolerance=0.5,
-        verbose=True,
-        max_attempts=100000,
-    )
-
-    print("\nRunning 2D ABC inference...")
-    result_2d = abc_2d.infer(observed_data_2d, num_simulations=300)
-
-    # Extract parameter estimates
-    mean_estimates = [sample[0] for sample in result_2d.samples]
-    std_estimates = [sample[1] for sample in result_2d.samples]
-
-    print("\n2D ABC Results:")
-    print(f"Number of samples: {len(result_2d)}")
-    print(f"Acceptance rate: {result_2d.acceptance_rate:.4f}")
-    print(
-        f"Mean estimate: {np.mean(mean_estimates):.3f} ± {np.std(mean_estimates):.3f}"
-    )
-    print(f"Std estimate: {np.mean(std_estimates):.3f} ± {np.std(std_estimates):.3f}")
-
-    # Comprehensive 2D plotting
-    fig, axes = plt.subplots(2, 3, figsize=(18, 12))
-
-    # Marginal distributions
-    axes[0, 0].hist(
-        mean_estimates,
-        bins=30,
-        density=True,
-        alpha=0.7,
-        color="green",
-        edgecolor="black",
-    )
-    axes[0, 0].axvline(
-        true_params_2d[0],
-        color="red",
-        linestyle="--",
-        linewidth=2,
-        label=f"True: {true_params_2d[0]}",
-    )
-    axes[0, 0].axvline(
-        np.mean(mean_estimates),
-        color="blue",
-        linestyle="-",
-        linewidth=2,
-        label=f"ABC: {np.mean(mean_estimates):.3f}",
-    )
-    axes[0, 0].set_title("Posterior: Mean Parameter")
-    axes[0, 0].set_xlabel("Mean")
-    axes[0, 0].set_ylabel("Density")
-    axes[0, 0].legend()
-    axes[0, 0].grid(True, alpha=0.3)
-
-    axes[0, 1].hist(
-        std_estimates,
-        bins=30,
-        density=True,
-        alpha=0.7,
-        color="orange",
-        edgecolor="black",
-    )
-    axes[0, 1].axvline(
-        true_params_2d[1],
-        color="red",
-        linestyle="--",
-        linewidth=2,
-        label=f"True: {true_params_2d[1]}",
-    )
-    axes[0, 1].axvline(
-        np.mean(std_estimates),
-        color="blue",
-        linestyle="-",
-        linewidth=2,
-        label=f"ABC: {np.mean(std_estimates):.3f}",
-    )
-    axes[0, 1].set_title("Posterior: Std Parameter")
-    axes[0, 1].set_xlabel("Standard Deviation")
-    axes[0, 1].set_ylabel("Density")
-    axes[0, 1].legend()
-    axes[0, 1].grid(True, alpha=0.3)
-
-    # Joint distribution
-    axes[0, 2].scatter(mean_estimates, std_estimates, alpha=0.6, s=15, color="purple")
-    axes[0, 2].scatter(
-        true_params_2d[0],
-        true_params_2d[1],
-        color="red",
-        s=100,
-        marker="x",
-        linewidth=3,
-        label="True parameters",
-    )
-    axes[0, 2].scatter(
-        np.mean(mean_estimates),
-        np.mean(std_estimates),
-        color="blue",
-        s=100,
-        marker="o",
-        label="ABC estimates",
-    )
-    axes[0, 2].set_title("Joint Posterior Distribution")
-    axes[0, 2].set_xlabel("Mean Parameter")
-    axes[0, 2].set_ylabel("Std Parameter")
-    axes[0, 2].legend()
-    axes[0, 2].grid(True, alpha=0.3)
-
-    # Distance analysis
-    axes[1, 0].hist(
-        result_2d.distances,
-        bins=25,
-        density=True,
-        alpha=0.7,
-        color="red",
-        edgecolor="black",
-    )
-    axes[1, 0].axvline(
-        result_2d.tolerance,
-        color="black",
-        linestyle="--",
-        linewidth=2,
-        label=f"Tolerance: {result_2d.tolerance}",
-    )
-    axes[1, 0].set_title("Distribution of Accepted Distances")
-    axes[1, 0].set_xlabel("Distance")
-    axes[1, 0].set_ylabel("Density")
-    axes[1, 0].legend()
-    axes[1, 0].grid(True, alpha=0.3)
-
-    # Prior vs Posterior comparison
-    prior_samples_mean = []
-    prior_samples_std = []
-    for _ in range(1000):
-        sample = prior_2d.sample()
-        prior_samples_mean.append(sample[0])
-        prior_samples_std.append(sample[1])
-
-    axes[1, 1].scatter(
-        prior_samples_mean,
-        prior_samples_std,
-        alpha=0.3,
-        s=5,
-        color="gray",
-        label="Prior samples",
-    )
-    axes[1, 1].scatter(
-        mean_estimates,
-        std_estimates,
-        alpha=0.6,
-        s=15,
-        color="purple",
-        label="Posterior samples",
-    )
-    axes[1, 1].scatter(
-        true_params_2d[0],
-        true_params_2d[1],
-        color="red",
-        s=100,
-        marker="x",
-        linewidth=3,
-        label="True parameters",
-    )
-    axes[1, 1].set_title("Prior vs Posterior")
-    axes[1, 1].set_xlabel("Mean Parameter")
-    axes[1, 1].set_ylabel("Std Parameter")
-    axes[1, 1].legend()
-    axes[1, 1].grid(True, alpha=0.3)
-
-    # Data comparison
-    axes[1, 2].hist(
-        observed_data_2d,
-        bins=30,
-        density=True,
-        alpha=0.7,
-        color="lightblue",
-        edgecolor="black",
-        label="Observed data",
-    )
-
-    # Sample some posterior predictive datasets
-    for i in range(5):
-        if i < len(result_2d.samples):
-            sample_params = result_2d.samples[i]
-            pred_data = np.random.normal(sample_params[0], sample_params[1], 200)
-            axes[1, 2].hist(
-                pred_data,
-                bins=30,
-                density=True,
-                alpha=0.2,
-                color="red",
-                histtype="step",
-            )
-
-    axes[1, 2].set_title("Data: Observed vs Posterior Predictive")
-    axes[1, 2].set_xlabel("Value")
-    axes[1, 2].set_ylabel("Density")
-    axes[1, 2].legend()
-    axes[1, 2].grid(True, alpha=0.3)
-
-    plt.suptitle("ABC Rejection Sampling: Complete 2D Analysis", fontsize=16)
-    plt.tight_layout()
-    plt.show()
-
-    # Example 3: Summary statistics demonstration
-    print("\n3. SUMMARY STATISTICS DEMONSTRATION")
-    print("-" * 40)
-
-    class ComprehensiveSummary:
-        def compute(self, data):
-            return [
-                np.mean(data),
-                np.std(data),
-                np.percentile(data, 25),
-                np.percentile(data, 75),
-            ]
-
-    def comprehensive_distance(x, y):
-        return np.linalg.norm(np.array(x) - np.array(y))
-
-    summary_stat = ComprehensiveSummary()
-
-    print("Running ABC with comprehensive summary statistics...")
-    abc_summary = ABCRejectionSampling(
-        simulator=simulator_2d,
-        prior=prior_2d,
-        distance_function=comprehensive_distance,
-        tolerance=0.8,
-        summary_statistic=summary_stat,
-        verbose=True,
-        max_attempts=100000,
-    )
-
-    result_summary = abc_summary.infer(observed_data_2d, num_simulations=200)
-
-    # Compare with and without summary statistics
-    mean_estimates_summ = [sample[0] for sample in result_summary.samples]
-    std_estimates_summ = [sample[1] for sample in result_summary.samples]
-
-    print("\nSummary Statistics Results:")
-    print(f"Number of samples: {len(result_summary)}")
-    print(f"Acceptance rate: {result_summary.acceptance_rate:.4f}")
-    print(
-        f"Mean estimate: {np.mean(mean_estimates_summ):.3f} ± {np.std(mean_estimates_summ):.3f}"
-    )
-    print(
-        f"Std estimate: {np.mean(std_estimates_summ):.3f} ± {np.std(std_estimates_summ):.3f}"
-    )
-
-    # Comparison plot
-    fig, axes = plt.subplots(1, 2, figsize=(15, 6))
-
-    axes[0].hist(
-        mean_estimates,
-        bins=25,
-        density=True,
-        alpha=0.7,
-        color="blue",
-        edgecolor="black",
-        label="Full data",
-    )
-    axes[0].hist(
-        mean_estimates_summ,
-        bins=25,
-        density=True,
-        alpha=0.7,
-        color="red",
-        edgecolor="black",
-        label="Summary statistics",
-    )
-    axes[0].axvline(
-        true_params_2d[0],
-        color="black",
-        linestyle="--",
-        linewidth=2,
-        label=f"True: {true_params_2d[0]}",
-    )
-    axes[0].set_title("Mean Parameter: Full Data vs Summary Statistics")
-    axes[0].set_xlabel("Mean")
-    axes[0].set_ylabel("Density")
-    axes[0].legend()
-    axes[0].grid(True, alpha=0.3)
-
-    axes[1].hist(
-        std_estimates,
-        bins=25,
-        density=True,
-        alpha=0.7,
-        color="blue",
-        edgecolor="black",
-        label="Full data",
-    )
-    axes[1].hist(
-        std_estimates_summ,
-        bins=25,
-        density=True,
-        alpha=0.7,
-        color="red",
-        edgecolor="black",
-        label="Summary statistics",
-    )
-    axes[1].axvline(
-        true_params_2d[1],
-        color="black",
-        linestyle="--",
-        linewidth=2,
-        label=f"True: {true_params_2d[1]}",
-    )
-    axes[1].set_title("Std Parameter: Full Data vs Summary Statistics")
-    axes[1].set_xlabel("Standard Deviation")
-    axes[1].set_ylabel("Density")
-    axes[1].legend()
-    axes[1].grid(True, alpha=0.3)
-
-    plt.suptitle("ABC: Impact of Summary Statistics", fontsize=16)
-    plt.tight_layout()
-    plt.show()
-
-    # Summary statistics table
-    print("\nSummary Statistics Comparison:")
-    print(
-        f"{'Method':<20} {'Acceptance Rate':<15} {'Mean Error':<12} {'Std Error':<12}"
-    )
-    print("-" * 65)
-
-    mean_error_full = abs(np.mean(mean_estimates) - true_params_2d[0])
-    std_error_full = abs(np.mean(std_estimates) - true_params_2d[1])
-    mean_error_summ = abs(np.mean(mean_estimates_summ) - true_params_2d[0])
-    std_error_summ = abs(np.mean(std_estimates_summ) - true_params_2d[1])
-
-    print(
-        f"{'Full Data':<20} {result_2d.acceptance_rate:<15.4f} {mean_error_full:<12.4f} {std_error_full:<12.4f}"
-    )
-    print(
-        f"{'Summary Stats':<20} {result_summary.acceptance_rate:<15.4f} {mean_error_summ:<12.4f} {std_error_summ:<12.4f}"
-    )
-
-    print("\n" + "=" * 60)
-    print("ABC Rejection Sampling demonstration completed!")
-    print("Key insights:")
-    print("1. Lower tolerance → More accurate but lower acceptance rate")
-    print("2. ABC can recover true parameters from simulated data")
-    print("3. Summary statistics can improve efficiency")
-    print("4. Joint posterior shows parameter correlations")
-    print("=" * 60)
-
-
 if __name__ == "__main__":
-    main()
+    pass

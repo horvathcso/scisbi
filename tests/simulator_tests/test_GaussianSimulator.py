@@ -26,10 +26,13 @@ class TestGaussianSimulator:
         sim = GaussianSimulator(dimensions=1, seed=seed)
 
         # Parameters: [mean, std]
-        params = np.array([5.0, 2.0])
+        params_single = np.array([5.0, 2.0])
         num_sims = 10000
 
-        samples = sim.simulate(params, num_sims)
+        # Batch parameters
+        params = np.tile(params_single, (num_sims, 1))
+
+        samples = sim.simulate(params)
 
         # Check shape
         assert samples.shape == (num_sims, 1)
@@ -40,7 +43,7 @@ class TestGaussianSimulator:
 
         # Test normality using Kolmogorov-Smirnov test
         _, p_value = stats.kstest(
-            samples.flatten(), "norm", args=(params[0], params[1])
+            samples.flatten(), "norm", args=(params_single[0], params_single[1])
         )
         assert p_value > 0.01  # Should not reject null hypothesis that data is normal
 
@@ -48,10 +51,13 @@ class TestGaussianSimulator:
         """Test 1D Gaussian with dictionary parameters."""
         sim = GaussianSimulator(dimensions=1, seed=42)
 
-        params = {"mean": 3.0, "std": 1.5}
         num_sims = 5000
+        params = {
+            "mean": np.full((num_sims, 1), 3.0),
+            "std": np.full((num_sims, 1), 1.5),
+        }
 
-        samples = sim.simulate(params, num_sims)
+        samples = sim.simulate(params)
 
         # Check shape and statistical properties
         assert samples.shape == (num_sims, 1)
@@ -64,10 +70,12 @@ class TestGaussianSimulator:
 
         mean = np.array([1.0, 2.0, 3.0])
         std = np.array([0.5, 1.0, 1.5])
-        params = np.concatenate([mean, std])
+        params_single = np.concatenate([mean, std])
 
         num_sims = 5000
-        samples = sim.simulate(params, num_sims)
+        params = np.tile(params_single, (num_sims, 1))
+
+        samples = sim.simulate(params)
 
         # Check shape
         assert samples.shape == (num_sims, 3)
@@ -92,10 +100,13 @@ class TestGaussianSimulator:
         # Non-diagonal covariance matrix
         cov = np.array([[4.0, 3.0], [3.0, 9.0]])
 
-        params = {"mean": mean, "cov": cov}
         num_sims = 10000
+        params = {
+            "mean": np.tile(mean, (num_sims, 1)),
+            "cov": np.tile(cov, (num_sims, 1, 1)),
+        }
 
-        samples = sim.simulate(params, num_sims)
+        samples = sim.simulate(params)
 
         # Check shape
         assert samples.shape == (num_sims, 2)
@@ -123,10 +134,12 @@ class TestGaussianSimulator:
         cov = np.dot(A, A.T)  # Ensures positive semi-definiteness
 
         # Flatten cov matrix for parameter input
-        params = np.concatenate([mean, cov.flatten()])
+        params_single = np.concatenate([mean, cov.flatten()])
 
         num_sims = 8000
-        samples = sim.simulate(params, num_sims)
+        params = np.tile(params_single, (num_sims, 1))
+
+        samples = sim.simulate(params)
 
         # Check shape
         assert samples.shape == (num_sims, 3)
@@ -143,10 +156,10 @@ class TestGaussianSimulator:
         sim1 = GaussianSimulator(dimensions=2, seed=999)
         sim2 = GaussianSimulator(dimensions=2, seed=999)
 
-        params = {"mean": [0, 0], "std": [1, 1]}
+        params = {"mean": np.zeros((100, 2)), "std": np.ones((100, 2))}
 
-        samples1 = sim1.simulate(params, 100)
-        samples2 = sim2.simulate(params, 100)
+        samples1 = sim1.simulate(params)
+        samples2 = sim2.simulate(params)
 
         assert np.allclose(samples1, samples2)
 
@@ -154,10 +167,11 @@ class TestGaussianSimulator:
         """Test that invalid parameters raise appropriate errors."""
         sim = GaussianSimulator(dimensions=2)
 
-        # Invalid parameter length
+        # Invalid parameter length (single item batch)
+        # Expected dim: 2*2=4.
         with pytest.raises(ValueError):
-            sim.simulate(np.array([1.0, 2.0, 3.0]), 10)  # Missing std values
+            sim.simulate(np.array([[1.0, 2.0, 3.0]]))  # Missing std values
 
         # Invalid parameter type
         with pytest.raises(Exception):
-            sim.simulate("not_a_valid_parameter", 10)
+            sim.simulate("not_a_valid_parameter")

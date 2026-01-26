@@ -11,7 +11,7 @@ from .TwoMoonSimulator import TwoMoonsSimulator
 # Define __all__ for the base submodule
 __all__ = [
     "GaussianSimulator",
-    "GaussianMixtureSimulator", 
+    "GaussianMixtureSimulator",
     "GeneRegulatoryNetworkSimulator",
     "LotkaVolterraSimulator",
     "TwoMoonsSimulator",
